@@ -39,12 +39,11 @@
         {
           "target": "nsis",
           "arch": [
-            "x64",
-            "ia32"
+            "x64"
           ]
         }
       ],
-      "icon": "resources/icons/icon.jpg"
+      "icon": "resources/icons/icon.ico"
     },
     "mac": {
       "target": [
