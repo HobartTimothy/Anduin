@@ -49,7 +49,7 @@ try {
         path.join(process.cwd(), 'src', 'renderer', 'contextMenu.html'),
         path.resolve(process.cwd(), 'src', 'renderer', 'contextMenu.html')
     ];
-    
+
     let loaded = false;
     for (const htmlPath of possiblePaths) {
         try {
@@ -67,7 +67,7 @@ try {
             continue;
         }
     }
-    
+
     if (!loaded) {
         console.error('读取右键菜单 HTML 文件失败: 所有路径都尝试失败', {
             __dirname: __dirname,
@@ -98,7 +98,8 @@ const contextMenuAPI = {
         return contextMenuModule.hideContextMenu();
     },
     initContextMenu: (editor, handleMenuCommand) => {
-        return contextMenuModule.initContextMenu(editor, handleMenuCommand);
+        // 修复：传入 contextMenuHTML，确保在事件触发时 menuHTML 可用
+        return contextMenuModule.initContextMenu(editor, handleMenuCommand, contextMenuHTML);
     },
     getMenuHTML: () => {
         console.log('getMenuHTML 被调用，contextMenuHTML 长度:', contextMenuHTML ? contextMenuHTML.length : 0);

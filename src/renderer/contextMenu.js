@@ -30,11 +30,7 @@ function buildContextMenu(handleMenuCommand, menuHTML = null) {
                     });
                 }
             } else {
-                console.error('contextMenuAPI 不可用', {
-                    hasWindow: typeof window !== 'undefined',
-                    hasContextMenuAPI: typeof window !== 'undefined' && !!window.contextMenuAPI,
-                    windowKeys: typeof window !== 'undefined' ? Object.keys(window).filter(k => k.includes('context') || k.includes('Menu')) : []
-                });
+                console.warn('contextMenuAPI 不可用，且未传入 menuHTML');
             }
         } catch (error) {
             console.error('获取菜单 HTML 时出错:', error);
@@ -169,24 +165,24 @@ function showContextMenu(x, y, handleMenuCommand, menuHTML = null) {
         console.error('showContextMenu: 无法创建菜单元素');
         return;
     }
-    
+
     // 先显示菜单（但暂时不可见），以便计算尺寸
     menu.style.visibility = 'hidden';
     menu.classList.add('visible');
     menu.style.display = 'block';
-    
+
     // 设置初始位置
     menu.style.left = `${x}px`;
     menu.style.top = `${y}px`;
-    
+
     // 确保菜单在视口内
     const rect = menu.getBoundingClientRect();
     const windowWidth = window.innerWidth;
     const windowHeight = window.innerHeight;
-    
+
     let finalX = x;
     let finalY = y;
-    
+
     // 如果菜单超出右边界，调整位置
     if (rect.right > windowWidth) {
         finalX = windowWidth - rect.width - 10;
@@ -203,7 +199,7 @@ function showContextMenu(x, y, handleMenuCommand, menuHTML = null) {
     if (rect.top < 0) {
         finalY = 10;
     }
-    
+
     // 应用最终位置并显示
     menu.style.left = `${finalX}px`;
     menu.style.top = `${finalY}px`;
@@ -231,8 +227,9 @@ function hideContextMenu() {
  * 初始化上下文菜单
  * @param {HTMLElement} editor - 编辑器 DOM 元素
  * @param {Function} handleMenuCommand - 处理菜单命令的函数
+ * @param {string} menuHTML - 菜单 HTML 内容（可选）
  */
-function initContextMenu(editor, handleMenuCommand) {
+function initContextMenu(editor, handleMenuCommand, menuHTML = null) {
     if (!editor) {
         console.error('initContextMenu: editor 元素不存在');
         return;
@@ -241,11 +238,11 @@ function initContextMenu(editor, handleMenuCommand) {
         console.error('initContextMenu: handleMenuCommand 函数不存在');
         return;
     }
-    
+
     // 编辑器右键菜单事件
     editor.addEventListener('contextmenu', (e) => {
         e.preventDefault();
-        showContextMenu(e.clientX, e.clientY, handleMenuCommand);
+        showContextMenu(e.clientX, e.clientY, handleMenuCommand, menuHTML);
     });
 
     // 点击事件监听 - 点击菜单外部时隐藏菜单
@@ -273,4 +270,3 @@ module.exports = {
     hideContextMenu,
     initContextMenu
 };
-
