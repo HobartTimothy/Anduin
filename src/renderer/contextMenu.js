@@ -3,6 +3,8 @@
  * 负责构建、显示和隐藏上下文菜单
  */
 
+const i18nUI = require('../util/i18nUI');
+
 let currentOpenSubmenu = null; // 跟踪当前打开的子菜单，确保一次只展开一个
 let lastClickedCommand = null; // 跟踪最后点击的菜单命令
 
@@ -50,6 +52,13 @@ function buildContextMenu(handleMenuCommand, menuHTML = null) {
     }
 
     document.body.appendChild(menu);
+
+    // 初始化菜单中的国际化文本
+    try {
+        i18nUI.updateUI(document);
+    } catch (error) {
+        console.error('初始化上下文菜单国际化失败:', error);
+    }
 
     // 处理子菜单 hover 显示 - 确保一次只展开一个子菜单
     let hideTimeout = null;

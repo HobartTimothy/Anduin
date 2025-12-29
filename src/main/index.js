@@ -238,6 +238,12 @@ function createAboutWindow() {
     // 加载关于页面
     aboutWindow.loadFile(path.join(__dirname, '../about/about.html'));
 
+    // 窗口加载完成后，发送当前语言设置
+    aboutWindow.webContents.once('did-finish-load', () => {
+        const currentLocale = i18n.currentLocale() || 'en';
+        aboutWindow.webContents.send('language-changed', currentLocale);
+    });
+
     // 窗口关闭事件处理
     aboutWindow.on('closed', () => {
         aboutWindow = null;
@@ -353,9 +359,15 @@ ipcMain.on('change-language', (event, locale) => {
     settings.language = locale;
     writeSettings(settings);
     
-    // 通知偏好设置窗口语言已更改
+    // 通知所有窗口语言已更改
     if (preferencesWindow) {
         preferencesWindow.webContents.send('language-changed', locale);
+    }
+    if (mainWindow) {
+        mainWindow.webContents.send('language-changed', locale);
+    }
+    if (aboutWindow) {
+        aboutWindow.webContents.send('language-changed', locale);
     }
 });
 

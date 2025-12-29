@@ -8,6 +8,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const {shell, ipcRenderer} = require('electron');
     const path = require('path');
     const fs = require('fs');
+    const i18n = require('../util/i18n');
+    const i18nUI = require('../util/i18nUI');
 
     // 应用主题
     function applyTheme() {
@@ -30,6 +32,19 @@ document.addEventListener('DOMContentLoaded', () => {
     // 应用主题
     applyTheme();
 
+    // 初始化国际化
+    i18nUI.updateUI(document);
+
+    // 监听语言变化事件
+    ipcRenderer.on('language-changed', (event, locale) => {
+        console.log('[About] 收到语言变化事件:', locale);
+        i18n.setLocale(locale);
+        i18nUI.updateUI(document);
+        
+        // 语言变化后，需要重新更新平台信息（因为 i18n 可能覆盖了它）
+        updatePlatformInfo();
+    });
+
     // 获取应用信息
     const packageJsonPath = path.join(__dirname, '../../../package.json');
     let packageInfo;
@@ -46,20 +61,28 @@ document.addEventListener('DOMContentLoaded', () => {
         versionElement.textContent = packageInfo.version || '0.1.0';
     }
 
+    // 更新平台信息的函数
+    function updatePlatformInfo() {
+        const platform = process.platform;
+        let platformText = '';
+        if (platform === 'win32') {
+            platformText = 'for Windows (x64)';
+        } else if (platform === 'darwin') {
+            platformText = 'for macOS';
+        } else if (platform === 'linux') {
+            platformText = 'for Linux';
+        }
+        const platformElement = document.getElementById('platform-info');
+        if (platformElement) {
+            // 保存原来的i18n key
+            const i18nKey = platformElement.getAttribute('data-i18n');
+            // 直接设置文本（平台信息不需要国际化）
+            platformElement.textContent = platformText;
+        }
+    }
+
     // 更新平台信息
-    const platform = process.platform;
-    let platformText = '';
-    if (platform === 'win32') {
-        platformText = 'for Windows (x64)';
-    } else if (platform === 'darwin') {
-        platformText = 'for macOS';
-    } else if (platform === 'linux') {
-        platformText = 'for Linux';
-    }
-    const platformElement = document.getElementById('platform-info');
-    if (platformElement) {
-        platformElement.textContent = platformText;
-    }
+    updatePlatformInfo();
 
     // 作者链接
     const authorLink = document.getElementById('author-link');

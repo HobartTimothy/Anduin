@@ -249,21 +249,21 @@
             <p class="section-note" data-i18n="preferences.markdown.note">（下述选项将在 Typora 重启后生效）</p>
 
             <div class="setting-group">
-                <label class="setting-label">Markdown 语法偏好</label>
+                <label class="setting-label" data-i18n="preferences.markdown.syntaxPreference">Markdown 语法偏好</label>
                 <div class="setting-row">
                     <input type="checkbox" id="md-strict-mode" checked/>
-                    <label for="md-strict-mode">严格模式</label>
-                    <a href="#" class="setting-link">了解更多...</a>
+                    <label for="md-strict-mode" data-i18n="preferences.markdown.strictMode">严格模式</label>
+                    <a href="#" class="setting-link" data-i18n="preferences.markdown.learnMore">了解更多...</a>
                 </div>
                 <div class="setting-row">
-                    <label for="heading-style" class="setting-sublabel">标题样式</label>
+                    <label for="heading-style" class="setting-sublabel" data-i18n="preferences.markdown.headingStyle">标题样式</label>
                     <select id="heading-style" class="setting-select small">
                         <option>atx (# )</option>
                         <option>Setext</option>
                     </select>
                 </div>
                 <div class="setting-row">
-                    <label for="unordered-list-style" class="setting-sublabel">无序列编</label>
+                    <label for="unordered-list-style" class="setting-sublabel" data-i18n="preferences.markdown.unorderedListStyle">无序列编</label>
                     <select id="unordered-list-style" class="setting-select small">
                         <option>-</option>
                         <option>*</option>
@@ -271,7 +271,7 @@
                     </select>
                 </div>
                 <div class="setting-row">
-                    <label for="ordered-list-style" class="setting-sublabel">有序列编</label>
+                    <label for="ordered-list-style" class="setting-sublabel" data-i18n="preferences.markdown.orderedListStyle">有序列编</label>
                     <select id="ordered-list-style" class="setting-select small">
                         <option>1... 2... 3...</option>
                         <option>1... 1... 1...</option>
@@ -280,79 +280,79 @@
             </div>
 
             <div class="setting-group">
-                <label class="setting-label">Markdown 扩展语法</label>
+                <label class="setting-label" data-i18n="preferences.markdown.extensionSyntax">Markdown 扩展语法</label>
                 <div class="setting-row">
                     <input type="checkbox" id="md-auto-number" checked/>
-                    <label for="md-auto-number">自动化对理顺格（例：https://typora.io）</label>
+                    <label for="md-auto-number" data-i18n="preferences.markdown.autoNumberLink">自动化对理顺格（例：https://typora.io）</label>
                 </div>
                 <div class="setting-row">
                     <input type="checkbox" id="md-internal-link"/>
-                    <label for="md-internal-link">内接公式（例：$\LaTeX$）</label>
+                    <label for="md-internal-link" data-i18n="preferences.markdown.inlineFormula">内接公式（例：$\LaTeX$）</label>
                 </div>
                 <div class="setting-row">
                     <input type="checkbox" id="md-code-block-math" checked/>
-                    <label for="md-code-block-math">Code Block Math（```math 代码块）</label>
+                    <label for="md-code-block-math" data-i18n="preferences.markdown.codeBlockMath">Code Block Math（```math 代码块）</label>
                 </div>
                 <div class="setting-row">
                     <input type="checkbox" id="md-subscript"/>
-                    <label for="md-subscript">下标（例：H~2~O）</label>
+                    <label for="md-subscript" data-i18n="preferences.markdown.subscript">下标（例：H~2~O）</label>
                 </div>
                 <div class="setting-row">
                     <input type="checkbox" id="md-superscript"/>
-                    <label for="md-superscript">上标（例：X^2^）</label>
+                    <label for="md-superscript" data-i18n="preferences.markdown.superscript">上标（例：X^2^）</label>
                 </div>
                 <div class="setting-row">
                     <input type="checkbox" id="md-highlight"/>
-                    <label for="md-highlight">高亮（例：==key==）</label>
+                    <label for="md-highlight" data-i18n="preferences.markdown.highlight">高亮（例：==key==）</label>
                 </div>
                 <div class="setting-row">
                     <input type="checkbox" id="md-github-emoji" checked/>
-                    <label for="md-github-emoji">Github 风格颜察换接</label>
+                    <label for="md-github-emoji" data-i18n="preferences.markdown.githubEmoji">Github 风格颜察换接</label>
                 </div>
                 <div class="setting-row">
                     <input type="checkbox" id="md-mermaid" checked/>
-                    <label for="md-mermaid">图表（序列图、流程图转化 Mermaid 图）</label>
-                    <button class="setting-btn-inline">图画选项</button>
+                    <label for="md-mermaid" data-i18n="preferences.markdown.mermaid">图表（序列图、流程图转化 Mermaid 图）</label>
+                    <button class="setting-btn-inline" data-i18n="preferences.markdown.diagramOptions">图画选项</button>
                 </div>
             </div>
 
             <div class="setting-group">
-                <label class="setting-label">智能标点</label>
-                <a href="#" class="setting-link">了解更多...</a>
+                <label class="setting-label" data-i18n="preferences.markdown.smartPunctuation">智能标点</label>
+                <a href="#" class="setting-link" data-i18n="preferences.markdown.learnMore">了解更多...</a>
                 <div class="setting-row">
-                    <label for="smart-pair-keys" class="sr-only">输入对符号键</label>
-                    <input type="text" id="smart-pair-keys" class="setting-input" placeholder="输入对符号键" aria-label="输入对符号键"/>
+                    <label for="smart-pair-keys" class="sr-only" data-i18n="preferences.markdown.smartPairKeysLabel">输入对符号键</label>
+                    <input type="text" id="smart-pair-keys" class="setting-input" placeholder="" data-i18n-placeholder="preferences.markdown.smartPairKeysPlaceholder" aria-label="" data-i18n-aria-label="preferences.markdown.smartPairKeysLabel"/>
                 </div>
                 <div class="setting-row">
                     <input type="checkbox" id="smart-pair-single"/>
-                    <label for="smart-pair-single">智能引号</label>
+                    <label for="smart-pair-single" data-i18n="preferences.markdown.smartQuote">智能引号</label>
                 </div>
                 <div class="setting-row">
                     <input type="checkbox" id="smart-pair-double"/>
-                    <label for="smart-pair-double">智能倡号序字</label>
+                    <label for="smart-pair-double" data-i18n="preferences.markdown.smartDash">智能倡号序字</label>
                 </div>
                 <div class="setting-row">
                     <input type="checkbox" id="smart-esc-unicode"/>
-                    <label for="smart-esc-unicode">解析 Markdown 时允许并转化 Unicode 检码</label>
+                    <label for="smart-esc-unicode" data-i18n="preferences.markdown.escUnicode">解析 Markdown 时允许并转化 Unicode 检码</label>
                 </div>
             </div>
 
             <div class="setting-group">
-                <label class="setting-label">代码块</label>
+                <label class="setting-label" data-i18n="preferences.markdown.codeBlock">代码块</label>
                 <div class="setting-row">
                     <input type="checkbox" id="code-indent"/>
-                    <label for="code-indent">显示行号</label>
+                    <label for="code-indent" data-i18n="preferences.markdown.codeBlockLineNumbers">显示行号</label>
                 </div>
                 <div class="setting-row">
                     <input type="checkbox" id="code-fences" checked/>
-                    <label for="code-fences">代码块自动换行</label>
+                    <label for="code-fences" data-i18n="preferences.markdown.codeBlockAutoWrap">代码块自动换行</label>
                 </div>
                 <div class="setting-row">
                     <input type="checkbox" id="code-tab-convert"/>
-                    <label for="code-tab-convert">使用 Shift+Tab 自动缩进到所代码编辑器</label>
+                    <label for="code-tab-convert" data-i18n="preferences.markdown.codeBlockAutoIndent">使用 Shift+Tab 自动缩进到所代码编辑器</label>
                 </div>
                 <div class="setting-row">
-                    <label for="code-indent-size" class="setting-sublabel">代码缩编</label>
+                    <label for="code-indent-size" class="setting-sublabel" data-i18n="preferences.markdown.codeIndentSize">代码缩编</label>
                     <select id="code-indent-size" class="setting-select small">
                         <option>4</option>
                         <option>2</option>
@@ -360,69 +360,69 @@
                     </select>
                 </div>
                 <div class="setting-row">
-                    <label for="default-code-language" class="setting-sublabel">默认的代码格检查语言</label>
-                    <button id="default-code-language" class="setting-btn-inline" aria-label="选择默认代码语言">□</button>
+                    <label for="default-code-language" class="setting-sublabel" data-i18n="preferences.markdown.defaultCodeLanguage">默认的代码格检查语言</label>
+                    <button id="default-code-language" class="setting-btn-inline" aria-label="" data-i18n-aria-label="preferences.markdown.selectDefaultCodeLanguage">□</button>
                 </div>
                 <div class="setting-row">
-                    <label for="code-language-detection" class="setting-sublabel">以下哪些项决定代码绑高清语言</label>
+                    <label for="code-language-detection" class="setting-sublabel" data-i18n="preferences.markdown.codeLanguageDetection">以下哪些项决定代码绑高清语言</label>
                     <select id="code-language-detection" class="setting-select">
-                        <option>当编辑Markdown代码时插入代码块</option>
-                        <option>仅当编辑空代码块时</option>
+                        <option data-i18n="preferences.markdown.codeLanguageDetectionOption1">当编辑Markdown代码时插入代码块</option>
+                        <option data-i18n="preferences.markdown.codeLanguageDetectionOption2">仅当编辑空代码块时</option>
                     </select>
                 </div>
             </div>
 
             <div class="setting-group">
-                <label class="setting-label">公式</label>
-                <a href="#" class="setting-link">了解更多...</a>
+                <label class="setting-label" data-i18n="preferences.markdown.formula">公式</label>
+                <a href="#" class="setting-link" data-i18n="preferences.markdown.learnMore">了解更多...</a>
                 <div class="setting-row">
                     <input type="checkbox" id="formula-newline" checked/>
-                    <label for="formula-newline">支持使用 \\ 和 \newline 换行</label>
+                    <label for="formula-newline" data-i18n="preferences.markdown.formulaNewline">支持使用 \\ 和 \newline 换行</label>
                 </div>
                 <div class="setting-row">
                     <input type="checkbox" id="formula-physics"/>
-                    <label for="formula-physics">启用 physics 包</label>
+                    <label for="formula-physics" data-i18n="preferences.markdown.formulaPhysics">启用 physics 包</label>
                 </div>
                 <div class="setting-row">
-                    <label for="formula-auto-encoding" class="setting-sublabel">自动编码适应</label>
+                    <label for="formula-auto-encoding" class="setting-sublabel" data-i18n="preferences.markdown.formulaAutoEncoding">自动编码适应</label>
                     <select id="formula-auto-encoding" class="setting-select">
-                        <option>不启用松松对访问换码自公式</option>
-                        <option>自动按需决定</option>
+                        <option data-i18n="preferences.markdown.formulaAutoEncodingOption1">不启用松松对访问换码自公式</option>
+                        <option data-i18n="preferences.markdown.formulaAutoEncodingOption2">自动按需决定</option>
                     </select>
                 </div>
                 <div class="setting-row">
-                    <label for="formula-html-output" class="setting-sublabel">当数敢或倍功为 无标底被的HTML 时</label>
+                    <label for="formula-html-output" class="setting-sublabel" data-i18n="preferences.markdown.formulaHtmlOutput">当数敢或倍功为 无标底被的HTML 时</label>
                     <select id="formula-html-output" class="setting-select">
-                        <option>使用 SVG</option>
-                        <option>使用 MathML</option>
+                        <option data-i18n="preferences.markdown.formulaHtmlOutputSVG">使用 SVG</option>
+                        <option data-i18n="preferences.markdown.formulaHtmlOutputMathML">使用 MathML</option>
                     </select>
                 </div>
             </div>
 
             <div class="setting-group">
-                <label class="setting-label">文档与导行</label>
-                <a href="#" class="setting-link">了解更多...</a>
+                <label class="setting-label" data-i18n="preferences.markdown.documentNavigation">文档与导行</label>
+                <a href="#" class="setting-link" data-i18n="preferences.markdown.learnMore">了解更多...</a>
                 <div class="setting-row">
                     <input type="checkbox" id="doc-br"/>
-                    <label for="doc-br">直行练进</label>
+                    <label for="doc-br" data-i18n="preferences.markdown.lineBreak">直行练进</label>
                 </div>
                 <div class="setting-row">
-                    <label class="setting-sublabel">编辑时</label>
+                    <label class="setting-sublabel" data-i18n="preferences.markdown.lineBreakEdit">编辑时</label>
                     <input type="checkbox" id="doc-edit-br" checked/>
-                    <label for="doc-edit-br">显示 &lt;br/&gt;</label>
+                    <label for="doc-edit-br" data-i18n="preferences.markdown.showBr">显示 &lt;br/&gt;</label>
                 </div>
                 <div class="setting-row">
-                    <label for="doc-line-break-edit" class="setting-sublabel">保留换编号</label>
+                    <label for="doc-line-break-edit" class="setting-sublabel" data-i18n="preferences.markdown.lineBreakPreserve">保留换编号</label>
                     <select id="doc-line-break-edit" class="setting-select">
-                        <option>保留每包的空行选号个换行</option>
-                        <option>保留所有空行</option>
+                        <option data-i18n="preferences.markdown.lineBreakPreserveOption1">保留每包的空行选号个换行</option>
+                        <option data-i18n="preferences.markdown.lineBreakPreserveOption2">保留所有空行</option>
                     </select>
                 </div>
                 <div class="setting-row">
-                    <label for="doc-line-break-export" class="setting-sublabel">导出时导印编</label>
+                    <label for="doc-line-break-export" class="setting-sublabel" data-i18n="preferences.markdown.lineBreakExport">导出时导印编</label>
                     <select id="doc-line-break-export" class="setting-select">
-                        <option>保留每包的空行选号个换行</option>
-                        <option>保留所有空行</option>
+                        <option data-i18n="preferences.markdown.lineBreakPreserveOption1">保留每包的空行选号个换行</option>
+                        <option data-i18n="preferences.markdown.lineBreakPreserveOption2">保留所有空行</option>
                     </select>
                 </div>
             </div>
@@ -430,31 +430,31 @@
 
         <!-- 导出设置 -->
         <div class="section" id="section-export">
-            <h2 data-i18n="preferences.menu.export">Export</h2>
+            <h2 data-i18n="preferences.menu.export">导出</h2>
 
             <div class="setting-group">
-                <label for="export-folder" class="setting-label">默认的导出文件夹</label>
+                <label for="export-folder" class="setting-label" data-i18n="preferences.export.defaultExportFolder">默认的导出文件夹</label>
                 <select id="export-folder" class="setting-select">
-                    <option>自动</option>
-                    <option>自定义</option>
+                    <option data-i18n="preferences.export.auto">自动</option>
+                    <option data-i18n="preferences.export.custom">自定义</option>
                 </select>
             </div>
 
             <div class="setting-group">
-                <label for="pandoc-path" class="setting-label">Pandoc 路径</label>
-                <a href="#" class="setting-link">了解更多...</a>
+                <label for="pandoc-path" class="setting-label" data-i18n="preferences.export.pandocPath">Pandoc 路径</label>
+                <a href="#" class="setting-link" data-i18n="preferences.markdown.learnMore">了解更多...</a>
                 <div class="setting-row">
-                    <label for="pandoc-path" class="sr-only">Pandoc 路径</label>
-                    <input type="text" id="pandoc-path" class="setting-input-full" placeholder="(自动侦测)" aria-label="Pandoc 路径"/>
-                    <button class="setting-btn-inline" aria-label="选择 Pandoc 路径">📁</button>
+                    <label for="pandoc-path" class="sr-only" data-i18n="preferences.export.pandocPathLabel">Pandoc 路径</label>
+                    <input type="text" id="pandoc-path" class="setting-input-full" placeholder="" data-i18n-placeholder="preferences.export.pandocPathPlaceholder" aria-label="" data-i18n-aria-label="preferences.export.pandocPathLabel"/>
+                    <button class="setting-btn-inline" aria-label="" data-i18n-aria-label="preferences.export.selectPandocPath">📁</button>
                 </div>
             </div>
 
             <div class="setting-group">
-                <label class="setting-label">输出框</label>
+                <label class="setting-label" data-i18n="preferences.export.outputSidebar">输出框</label>
                 <div class="setting-row">
                     <input type="checkbox" id="export-sidebar" checked/>
-                    <label for="export-sidebar">打开生活文件后自动</label>
+                    <label for="export-sidebar" data-i18n="preferences.export.autoOpenSidebar">打开生活文件后自动</label>
                 </div>
             </div>
         </div>
@@ -464,63 +464,63 @@
             <h2 data-i18n="preferences.menu.appearance">外观</h2>
 
             <div class="setting-group">
-                <label class="setting-label">窗口样式</label>
-                <p class="setting-note">（重启 Typora 后生效）</p>
+                <label class="setting-label" data-i18n="preferences.appearance.windowStyle">窗口样式</label>
+                <p class="setting-note" data-i18n="preferences.appearance.windowStyleNote">（重启 Typora 后生效）</p>
                 <div class="setting-row">
                     <input type="radio" name="window-style" id="window-classic" checked/>
-                    <label for="window-classic">经典</label>
+                    <label for="window-classic" data-i18n="preferences.appearance.windowStyleClassic">经典</label>
                     <input type="radio" name="window-style" id="window-unified" style="margin-left: 20px;"/>
-                    <label for="window-unified">一体化</label>
+                    <label for="window-unified" data-i18n="preferences.appearance.windowStyleUnified">一体化</label>
                 </div>
             </div>
 
             <div class="setting-group">
-                <label class="setting-label">字体大小</label>
+                <label class="setting-label" data-i18n="preferences.appearance.fontSize">字体大小</label>
                 <div class="setting-row">
                     <input type="radio" name="font-size" id="font-auto" checked/>
-                    <label for="font-auto">自动（推荐）</label>
+                    <label for="font-auto" data-i18n="preferences.appearance.fontSizeAuto">自动（推荐）</label>
                     <input type="radio" name="font-size" id="font-custom" style="margin-left: 20px;"/>
-                    <label for="font-custom">自定义</label>
+                    <label for="font-custom" data-i18n="preferences.appearance.fontSizeCustom">自定义</label>
                 </div>
             </div>
 
             <div class="setting-group">
-                <label for="zoom-level" class="setting-label">Zoom</label>
+                <label for="zoom-level" class="setting-label" data-i18n="preferences.appearance.zoom">Zoom</label>
                 <select id="zoom-level" class="setting-select small">
                     <option>100%</option>
                     <option>110%</option>
                     <option>125%</option>
                     <option>150%</option>
                 </select>
-                <button class="setting-btn-inline">重置</button>
+                <button class="setting-btn-inline" data-i18n="preferences.appearance.zoomReset">重置</button>
                 <div class="setting-row">
                     <input type="checkbox" id="zoom-ctrl-scroll"/>
-                    <label for="zoom-ctrl-scroll">按住 Ctrl 时使用鼠标滚轮缩放</label>
+                    <label for="zoom-ctrl-scroll" data-i18n="preferences.appearance.zoomCtrlScroll">按住 Ctrl 时使用鼠标滚轮缩放</label>
                 </div>
             </div>
 
             <div class="setting-group">
-                <label class="setting-label">状态栏</label>
+                <label class="setting-label" data-i18n="preferences.appearance.statusbar">状态栏</label>
                 <div class="setting-row">
                     <input type="checkbox" id="statusbar-show" checked/>
-                    <label for="statusbar-show">显示状态栏</label>
+                    <label for="statusbar-show" data-i18n="preferences.appearance.showStatusbar">显示状态栏</label>
                 </div>
             </div>
 
             <div class="setting-group">
-                <label class="setting-label">字数统计</label>
+                <label class="setting-label" data-i18n="preferences.appearance.wordCount">字数统计</label>
                 <div class="setting-row">
-                    <label for="reading-speed">阅读速度</label>
-                    <input type="number" id="reading-speed" class="setting-input-number" value="382" aria-label="阅读速度（词每分钟）"/>
-                    <label for="reading-speed">词每分钟</label>
-                    <button class="setting-btn-inline" aria-label="重置阅读速度">重置</button>
-                    <button class="setting-btn-dropdown" aria-label="阅读速度选项">▼</button>
+                    <label for="reading-speed" data-i18n="preferences.appearance.readingSpeed">阅读速度</label>
+                    <input type="number" id="reading-speed" class="setting-input-number" value="382" aria-label="" data-i18n-aria-label="preferences.appearance.readingSpeedLabel"/>
+                    <label for="reading-speed" data-i18n="preferences.appearance.readingSpeedUnit">词每分钟</label>
+                    <button class="setting-btn-inline" aria-label="" data-i18n-aria-label="preferences.appearance.readingSpeedReset" data-i18n="preferences.appearance.readingSpeedReset">重置</button>
+                    <button class="setting-btn-dropdown" aria-label="" data-i18n-aria-label="preferences.appearance.readingSpeedOptions">▼</button>
                 </div>
             </div>
 
             <div class="setting-group">
-                <label for="theme-select" class="setting-label">主题</label>
-                <a href="#" class="setting-link">了解更多...</a>
+                <label for="theme-select" class="setting-label" data-i18n="preferences.appearance.theme">主题</label>
+                <a href="#" class="setting-link" data-i18n="preferences.markdown.learnMore">了解更多...</a>
                 <select id="theme-select" class="setting-select">
                     <option>Newsprint</option>
                     <option>Github</option>
@@ -529,11 +529,11 @@
                 </select>
                 <div class="setting-row">
                     <input type="checkbox" id="theme-dark"/>
-                    <label for="theme-dark">在深色模式下使用暗的主题</label>
+                    <label for="theme-dark" data-i18n="preferences.appearance.themeDarkMode">在深色模式下使用暗的主题</label>
                 </div>
                 <div class="setting-row">
-                    <button class="setting-btn">打开主题文件夹</button>
-                    <button class="setting-btn">获取主题</button>
+                    <button class="setting-btn" data-i18n="preferences.appearance.openThemeFolder">打开主题文件夹</button>
+                    <button class="setting-btn" data-i18n="preferences.appearance.getThemes">获取主题</button>
                 </div>
             </div>
         </div>
@@ -557,10 +557,6 @@
                     <input type="checkbox" id="update-auto"/>
                     <label for="update-auto" data-i18n="preferences.general.autoCheckUpdate">自动检查更新</label>
                 </div>
-                <div class="setting-row">
-                    <input type="checkbox" id="update-dev"/>
-                    <label for="update-dev" data-i18n="preferences.general.updateToDev">更新至开发版</label>
-                </div>
             </div>
 
             <div class="setting-group">
@@ -569,25 +565,10 @@
             </div>
 
             <div class="setting-group">
-                <label class="setting-label" data-i18n="preferences.general.operatingSystem">操作系统</label>
-                <button class="setting-btn" data-i18n="preferences.general.addMarkdownToContextMenu">向 Windows 资源管理器"新建" 菜单添加语境的"Markdown" 选项</button>
-                <button class="setting-btn" data-i18n="preferences.general.removeMarkdownFromContextMenu">向 Windows 资源管理器"新建" 菜单移除语境的"Markdown" 选项</button>
-            </div>
-
-            <div class="setting-group">
                 <label class="setting-label" data-i18n="preferences.general.dialogs">对话框</label>
                 <button class="setting-btn" data-i18n="preferences.general.resetAllDialogs">重置全部密笺对话不内容转</button>
             </div>
 
-            <div class="setting-group">
-                <label class="setting-label" data-i18n="preferences.general.advanced">高级设置</label>
-                <div class="setting-row">
-                    <input type="checkbox" id="advanced-debug"/>
-                    <label for="advanced-debug" data-i18n="preferences.general.enableDebug">开启调试模式</label>
-                </div>
-                <button class="setting-btn" data-i18n="preferences.general.openAdvanced">打开高级设置</button>
-                <button class="setting-btn" data-i18n="preferences.general.resetAdvanced">重置高级设置</button>
-            </div>
         </div>
     </div>
 </div>
