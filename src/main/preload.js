@@ -1,5 +1,22 @@
 const {contextBridge, ipcRenderer} = require('electron');
 
+// 暴露 IPC 通信 API
+contextBridge.exposeInMainWorld('electronAPI', {
+    // IPC 方法
+    invoke: (channel, ...args) => ipcRenderer.invoke(channel, ...args),
+    send: (channel, ...args) => ipcRenderer.send(channel, ...args),
+    sendSync: (channel, ...args) => ipcRenderer.sendSync(channel, ...args),
+    on: (channel, callback) => {
+        const wrappedCallback = (event, ...args) => callback(event, ...args);
+        ipcRenderer.on(channel, wrappedCallback);
+        // 返回清理函数
+        return () => ipcRenderer.removeListener(channel, wrappedCallback);
+    },
+    removeListener: (channel, callback) => ipcRenderer.removeListener(channel, callback),
+    removeAllListeners: (channel) => ipcRenderer.removeAllListeners(channel)
+});
+
+// 暴露菜单命令 API（保持向后兼容）
 contextBridge.exposeInMainWorld('mdEditorAPI', {
     onMenuCommand(callback) {
         const channels = [

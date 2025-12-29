@@ -5,7 +5,8 @@
  */
 
 const path = require('path');
-const {ipcRenderer} = require('electron');
+// 优先使用暴露的 API，如果不存在则回退到直接 require（向后兼容）
+const ipcRenderer = window.electronAPI || require('electron').ipcRenderer;
 
 /**
  * 创建命令处理器映射对象

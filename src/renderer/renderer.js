@@ -12,7 +12,8 @@
 
 // ==================== 模块导入 ====================
 const {marked} = require('marked'); // Markdown 解析库
-const {ipcRenderer} = require('electron'); // Electron IPC 渲染进程接口
+// 优先使用暴露的 API，如果不存在则回退到直接 require（向后兼容）
+const ipcRenderer = window.electronAPI || require('electron').ipcRenderer;
 const path = require('path'); // 路径处理工具
 const {createCommandHandlers} = require('./commandHandlers'); // 命令处理器模块
 

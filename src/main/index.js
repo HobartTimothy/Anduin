@@ -61,8 +61,8 @@ function createWindow(filePath = null) {
         icon: path.join(__dirname, '../../resources/icons/icon.jpg'), // 窗口图标
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'), // 预加载脚本
-            nodeIntegration: true, // 启用 Node.js 集成
-            contextIsolation: false // 禁用上下文隔离
+            nodeIntegration: true, // 启用 Node.js 集成（保持向后兼容）
+            contextIsolation: true // 启用上下文隔离（contextBridge 需要）
         }
     });
 
