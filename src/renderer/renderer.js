@@ -871,19 +871,6 @@ function buildContextMenu() {
     // 处理子菜单 hover 显示 - 确保一次只展开一个子菜单
     let hideTimeout = null;
 
-    /**
-     * 关闭所有子菜单
-     * @param {HTMLElement|null} except - 要保留打开的子菜单（可选）
-     */
-    function _closeAllSubmenus(except = null) {
-        const allSubmenus = menu.querySelectorAll('.context-submenu');
-        allSubmenus.forEach(sub => {
-            if (sub !== except) {
-                sub.style.display = 'none';
-            }
-        });
-    }
-
     const submenuItems = menu.querySelectorAll('.has-submenu');
     submenuItems.forEach(item => {
         const submenu = item.querySelector('.context-submenu');
