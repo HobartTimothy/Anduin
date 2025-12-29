@@ -33,6 +33,18 @@ contextBridge.exposeInMainWorld('commandHandlersAPI', {
     createCommandHandlers: createCommandHandlers
 });
 
+// 加载并暴露 contextMenu 模块
+const contextMenuPath = path.join(__dirname, '..', 'renderer', 'contextMenu.js');
+const contextMenuModule = require(contextMenuPath);
+
+// 暴露 contextMenu 模块
+contextBridge.exposeInMainWorld('contextMenuAPI', {
+    buildContextMenu: contextMenuModule.buildContextMenu,
+    showContextMenu: contextMenuModule.showContextMenu,
+    hideContextMenu: contextMenuModule.hideContextMenu,
+    initContextMenu: contextMenuModule.initContextMenu
+});
+
 // 暴露菜单命令 API（保持向后兼容）
 contextBridge.exposeInMainWorld('mdEditorAPI', {
     onMenuCommand(callback) {

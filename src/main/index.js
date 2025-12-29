@@ -78,7 +78,8 @@ function createWindow(filePath = null) {
     fileUtils = new FileUtils(mainWindow);
 
     // 过滤 DevTools 控制台中的无害错误消息
-    mainWindow.webContents.on('console-message', (event, { level, message, line, sourceId }) => {
+    mainWindow.webContents.on('console-message', ({ level, message, lineNumber, sourceId, frame }) => {
+        // 使用新的事件对象格式（Electron 新 API）
         // 过滤 DevTools Autofill API 相关的无害错误
         // 这些错误是 DevTools 内部协议问题，不影响应用功能
         if (message && (
@@ -87,7 +88,8 @@ function createWindow(filePath = null) {
             message.includes("'Autofill.enable' wasn't found") ||
             message.includes("'Autofill.setAddresses' wasn't found")
         )) {
-            event.preventDefault(); // 阻止错误消息显示
+            // 注意：console-message 事件可能不支持 preventDefault
+            // 这里只是过滤消息，不阻止事件本身
             return;
         }
     });

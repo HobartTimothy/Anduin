@@ -3,13 +3,20 @@
  * 提供文件打开、创建、导入等常用文件操作方法
  */
 
+// 引入文件系统模块
 const fs = require('fs');
+// 引入路径模块
 const path = require('path');
+// 引入对话框模块
 const {dialog} = require('electron');
+// 引入 mammoth 库
 const mammoth = require('mammoth');
+// 引入 Turndown 库
 const TurndownService = require('turndown');
 
+
 class FileUtils {
+
     /**
      * 构造函数
      * @param {Object} mainWindow - Electron 主窗口实例
@@ -52,6 +59,7 @@ class FileUtils {
             if (fs.existsSync(filePath)) {
                 // 读取文件内容（UTF-8 编码）
                 const content = fs.readFileSync(filePath, 'utf-8');
+
                 // 通过 IPC 发送文件内容到渲染进程
                 this.mainWindow.webContents.send('file-opened', {
                     path: filePath,
@@ -96,7 +104,9 @@ class FileUtils {
                     path: filePath,
                     content: ''
                 });
-                this.mainWindow.focus(); // 聚焦主窗口
+
+                // 聚焦主窗口
+                this.mainWindow.focus();
             }
         } catch (error) {
             console.error('创建文件失败:', error);
@@ -293,5 +303,5 @@ class FileUtils {
     }
 }
 
+// 导出类
 module.exports = FileUtils;
-
