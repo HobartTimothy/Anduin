@@ -34,6 +34,11 @@ npm run build:dir
 
 打包完成后，安装程序将生成在 `dist/` 目录下。
 
+**Windows 打包说明：**
+- 支持 64 位 (x64) 和 32 位 (ia32) 架构
+- 生成 NSIS 安装程序
+- 默认会同时构建两个架构版本
+
 **Windows 安装程序功能：**
 
 - **文件关联**：将 `.md` 文件关联到 Anduin
@@ -73,7 +78,9 @@ npm run build:linux -- --dir
 打包完成后，AppImage 和 DEB 文件将生成在 `dist/` 目录下。
 
 **Linux 打包说明：**
+- 支持 64 位 (x64) 和 32 位 (ia32) 架构
 - 生成 AppImage（通用，无需安装）和 DEB（Debian/Ubuntu）两种格式
+- 默认会同时构建两个架构版本
 - 自动配置桌面文件关联 `.md` 文件
 
 #### 5. 多平台打包
@@ -110,6 +117,7 @@ npm run dist:all
 
 2. **GitHub Actions 会自动：**
    - 在 Windows、macOS、Linux 三个平台上构建应用
+   - Windows 和 Linux 会同时构建 64 位和 32 位版本
    - 将构建产物上传到 GitHub Release
    - 创建 Release 页面，包含所有平台的安装包
 
@@ -141,7 +149,7 @@ npm run dist:all
 - **格式操作**：标题、列表、任务列表、加粗、斜体、行内代码、代码块等
 - **表格编辑**：插入表格、表格工具栏、对齐、删除等功能
 - **主题**：Github 与 Night 主题切换
-- **跨平台支持**：Windows、macOS、Linux
+- **跨平台支持**：Windows（64 位 + 32 位）、macOS（Intel + Apple Silicon）、Linux（64 位 + 32 位）
 - **系统集成**：文件关联、右键菜单支持（Windows）
 
 你可以在此基础上继续扩展数学工具、表格、图片插入等高级功能。

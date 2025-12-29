@@ -35,7 +35,7 @@ jobs:
 
       - name: Build application (Windows)
         if: matrix.platform == 'win'
-        run: npm run build -- --win --publish never
+        run: npm run build -- --win --x64 --ia32 --publish never
 
       - name: Build application (macOS)
         if: matrix.platform == 'mac'
@@ -43,7 +43,7 @@ jobs:
 
       - name: Build application (Linux)
         if: matrix.platform == 'linux'
-        run: npm run build:linux -- --publish never
+        run: npm run build:linux -- --x64 --ia32 --publish never
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -83,9 +83,9 @@ jobs:
             
             ## Downloads
             
-            - **Windows**: Installer (.exe)
+            - **Windows**: Installer (.exe) - 64-bit and 32-bit
             - **macOS**: DMG (Intel + Apple Silicon)
-            - **Linux**: AppImage and DEB package
+            - **Linux**: AppImage and DEB package - 64-bit and 32-bit
           files: |
             dist/**/*
           draft: false
