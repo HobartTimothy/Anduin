@@ -14,9 +14,7 @@ const mammoth = require('mammoth');
 // 引入 Turndown 库
 const TurndownService = require('turndown');
 
-
 class FileUtils {
-
     /**
      * 构造函数
      * @param {Object} mainWindow - Electron 主窗口实例

@@ -14,13 +14,13 @@ function buildContextMenu(handleMenuCommand) {
     const menu = document.createElement('div');
     menu.id = 'md-context-menu';
     menu.className = 'context-menu';
-    
+
     // 从 preload.js 暴露的 API 获取菜单 HTML 内容
     let menuHTML = '';
     if (window.contextMenuAPI && typeof window.contextMenuAPI.getMenuHTML === 'function') {
         menuHTML = window.contextMenuAPI.getMenuHTML();
     }
-    
+
     if (menuHTML) {
         menu.innerHTML = menuHTML;
     } else {

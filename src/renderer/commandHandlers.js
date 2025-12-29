@@ -2,7 +2,7 @@
  * 命令处理器模块
  * 包含所有菜单命令的处理函数
  * 这些命令由主进程通过 IPC 发送
- * 
+ *
  * 注意：path 和 ipcRenderer 现在通过 dependencies 参数传入
  */
 
@@ -72,7 +72,7 @@ function createCommandHandlers(dependencies) {
         'file-quick-open': () => notImplemented('快速打开'),
         'file-save': async () => {
             const content = editor.value || '';
-            let filePath = currentFilePathRef.current; // 如果已打开文件，使用当前路径
+            const filePath = currentFilePathRef.current;
             let defaultFilename = '未命名';
 
             // 如果当前有打开的文件，使用文件名作为默认文件名
@@ -96,7 +96,7 @@ function createCommandHandlers(dependencies) {
             } else if (!result.cancelled) {
                 alert('保存失败：' + (result.error || '未知错误'));
             }
-            
+
             // 恢复编辑器焦点（延迟执行，确保对话框已关闭）
             setTimeout(() => {
                 editor.focus();
@@ -128,7 +128,7 @@ function createCommandHandlers(dependencies) {
             } else if (!result.cancelled) {
                 alert('保存失败：' + (result.error || '未知错误'));
             }
-            
+
             // 恢复编辑器焦点（延迟执行，确保对话框已关闭）
             setTimeout(() => {
                 editor.focus();

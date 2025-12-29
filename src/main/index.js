@@ -10,20 +10,22 @@ const originalStderrWrite = process.stderr.write.bind(process.stderr);
 const originalStdoutWrite = process.stdout.write.bind(process.stdout);
 
 function shouldSuppressWarning(chunk) {
-    if (!chunk) return false;
+    if (!chunk) {
+        return false;
+    }
     const text = typeof chunk === 'string' ? chunk : chunk.toString();
-    return text.includes('libpng warning: iCCP') || 
+    return text.includes('libpng warning: iCCP') ||
            text.includes('cHRM chunk does not match sRGB');
 }
 
-process.stderr.write = function(chunk, encoding, fd) {
+process.stderr.write = function (chunk, encoding, fd) {
     if (shouldSuppressWarning(chunk)) {
         return true; // 忽略这个警告
     }
     return originalStderrWrite(chunk, encoding, fd);
 };
 
-process.stdout.write = function(chunk, encoding, fd) {
+process.stdout.write = function (chunk, encoding, fd) {
     if (shouldSuppressWarning(chunk)) {
         return true; // 忽略这个警告
     }
@@ -81,7 +83,7 @@ function createWindow(filePath = null) {
     mainWindow.on('closed', () => {
         mainWindow = null;
     });
-    
+
     // 窗口获得焦点时，确保编辑器能够获得焦点
     mainWindow.on('focus', () => {
         // 延迟执行，确保窗口完全获得焦点
@@ -96,13 +98,13 @@ function createWindow(filePath = null) {
     fileUtils = new FileUtils(mainWindow);
 
     // 过滤 DevTools 控制台中的无害错误消息
-    mainWindow.webContents.on('console-message', ({ level, message, lineNumber, sourceId, frame }) => {
+    mainWindow.webContents.on('console-message', ({message}) => {
         // 使用新的事件对象格式（Electron 新 API）
         // 过滤 DevTools Autofill API 相关的无害错误
         // 这些错误是 DevTools 内部协议问题，不影响应用功能
         if (message && (
-            message.includes("Autofill.enable") ||
-            message.includes("Autofill.setAddresses") ||
+            message.includes('Autofill.enable') ||
+            message.includes('Autofill.setAddresses') ||
             message.includes("'Autofill.enable' wasn't found") ||
             message.includes("'Autofill.setAddresses' wasn't found")
         )) {
@@ -442,7 +444,7 @@ ipcMain.handle('print-document', async (event, data) => {
 
         // 调用打印方法，这会弹出系统的打印对话框
         // 注意：print() 方法会立即返回，不会等待用户完成打印操作
-        printWindow.webContents.print(printOptions, (success, failureReason) => {
+        printWindow.webContents.print(printOptions, () => {
             // 打印操作完成后的回调（用户确认或取消打印对话框后触发）
             // 延迟关闭窗口，确保打印对话框已经完全关闭
             setTimeout(() => {
@@ -574,10 +576,9 @@ ipcMain.handle('export-markdown', async (event, data) => {
 
 /**
  * 选择图片文件（包括 GIF）
- * @param {Object} event - IPC 事件对象
  * @returns {Object} 选择结果对象，包含 filePath 或 cancelled 标志
  */
-ipcMain.handle('select-image-file', async (event) => {
+ipcMain.handle('select-image-file', async () => {
     try {
         const result = await dialog.showOpenDialog(mainWindow, {
             title: '选择图片文件',

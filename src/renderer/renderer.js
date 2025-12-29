@@ -9,6 +9,7 @@
  * - 与主进程的 IPC 通信
  */
 
+/* global createTableToolbar, showTableToolbar, hideTableToolbar */
 
 // ==================== 模块导入 ====================
 // 使用暴露的 API（contextIsolation 启用后，require 不可用）
@@ -38,6 +39,8 @@ const appRoot = document.getElementById('app-root'); // 应用根容器，用于
 let currentMode = 'split';
 // 使用引用对象来存储当前文件路径，以便在命令处理器中修改
 const currentFilePathRef = {current: null};
+// 使用引用对象来存储对话框函数，以便临时替换
+const showInsertTableDialogRef = {current: null};
 
 // 防抖定时器，用于优化 Markdown 渲染性能
 let renderDebounceTimer = null;
@@ -102,7 +105,7 @@ function setMode(mode) {
         isUpdatingResultPane = true;
         const markdown = editor.value || '';
         try {
-        resultPane.innerHTML = marked.parse(markdown);
+            resultPane.innerHTML = marked.parse(markdown);
         } catch (error) {
             console.error('Markdown 渲染错误:', error);
             resultPane.innerHTML = '<p style="color: red;">渲染错误: ' + error.message + '</p>';
@@ -171,22 +174,22 @@ editor.addEventListener('keydown', (e) => {
     if (currentMode === 'result' || e.key !== 'Enter') {
         return;
     }
-    
+
     const listInfo = detectListMarker();
-    
+
     // 如果当前行是列表项，处理自动创建新列表项
     if (listInfo.isList) {
         e.preventDefault(); // 阻止默认的回车行为
-        
+
         const {lineStart, lineEnd} = getCurrentLineRange();
         const value = editor.value;
         const currentLine = value.slice(lineStart, lineEnd);
         const cursorPos = editor.selectionStart;
-        
+
         // 检查光标是否在列表项内容的末尾（即列表项为空或光标在标记之后）
         const contentStart = lineStart + listInfo.indent.length + listInfo.marker.length;
         const lineContent = currentLine.slice(listInfo.indent.length + listInfo.marker.length);
-        
+
         // 如果当前列表项为空（只有标记），则退出列表
         if (lineContent.trim() === '') {
             // 删除当前空行，插入普通换行
@@ -198,7 +201,7 @@ editor.addEventListener('keydown', (e) => {
             renderMarkdown(editor.value);
             return;
         }
-        
+
         // 如果光标在列表标记之后，创建新的列表项
         if (cursorPos >= contentStart) {
             const nextMarker = getNextListMarker(listInfo);
@@ -459,14 +462,14 @@ function getCurrentLine() {
  */
 function detectListMarker() {
     const line = getCurrentLine();
-    
+
     // 匹配列表项：支持缩进 + 列表标记
     // 无序列表：- 或 * 或 +
     // 有序列表：数字. 或 数字)
     // 任务列表：- [ ] 或 - [x] 或 * [ ] 等
     const listPattern = /^(\s*)([-*+]|\d+([.)]))\s+(.*)$/;
     const taskPattern = /^(\s*)([-*+])\s+(\[[ xX]\])/;
-    
+
     // 先检查是否是任务列表
     const taskMatch = line.match(taskPattern);
     if (taskMatch) {
@@ -479,14 +482,14 @@ function detectListMarker() {
             orderedFormat: null
         };
     }
-    
+
     // 检查普通列表
     const listMatch = line.match(listPattern);
     if (listMatch) {
         const indent = listMatch[1];
         const marker = listMatch[2];
         const isOrdered = /^\d+/.test(marker);
-        
+
         if (isOrdered) {
             // 有序列表：提取数字和格式（. 或 )）
             // marker 可能是 "1." 或 "1)"，需要分别提取数字和格式
@@ -526,7 +529,7 @@ function detectListMarker() {
             };
         }
     }
-    
+
     return {isList: false};
 }
 
@@ -558,37 +561,37 @@ function insertTextAtCursor(text) {
         console.warn('insertTextAtCursor: 文本为空，跳过插入');
         return;
     }
-    
+
     // 确保编辑器存在且可用
     if (!editor) {
         console.error('insertTextAtCursor: 编辑器元素不存在');
         return;
     }
-    
+
     // 确保编辑器获得焦点
     editor.focus();
-    
+
     // 获取当前光标位置，如果不可用则使用文档末尾
-    const start = (editor.selectionStart !== undefined && editor.selectionStart !== null) 
-        ? editor.selectionStart 
+    const start = (editor.selectionStart !== undefined && editor.selectionStart !== null)
+        ? editor.selectionStart
         : (editor.value ? editor.value.length : 0);
-    const end = (editor.selectionEnd !== undefined && editor.selectionEnd !== null) 
-        ? editor.selectionEnd 
+    const end = (editor.selectionEnd !== undefined && editor.selectionEnd !== null)
+        ? editor.selectionEnd
         : (editor.value ? editor.value.length : 0);
     const value = editor.value || '';
-    
+
     console.log('insertTextAtCursor - 插入前:', {
         start,
         end,
         valueLength: value.length,
         textToInsert: text.substring(0, 50) + (text.length > 50 ? '...' : '')
     });
-    
+
     // 插入文本
     const newValue = value.slice(0, start) + text + value.slice(end);
     editor.value = newValue;
     const newPos = start + text.length;
-    
+
     // 将光标移动到插入文本的末尾
     try {
         editor.selectionStart = newPos;
@@ -596,21 +599,21 @@ function insertTextAtCursor(text) {
     } catch (e) {
         console.warn('设置光标位置失败:', e);
     }
-    
+
     console.log('insertTextAtCursor - 插入后:', {
         newPos,
         newValueLength: newValue.length,
         cursorPosition: editor.selectionStart
     });
-    
+
     // 触发 input 事件以确保其他监听器能够响应
     try {
-        const inputEvent = new Event('input', { bubbles: true, cancelable: true });
+        const inputEvent = new Event('input', {bubbles: true, cancelable: true});
         editor.dispatchEvent(inputEvent);
     } catch (e) {
         console.warn('触发 input 事件失败:', e);
     }
-    
+
     // 渲染 Markdown
     renderMarkdown(editor.value);
 }
@@ -655,7 +658,7 @@ function setTheme(theme, save = true) {
     // 添加新主题类
     const cls = `${theme}-theme`;
     document.body.classList.add(cls);
-    
+
     // 保存主题到设置
     if (save) {
         try {
@@ -838,7 +841,7 @@ function showInputDialog(message, defaultValue = '') {
     return new Promise((resolve) => {
         // 保存当前活动元素，以便对话框关闭后恢复焦点
         const previousActiveElement = document.activeElement;
-        
+
         // 创建模态遮罩层
         const overlay = document.createElement('div');
         overlay.style.cssText = `
@@ -853,7 +856,7 @@ function showInputDialog(message, defaultValue = '') {
             align-items: center;
             justify-content: center;
         `;
-        
+
         // 创建对话框
         const dialog = document.createElement('div');
         dialog.style.cssText = `
@@ -864,7 +867,7 @@ function showInputDialog(message, defaultValue = '') {
             min-width: 300px;
             max-width: 500px;
         `;
-        
+
         // 创建消息标签
         const label = document.createElement('label');
         label.textContent = message;
@@ -874,7 +877,7 @@ function showInputDialog(message, defaultValue = '') {
             font-size: 14px;
             color: #333;
         `;
-        
+
         // 创建输入框
         const input = document.createElement('input');
         input.type = 'text';
@@ -888,7 +891,7 @@ function showInputDialog(message, defaultValue = '') {
             box-sizing: border-box;
             margin-bottom: 15px;
         `;
-        
+
         // 创建按钮容器
         const buttonContainer = document.createElement('div');
         buttonContainer.style.cssText = `
@@ -896,7 +899,7 @@ function showInputDialog(message, defaultValue = '') {
             justify-content: flex-end;
             gap: 10px;
         `;
-        
+
         // 创建确定按钮
         const okButton = document.createElement('button');
         okButton.textContent = '确定';
@@ -911,7 +914,7 @@ function showInputDialog(message, defaultValue = '') {
         `;
         okButton.onmouseover = () => okButton.style.background = '#005a9e';
         okButton.onmouseout = () => okButton.style.background = '#007acc';
-        
+
         // 创建取消按钮
         const cancelButton = document.createElement('button');
         cancelButton.textContent = '取消';
@@ -926,7 +929,7 @@ function showInputDialog(message, defaultValue = '') {
         `;
         cancelButton.onmouseover = () => cancelButton.style.background = '#e0e0e0';
         cancelButton.onmouseout = () => cancelButton.style.background = '#f0f0f0';
-        
+
         // 组装对话框
         buttonContainer.appendChild(okButton);
         buttonContainer.appendChild(cancelButton);
@@ -935,13 +938,13 @@ function showInputDialog(message, defaultValue = '') {
         dialog.appendChild(buttonContainer);
         overlay.appendChild(dialog);
         document.body.appendChild(overlay);
-        
+
         // 聚焦输入框并选中默认值（延迟确保 DOM 已渲染）
         setTimeout(() => {
             input.focus();
             input.select();
         }, 10);
-        
+
         // 恢复焦点的辅助函数
         const restoreFocus = () => {
             // 延迟恢复焦点，确保对话框完全关闭
@@ -958,7 +961,7 @@ function showInputDialog(message, defaultValue = '') {
                 }
             }, 50);
         };
-        
+
         // 确定按钮处理
         const handleOk = () => {
             const value = input.value;
@@ -966,17 +969,17 @@ function showInputDialog(message, defaultValue = '') {
             restoreFocus();
             resolve(value);
         };
-        
+
         // 取消按钮处理
         const handleCancel = () => {
             document.body.removeChild(overlay);
             restoreFocus();
             resolve(null);
         };
-        
+
         okButton.addEventListener('click', handleOk);
         cancelButton.addEventListener('click', handleCancel);
-        
+
         // 按 Enter 键确定，按 Esc 键取消
         input.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
@@ -987,7 +990,7 @@ function showInputDialog(message, defaultValue = '') {
                 handleCancel();
             }
         });
-        
+
         // 点击遮罩层取消
         overlay.addEventListener('click', (e) => {
             if (e.target === overlay) {
@@ -1001,10 +1004,11 @@ function showInputDialog(message, defaultValue = '') {
  * 显示插入表格对话框
  * @returns {Promise<{cols: number, rows: number}|null>} 返回列数和行数，如果取消则返回 null
  */
+// eslint-disable-next-line no-unused-vars
 function showInsertTableDialog() {
     return new Promise((resolve) => {
         const previousActiveElement = document.activeElement;
-        
+
         // 创建模态遮罩层
         const overlay = document.createElement('div');
         overlay.style.cssText = `
@@ -1019,7 +1023,7 @@ function showInsertTableDialog() {
             align-items: center;
             justify-content: center;
         `;
-        
+
         // 创建对话框
         const dialog = document.createElement('div');
         dialog.style.cssText = `
@@ -1030,7 +1034,7 @@ function showInsertTableDialog() {
             min-width: 300px;
             max-width: 400px;
         `;
-        
+
         // 创建标题
         const title = document.createElement('div');
         title.textContent = '插入表格';
@@ -1040,7 +1044,7 @@ function showInsertTableDialog() {
             color: #333;
             margin-bottom: 20px;
         `;
-        
+
         // 创建列输入组
         const colGroup = document.createElement('div');
         colGroup.style.cssText = 'margin-bottom: 15px;';
@@ -1065,7 +1069,7 @@ function showInsertTableDialog() {
         `;
         colGroup.appendChild(colLabel);
         colGroup.appendChild(colInput);
-        
+
         // 创建行输入组
         const rowGroup = document.createElement('div');
         rowGroup.style.cssText = 'margin-bottom: 20px;';
@@ -1090,7 +1094,7 @@ function showInsertTableDialog() {
         `;
         rowGroup.appendChild(rowLabel);
         rowGroup.appendChild(rowInput);
-        
+
         // 创建按钮容器
         const buttonContainer = document.createElement('div');
         buttonContainer.style.cssText = `
@@ -1098,7 +1102,7 @@ function showInsertTableDialog() {
             justify-content: flex-end;
             gap: 10px;
         `;
-        
+
         // 创建取消按钮
         const cancelButton = document.createElement('button');
         cancelButton.textContent = '取消';
@@ -1113,7 +1117,7 @@ function showInsertTableDialog() {
         `;
         cancelButton.onmouseover = () => cancelButton.style.background = '#e0e0e0';
         cancelButton.onmouseout = () => cancelButton.style.background = '#f0f0f0';
-        
+
         // 创建确定按钮
         const okButton = document.createElement('button');
         okButton.textContent = '确定';
@@ -1128,7 +1132,7 @@ function showInsertTableDialog() {
         `;
         okButton.onmouseover = () => okButton.style.background = '#005a9e';
         okButton.onmouseout = () => okButton.style.background = '#007acc';
-        
+
         // 组装对话框
         buttonContainer.appendChild(cancelButton);
         buttonContainer.appendChild(okButton);
@@ -1138,13 +1142,13 @@ function showInsertTableDialog() {
         dialog.appendChild(buttonContainer);
         overlay.appendChild(dialog);
         document.body.appendChild(overlay);
-        
+
         // 聚焦列输入框并选中默认值
         setTimeout(() => {
             colInput.focus();
             colInput.select();
         }, 10);
-        
+
         // 恢复焦点的辅助函数
         const restoreFocus = () => {
             setTimeout(() => {
@@ -1157,7 +1161,7 @@ function showInsertTableDialog() {
                 }
             }, 50);
         };
-        
+
         // 确定按钮处理
         const handleOk = () => {
             const cols = parseInt(colInput.value, 10) || 4;
@@ -1171,17 +1175,17 @@ function showInsertTableDialog() {
                 colInput.focus();
             }
         };
-        
+
         // 取消按钮处理
         const handleCancel = () => {
             document.body.removeChild(overlay);
             restoreFocus();
             resolve(null);
         };
-        
+
         okButton.addEventListener('click', handleOk);
         cancelButton.addEventListener('click', handleCancel);
-        
+
         // 按 Enter 键确定，按 Esc 键取消
         const handleKeyDown = (e) => {
             if (e.key === 'Enter') {
@@ -1194,7 +1198,7 @@ function showInsertTableDialog() {
         };
         colInput.addEventListener('keydown', handleKeyDown);
         rowInput.addEventListener('keydown', handleKeyDown);
-        
+
         // 点击遮罩层取消
         overlay.addEventListener('click', (e) => {
             if (e.target === overlay) {
@@ -1221,9 +1225,9 @@ async function insertLink() {
     editor.value = value.slice(0, start) + md + value.slice(end);
     // 延迟聚焦，确保对话框完全关闭
     setTimeout(() => {
-    editor.focus();
-    editor.selectionStart = start;
-    editor.selectionEnd = start + md.length;
+        editor.focus();
+        editor.selectionStart = start;
+        editor.selectionEnd = start + md.length;
     }, 100);
     renderMarkdown(editor.value);
 }
@@ -1236,22 +1240,22 @@ async function insertImage() {
     try {
         // 确保编辑器获得焦点
         editor.focus();
-        
+
         // 首先尝试打开文件选择对话框选择本地图片
         const result = await ipcRenderer.invoke('select-image-file');
-        
+
         console.log('图片选择结果:', result); // 调试信息
-        
+
         if (result && result.filePath) {
             // 用户选择了本地文件
             const filePath = result.filePath;
             console.log('选择的文件路径:', filePath); // 调试信息
-            
+
             // 将文件路径转换为 file:// URL 格式
             // 使用 path 模块规范化路径，然后转换为 URL
             const normalizedPath = path.normalize(filePath);
             let imageUrl = normalizedPath.replace(/\\/g, '/');
-            
+
             // Windows 路径处理：确保正确格式
             // 如果路径是绝对路径（如 C:/path/to/file），需要转换为 file:///C:/path/to/file
             if (!imageUrl.startsWith('file://')) {
@@ -1260,32 +1264,32 @@ async function insertImage() {
                     imageUrl = `file:///${imageUrl}`;
                 } else {
                     // 相对路径或其他情况
-                imageUrl = `file:///${imageUrl}`;
+                    imageUrl = `file:///${imageUrl}`;
+                }
             }
-            }
-            
+
             // 对路径进行编码，确保特殊字符正确处理
             // 注意：encodeURI 不会编码 : / 等字符，这对 file:// URL 是正确的
             const encodedUrl = encodeURI(imageUrl).replace(/#/g, '%23');
-            
+
             const alt = (await showInputDialog('输入图片说明（可选）：', '')) || '';
             const md = `![${alt}](${encodedUrl})`;
-            
+
             console.log('生成的 Markdown:', md); // 调试信息
             console.log('编辑器当前值长度:', editor.value.length); // 调试信息
             console.log('光标位置:', editor.selectionStart, editor.selectionEnd); // 调试信息
-            
+
             insertTextAtCursor(md);
-            
+
             // 验证插入是否成功
             setTimeout(() => {
                 console.log('插入后编辑器值长度:', editor.value.length); // 调试信息
                 console.log('插入后光标位置:', editor.selectionStart, editor.selectionEnd); // 调试信息
             }, 100);
-            
+
             return;
         }
-        
+
         // 用户取消了文件选择或没有选择文件，可以选择输入 URL
         if (result && result.cancelled) {
             const url = await showInputDialog('输入图片地址（或取消以退出）：', 'https://');
@@ -1338,7 +1342,7 @@ const commandHandlers = createCommandHandlers({
     adjustHeadingLevel,
     insertLink,
     insertImage,
-    showInsertTableDialog,
+    showInsertTableDialog: () => showInsertTableDialogRef.current(),
     exportToPDF,
     exportToHTML,
     exportToImage,
@@ -1404,7 +1408,7 @@ ipcRenderer.on('file-imported', (event, data) => {
 
         // 更新预览（导入时立即渲染）
         renderMarkdown(editor.value, true);
-        
+
         // 确保编辑器获得焦点（延迟执行，确保文件对话框已关闭）
         setTimeout(() => {
             if (currentMode !== 'result') {
@@ -1437,21 +1441,23 @@ let tableToolbar = null;
 if (typeof createTableToolbar !== 'undefined') {
     tableToolbar = createTableToolbar();
     document.body.appendChild(tableToolbar);
-    
+
     // 监听插入表格事件（从网格选择器触发）
     document.addEventListener('insert-table', async (e) => {
         const {cols, rows} = e.detail;
         // 直接使用网格选择器的值插入表格
         const handler = commandHandlers['paragraph-insert-table'];
         if (handler) {
-            // 临时修改对话框返回值
-            const originalShowDialog = showInsertTableDialog;
-            showInsertTableDialog = () => Promise.resolve({cols, rows});
+            // 临时替换对话框函数，使用引用对象
+            const originalDialog = showInsertTableDialogRef.current;
+            showInsertTableDialogRef.current = () => Promise.resolve({cols, rows});
             await handler();
-            showInsertTableDialog = originalShowDialog;
+            // 恢复原始函数
+            showInsertTableDialogRef.current = originalDialog;
         }
     });
-    
+
+
     // 在 result-pane 中检测表格点击
     resultPane.addEventListener('click', (e) => {
         const table = e.target.closest('table');
@@ -1461,7 +1467,7 @@ if (typeof createTableToolbar !== 'undefined') {
             }
         }
     });
-    
+
     // 在 preview-pane 中也可以显示工具栏（只读模式）
     preview.addEventListener('click', (e) => {
         const table = e.target.closest('table');
@@ -1472,7 +1478,7 @@ if (typeof createTableToolbar !== 'undefined') {
             }
         }
     });
-    
+
     // 点击其他地方隐藏工具栏
     document.addEventListener('click', (e) => {
         if (tableToolbar && !tableToolbar.contains(e.target) && !e.target.closest('table') && !e.target.closest('.grid-selector-panel')) {
@@ -1481,14 +1487,13 @@ if (typeof createTableToolbar !== 'undefined') {
             }
         }
     });
-    
+
     // 监听表格对齐事件
     document.addEventListener('table-align', (e) => {
         const {align} = e.detail;
         // 查找当前显示的表格
-        const visibleTables = document.querySelectorAll('table');
         let targetTable = null;
-        
+
         // 优先查找 result-pane 中的表格
         if (currentMode === 'result') {
             const resultTables = resultPane.querySelectorAll('table');
@@ -1502,7 +1507,7 @@ if (typeof createTableToolbar !== 'undefined') {
                 targetTable = previewTables[previewTables.length - 1];
             }
         }
-        
+
         if (targetTable) {
             const cells = targetTable.querySelectorAll('th, td');
             cells.forEach(cell => {
@@ -1510,13 +1515,12 @@ if (typeof createTableToolbar !== 'undefined') {
             });
         }
     });
-    
+
     // 监听删除表格事件
-    document.addEventListener('table-delete', (e) => {
+    document.addEventListener('table-delete', () => {
         // 查找当前显示的表格
-        const visibleTables = document.querySelectorAll('table');
         let targetTable = null;
-        
+
         // 优先查找 result-pane 中的表格
         if (currentMode === 'result') {
             const resultTables = resultPane.querySelectorAll('table');
@@ -1530,7 +1534,7 @@ if (typeof createTableToolbar !== 'undefined') {
                 targetTable = previewTables[previewTables.length - 1];
             }
         }
-        
+
         if (targetTable) {
             targetTable.remove();
             if (typeof hideTableToolbar !== 'undefined') {

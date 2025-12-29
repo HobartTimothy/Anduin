@@ -10,29 +10,29 @@
 function createTableToolbar() {
     const toolbar = document.createElement('div');
     toolbar.className = 'table-toolbar';
-    
+
     // 网格选择器
     const gridSelector = createGridSelector();
     toolbar.appendChild(gridSelector);
-    
+
     // 分隔符
     toolbar.appendChild(createSeparator());
-    
+
     // 对齐按钮组
     const alignGroup = createAlignButtons();
     toolbar.appendChild(alignGroup);
-    
+
     // 分隔符
     toolbar.appendChild(createSeparator());
-    
+
     // 更多选项按钮
     const moreBtn = createMoreButton();
     toolbar.appendChild(moreBtn);
-    
+
     // 删除按钮
     const deleteBtn = createDeleteButton();
     toolbar.appendChild(deleteBtn);
-    
+
     return toolbar;
 }
 
@@ -43,7 +43,7 @@ function createTableToolbar() {
 function createGridSelector() {
     const container = document.createElement('div');
     container.className = 'grid-selector';
-    
+
     const btn = document.createElement('button');
     btn.className = 'grid-selector-btn';
     btn.innerHTML = `
@@ -51,14 +51,14 @@ function createGridSelector() {
             <path d="M1 1h6v6H1V1zm8 0h6v6H9V1zM1 9h6v6H1V9zm8 0h6v6H9V9z"/>
         </svg>
     `;
-    
+
     const panel = document.createElement('div');
     panel.className = 'grid-selector-panel';
-    
+
     // 创建网格
     const grid = document.createElement('div');
     grid.className = 'grid-selector-grid';
-    
+
     // 创建 6x10 的网格
     for (let row = 0; row < 10; row++) {
         for (let col = 0; col < 6; col++) {
@@ -69,18 +69,18 @@ function createGridSelector() {
             grid.appendChild(cell);
         }
     }
-    
+
     // 尺寸显示
     const dimensions = document.createElement('div');
     dimensions.className = 'grid-selector-dimensions';
     dimensions.textContent = '6 x 10';
-    
+
     panel.appendChild(grid);
     panel.appendChild(dimensions);
-    
+
     let selectedCells = [];
     let isSelecting = false;
-    
+
     // 网格单元格交互
     grid.addEventListener('mousedown', (e) => {
         if (e.target.classList.contains('grid-selector-cell')) {
@@ -89,26 +89,26 @@ function createGridSelector() {
             updateGridSelection(e.target);
         }
     });
-    
+
     grid.addEventListener('mouseover', (e) => {
         if (isSelecting && e.target.classList.contains('grid-selector-cell')) {
             updateGridSelection(e.target);
         }
     });
-    
+
     document.addEventListener('mouseup', () => {
         isSelecting = false;
     });
-    
+
     function updateGridSelection(targetCell) {
         const row = parseInt(targetCell.dataset.row);
         const col = parseInt(targetCell.dataset.col);
-        
+
         // 清除之前的选中
         grid.querySelectorAll('.grid-selector-cell').forEach(cell => {
             cell.classList.remove('selected');
         });
-        
+
         // 选中从 (0,0) 到 (row, col) 的区域
         for (let r = 0; r <= row; r++) {
             for (let c = 0; c <= col; c++) {
@@ -119,17 +119,17 @@ function createGridSelector() {
                 }
             }
         }
-        
+
         // 更新尺寸显示
         dimensions.textContent = `${col + 1} x ${row + 1}`;
     }
-    
+
     // 点击网格选择器按钮显示/隐藏面板
     btn.addEventListener('click', (e) => {
         e.stopPropagation();
         panel.classList.toggle('visible');
     });
-    
+
     // 点击网格单元格时应用选择
     grid.addEventListener('click', (e) => {
         if (e.target.classList.contains('grid-selector-cell')) {
@@ -143,17 +143,17 @@ function createGridSelector() {
             panel.classList.remove('visible');
         }
     });
-    
+
     // 点击外部关闭面板
     document.addEventListener('click', (e) => {
         if (!container.contains(e.target)) {
             panel.classList.remove('visible');
         }
     });
-    
+
     container.appendChild(btn);
     container.appendChild(panel);
-    
+
     return container;
 }
 
@@ -164,13 +164,13 @@ function createGridSelector() {
 function createAlignButtons() {
     const container = document.createElement('div');
     container.style.cssText = 'display: flex; gap: 2px;';
-    
+
     const alignments = [
         {name: 'left', icon: 'M3 3h10v2H3V3zm0 4h10v2H3V7zm0 4h10v2h-10v-2z'},
         {name: 'center', icon: 'M1 3h14v2H1V3zm0 4h14v2H1V7zm0 4h14v2H1v-2z'},
         {name: 'right', icon: 'M3 3h10v2H3V3zm0 4h10v2H3V7zm0 4h10v2H3v-2z'}
     ];
-    
+
     alignments.forEach(align => {
         const btn = document.createElement('button');
         btn.className = 'table-toolbar-btn';
@@ -194,7 +194,7 @@ function createAlignButtons() {
         });
         container.appendChild(btn);
     });
-    
+
     return container;
 }
 
@@ -264,7 +264,7 @@ function showTableToolbar(table, toolbar) {
     const rect = table.getBoundingClientRect();
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
     const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
-    
+
     // 计算工具栏位置（表格上方）
     toolbar.style.position = 'fixed';
     toolbar.style.top = `${rect.top + scrollTop - 45}px`;
