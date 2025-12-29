@@ -1433,7 +1433,19 @@ renderMarkdown('', true);
 
 // ==================== 右键上下文菜单 ====================
 // 初始化上下文菜单（在 commandHandlers 创建后调用）
-initContextMenu(editor, handleMenuCommand);
+if (editor && handleMenuCommand && initContextMenu) {
+    try {
+        initContextMenu(editor, handleMenuCommand);
+    } catch (error) {
+        console.error('右键菜单初始化失败:', error);
+    }
+} else {
+    console.error('右键菜单初始化失败: 缺少必要的参数', {
+        editor: !!editor,
+        handleMenuCommand: !!handleMenuCommand,
+        initContextMenu: !!initContextMenu
+    });
+}
 
 // ==================== 表格工具栏 ====================
 // 创建表格工具栏

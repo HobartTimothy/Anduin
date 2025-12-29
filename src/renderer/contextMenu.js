@@ -8,25 +8,48 @@ let currentOpenSubmenu = null; // 跟踪当前打开的子菜单，确保一次�
 /**
  * 构建右键上下文菜单
  * @param {Function} handleMenuCommand - 处理菜单命令的函数
+ * @param {string} menuHTML - 菜单 HTML 内容（可选，如果不提供则尝试从 window.contextMenuAPI 获取）
  * @returns {HTMLElement} 菜单 DOM 元素
  */
-function buildContextMenu(handleMenuCommand) {
+function buildContextMenu(handleMenuCommand, menuHTML = null) {
     const menu = document.createElement('div');
     menu.id = 'md-context-menu';
     menu.className = 'context-menu';
 
-    // 从 preload.js 暴露的 API 获取菜单 HTML 内容
-    let menuHTML = '';
-    if (window.contextMenuAPI && typeof window.contextMenuAPI.getMenuHTML === 'function') {
-        menuHTML = window.contextMenuAPI.getMenuHTML();
+    // 如果没有提供 menuHTML，尝试从 window.contextMenuAPI 获取
+    if (!menuHTML) {
+        try {
+            // 检查 contextMenuAPI 是否可用
+            if (typeof window !== 'undefined' && window.contextMenuAPI) {
+                if (typeof window.contextMenuAPI.getMenuHTML === 'function') {
+                    menuHTML = window.contextMenuAPI.getMenuHTML();
+                } else {
+                    console.error('getMenuHTML 方法不存在', {
+                        contextMenuAPI: window.contextMenuAPI,
+                        availableMethods: Object.keys(window.contextMenuAPI || {})
+                    });
+                }
+            } else {
+                console.error('contextMenuAPI 不可用', {
+                    hasWindow: typeof window !== 'undefined',
+                    hasContextMenuAPI: typeof window !== 'undefined' && !!window.contextMenuAPI,
+                    windowKeys: typeof window !== 'undefined' ? Object.keys(window).filter(k => k.includes('context') || k.includes('Menu')) : []
+                });
+            }
+        } catch (error) {
+            console.error('获取菜单 HTML 时出错:', error);
+        }
     }
 
-    if (menuHTML) {
+    if (menuHTML && menuHTML.trim().length > 0) {
         menu.innerHTML = menuHTML;
     } else {
         // 如果加载失败，使用空内容（避免错误）
         menu.innerHTML = '';
-        console.warn('菜单 HTML 加载失败，使用空菜单');
+        console.warn('菜单 HTML 加载失败，使用空菜单', {
+            menuHTMLLength: menuHTML ? menuHTML.length : 0,
+            menuHTMLPreview: menuHTML ? menuHTML.substring(0, 100) : 'null'
+        });
     }
 
     document.body.appendChild(menu);
@@ -135,12 +158,56 @@ function buildContextMenu(handleMenuCommand) {
  * @param {number} x - 菜单显示的 X 坐标
  * @param {number} y - 菜单显示的 Y 坐标
  * @param {Function} handleMenuCommand - 处理菜单命令的函数
+ * @param {string} menuHTML - 菜单 HTML 内容（可选）
  */
-function showContextMenu(x, y, handleMenuCommand) {
-    const menu = document.getElementById('md-context-menu') || buildContextMenu(handleMenuCommand);
+function showContextMenu(x, y, handleMenuCommand, menuHTML = null) {
+    let menu = document.getElementById('md-context-menu');
+    if (!menu) {
+        menu = buildContextMenu(handleMenuCommand, menuHTML);
+    }
+    if (!menu) {
+        console.error('showContextMenu: 无法创建菜单元素');
+        return;
+    }
+    
+    // 先显示菜单（但暂时不可见），以便计算尺寸
+    menu.style.visibility = 'hidden';
+    menu.classList.add('visible');
+    menu.style.display = 'block';
+    
+    // 设置初始位置
     menu.style.left = `${x}px`;
     menu.style.top = `${y}px`;
-    menu.classList.add('visible');
+    
+    // 确保菜单在视口内
+    const rect = menu.getBoundingClientRect();
+    const windowWidth = window.innerWidth;
+    const windowHeight = window.innerHeight;
+    
+    let finalX = x;
+    let finalY = y;
+    
+    // 如果菜单超出右边界，调整位置
+    if (rect.right > windowWidth) {
+        finalX = windowWidth - rect.width - 10;
+    }
+    // 如果菜单超出下边界，调整位置
+    if (rect.bottom > windowHeight) {
+        finalY = windowHeight - rect.height - 10;
+    }
+    // 如果菜单超出左边界，调整位置
+    if (rect.left < 0) {
+        finalX = 10;
+    }
+    // 如果菜单超出上边界，调整位置
+    if (rect.top < 0) {
+        finalY = 10;
+    }
+    
+    // 应用最终位置并显示
+    menu.style.left = `${finalX}px`;
+    menu.style.top = `${finalY}px`;
+    menu.style.visibility = 'visible';
 }
 
 /**
@@ -166,6 +233,15 @@ function hideContextMenu() {
  * @param {Function} handleMenuCommand - 处理菜单命令的函数
  */
 function initContextMenu(editor, handleMenuCommand) {
+    if (!editor) {
+        console.error('initContextMenu: editor 元素不存在');
+        return;
+    }
+    if (!handleMenuCommand) {
+        console.error('initContextMenu: handleMenuCommand 函数不存在');
+        return;
+    }
+    
     // 编辑器右键菜单事件
     editor.addEventListener('contextmenu', (e) => {
         e.preventDefault();
