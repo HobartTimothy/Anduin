@@ -168,6 +168,7 @@ body {
     color: #333;
     display: none;
     padding: 4px 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
 }
 
 .context-menu.visible {
@@ -200,7 +201,7 @@ body {
     justify-content: center;
     border-radius: 3px;
     margin: 0 2px;
-    transition: background-color 0.15s;
+    transition: background-color 0.2s;
 }
 
 .context-menu-btn svg {
@@ -219,14 +220,15 @@ body {
 }
 
 .context-menu-item {
-    padding: 6px 16px;
+    padding: 10px 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     cursor: pointer;
     white-space: nowrap;
     position: relative;
-    transition: background-color 0.15s;
+    transition: background-color 0.2s;
+    user-select: none;
 }
 
 .context-menu-item.has-submenu {
@@ -273,6 +275,7 @@ body {
     display: none;
     padding: 4px 0;
     z-index: 10000;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
 }
 
 body.github-theme {

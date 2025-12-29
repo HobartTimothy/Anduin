@@ -1,5 +1,6 @@
 const {contextBridge, ipcRenderer} = require('electron');
 const path = require('path');
+const fs = require('fs');
 const marked = require('marked');
 
 // 暴露 IPC 通信 API
@@ -21,6 +22,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
 // 暴露 Node.js 模块
 contextBridge.exposeInMainWorld('nodeAPI', {
     path: path,
+    fs: fs,
     marked: marked
 });
 
@@ -37,12 +39,22 @@ contextBridge.exposeInMainWorld('commandHandlersAPI', {
 const contextMenuPath = path.join(__dirname, '..', 'renderer', 'contextMenu.js');
 const contextMenuModule = require(contextMenuPath);
 
+// 读取右键菜单 HTML 文件
+let contextMenuHTML = '';
+try {
+    const contextMenuHTMLPath = path.join(__dirname, '..', 'renderer', 'contextMenu.html');
+    contextMenuHTML = fs.readFileSync(contextMenuHTMLPath, 'utf-8');
+} catch (error) {
+    console.error('读取右键菜单 HTML 文件失败:', error);
+}
+
 // 暴露 contextMenu 模块
 contextBridge.exposeInMainWorld('contextMenuAPI', {
     buildContextMenu: contextMenuModule.buildContextMenu,
     showContextMenu: contextMenuModule.showContextMenu,
     hideContextMenu: contextMenuModule.hideContextMenu,
-    initContextMenu: contextMenuModule.initContextMenu
+    initContextMenu: contextMenuModule.initContextMenu,
+    getMenuHTML: () => contextMenuHTML
 });
 
 // 暴露菜单命令 API（保持向后兼容）
