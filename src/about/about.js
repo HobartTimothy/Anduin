@@ -66,7 +66,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (authorLink) {
         authorLink.addEventListener('click', (e) => {
             e.preventDefault();
-            shell.openExternal('https://github.com/HobartTimothy');
+            shell.openExternal('https://github.com/HobartTimothy').catch((err) => {
+                console.error('打开外部链接失败:', err);
+            });
         });
     }
 
@@ -75,7 +77,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (websiteLink) {
         websiteLink.addEventListener('click', (e) => {
             e.preventDefault();
-            shell.openExternal('https://github.com/HobartTimothy/Anduin');
+            shell.openExternal('https://github.com/HobartTimothy/Anduin').catch((err) => {
+                console.error('打开外部链接失败:', err);
+            });
         });
     }
 
@@ -84,7 +88,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (githubLink) {
         githubLink.addEventListener('click', (e) => {
             e.preventDefault();
-            shell.openExternal('https://github.com/HobartTimothy/Anduin');
+            shell.openExternal('https://github.com/HobartTimothy/Anduin').catch((err) => {
+                console.error('打开外部链接失败:', err);
+            });
         });
     }
 });
