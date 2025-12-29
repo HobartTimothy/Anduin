@@ -55,7 +55,7 @@ searchInput.addEventListener('input', (e) => {
     const searchTerm = e.target.value.toLowerCase();
 
     if (!searchTerm) {
-    // 如果搜索框为空，显示当前选中的部分
+        // 如果搜索框为空，显示当前选中的部分
         showSection(currentSection);
         return;
     }
@@ -73,7 +73,7 @@ searchInput.addEventListener('input', (e) => {
     });
 
     if (!found) {
-    // 如果没有找到结果，显示提示
+        // 如果没有找到结果，显示提示
         console.log('未找到匹配的设置项');
     }
 });
@@ -81,10 +81,10 @@ searchInput.addEventListener('input', (e) => {
 // 初始化主题选择框
 function initThemeSelect() {
     if (!themeSelect) return;
-    
+
     // 1. 清空现有选项
     themeSelect.innerHTML = '';
-    
+
     // 2. 动态生成选项
     const themes = themeManager.getAvailableThemes();
     themes.forEach(theme => {
@@ -93,13 +93,13 @@ function initThemeSelect() {
         option.textContent = theme.name;
         themeSelect.appendChild(option);
     });
-    
+
     // 3. 选中当前主题
     const currentTheme = themeManager.getCurrentTheme();
     if (currentTheme) {
         themeSelect.value = currentTheme.id;
     }
-    
+
     // 4. 绑定变更事件
     themeSelect.addEventListener('change', (e) => {
         const newThemeId = e.target.value;
@@ -116,13 +116,13 @@ function loadSettings() {
     try {
         const settings = ipcRenderer.sendSync('get-settings');
         // 这里可以加载其他设置（除了语言，语言已在 initialize() 中设置）
-        
+
         // 加载调试模式设置
         const debugModeCheckbox = document.getElementById('general-debug-mode');
         if (debugModeCheckbox) {
             debugModeCheckbox.checked = settings.debugMode || false;
         }
-        
+
         // TODO: 加载其他设置项到界面
     } catch (error) {
         console.error('加载设置失败:', error);
@@ -138,7 +138,7 @@ function updateHtmlLang(locale) {
 function saveSettings() {
     // 获取调试模式状态
     const debugModeCheckbox = document.getElementById('general-debug-mode');
-    
+
     const settings = {
         language: languageSelect ? languageSelect.value : i18n.currentLocale() || 'en',
         debugMode: debugModeCheckbox ? debugModeCheckbox.checked : false // 保存调试模式
@@ -155,15 +155,15 @@ function saveSettings() {
 if (languageSelect) {
     languageSelect.addEventListener('change', (e) => {
         const newLocale = e.target.value;
-        
+
         console.log('[Preferences] 用户切换语言:', newLocale);
-        
+
         // 1. 在本地实例设置并保存 (这一步会写入 json 配置文件)
         i18n.setLocale(newLocale);
-        
+
         // 2. 发送给主进程，让主进程通知其他窗口
         ipcRenderer.send('change-language', newLocale);
-        
+
         // 3. 立即更新当前页面 UI (虽然监听了事件，但为了响应速度可以立即执行)
         i18nUI.updateUI();
     });
@@ -181,20 +181,20 @@ document.addEventListener('change', (e) => {
 // 监听来自主进程的广播 (用于多窗口同步)
 ipcRenderer.on('language-changed', (event, locale) => {
     console.log('[Preferences] 收到同步事件:', locale);
-    
+
     // 标记已接收到主进程的语言设置
     initialLanguageReceived = true;
-    
+
     // 如果是别的窗口触发的改变，这里也需要同步
     if (i18n.currentLocale() !== locale) {
         i18n.setLocale(locale); // 只需要加载内存，不需要再存盘（因为 preferences 已经保存了）
     }
-    
+
     // 更新 HTML lang 属性
     updateHtmlLang(locale);
     // 更新 UI 文本
     i18nUI.updateUI();
-    
+
     // 在下一个事件循环中更新语言选择框
     // 确保在 UI 更新完成后再设置选择框的值
     setTimeout(() => {
@@ -205,15 +205,15 @@ ipcRenderer.on('language-changed', (event, locale) => {
 // 监听主题变化事件
 ipcRenderer.on('theme-changed', (event, themeId) => {
     console.log('[Preferences] 收到主题变化事件:', themeId);
-    
+
     // 更新内存中的状态
     themeManager.setTheme(themeId);
-    
+
     // 更新主题选择框
     if (themeSelect && themeSelect.value !== themeId) {
         themeSelect.value = themeId;
     }
-    
+
     // 应用新样式
     themeUI.applyTheme();
 });
@@ -224,13 +224,17 @@ function setLanguageSelectValue(locale) {
         console.warn('[设置语言] 语言选择框元素不存在');
         return;
     }
-    
+
     console.log('[设置语言] 尝试设置为:', locale);
-    console.log('[设置语言] 当前选项:', Array.from(languageSelect.options).map(opt => ({value: opt.value, text: opt.textContent, selected: opt.selected})));
-    
+    console.log('[设置语言] 当前选项:', Array.from(languageSelect.options).map(opt => ({
+        value: opt.value,
+        text: opt.textContent,
+        selected: opt.selected
+    })));
+
     // 方法1: 直接设置 value
     languageSelect.value = locale;
-    
+
     // 方法2: 如果方法1失败，手动设置 selected 属性
     if (languageSelect.value !== locale) {
         console.warn('[设置语言] 方法1失败，尝试方法2');
@@ -238,7 +242,7 @@ function setLanguageSelectValue(locale) {
             option.selected = (option.value === locale);
         });
     }
-    
+
     // 方法3: 如果还是失败，通过 selectedIndex 设置
     if (languageSelect.value !== locale) {
         console.warn('[设置语言] 方法2失败，尝试方法3');
@@ -247,7 +251,7 @@ function setLanguageSelectValue(locale) {
             languageSelect.selectedIndex = targetIndex;
         }
     }
-    
+
     console.log('[设置语言] 最终值:', languageSelect.value);
     console.log('[设置语言] 选中的选项:', languageSelect.selectedOptions[0] ? {
         value: languageSelect.selectedOptions[0].value,
@@ -263,22 +267,22 @@ function initialize() {
     // 1. 获取当前语言 (i18n 内部会自动从配置文件读取)
     const currentLocale = i18n.currentLocale() || 'en';
     console.log('[Preferences] 初始化语言:', currentLocale);
-    
+
     // 2. 更新 HTML lang 属性
     updateHtmlLang(currentLocale);
-    
+
     // 3. 加载其他设置
     loadSettings();
-    
+
     // 4. 初始化主题选择框
     initThemeSelect();
-    
+
     // 5. 应用当前主题
     themeUI.applyTheme();
-    
+
     // 6. 更新当前页面的文本
     i18nUI.updateUI();
-    
+
     // 7. 等待一小段时间，让主进程有机会发送 language-changed 事件
     // 如果主进程没有发送，我们就使用本地的语言设置
     setTimeout(() => {
