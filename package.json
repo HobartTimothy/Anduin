@@ -83,10 +83,12 @@
       "icon": "resources/icons/icon.jpg",
       "category": "Office",
       "desktop": {
-        "Name": "Anduin",
-        "Comment": "Markdown 文本编辑器",
-        "Categories": "Office;TextEditor;",
-        "MimeType": "text/markdown;"
+        "entry": {
+          "Name": "Anduin",
+          "Comment": "Markdown 文本编辑器",
+          "Categories": "Office;TextEditor;",
+          "MimeType": "text/markdown;"
+        }
       }
     },
     "nsis": {
