@@ -1,0 +1,65 @@
+{
+  "name": "anduin",
+  "version": "0.1.0",
+  "description": "Markdown 文本编辑器",
+  "main": "src/main/index.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron .",
+    "build": "electron-builder --win",
+    "build:dir": "electron-builder --win --dir",
+    "dist": "electron-builder --win --publish never",
+    "lint": "eslint . --ext .js",
+    "lint:fix": "eslint . --ext .js --fix"
+  },
+  "author": "Robert.HU",
+  "license": "Apache License",
+  "build": {
+    "appId": "com.anduin.app",
+    "productName": "Anduin",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/main/**/*",
+      "src/renderer/**/*",
+      "src/preferences/**/*",
+      "resources/**/*",
+      "node_modules/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "resources/icons/icon.jpg"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Anduin",
+      "include": "resources/windows/installer.nsh",
+      "installerIcon": "resources/icons/icon.jpg",
+      "uninstallerIcon": "resources/icons/icon.jpg",
+      "installerHeaderIcon": "resources/icons/icon.jpg"
+    }
+  },
+  "devDependencies": {
+    "electron": "37.3.1",
+    "electron-builder": "^26.0.12",
+    "eslint": "^8.57.1",
+    "eslint-plugin-node": "^11.1.0"
+  },
+  "dependencies": {
+    "mammoth": "^1.11.0",
+    "marked": "^12.0.0",
+    "turndown": "^7.2.2"
+  }
+}

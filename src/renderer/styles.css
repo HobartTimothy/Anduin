@@ -1,0 +1,433 @@
+.app-root {
+    display: flex;
+    height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* 对比模式（默认） */
+.app-root.mode-split .editor-pane,
+.app-root.mode-split .preview-pane {
+    width: 50%;
+    height: 100%;
+    box-sizing: border-box;
+    display: block;
+}
+
+.app-root.mode-split .editor-pane {
+    border-right: 1px solid #e0e0e0;
+}
+
+.app-root.mode-split .result-pane {
+    display: none;
+}
+
+/* 源代码模式 */
+.app-root.mode-source .editor-pane {
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    display: block;
+    border-right: none;
+}
+
+.app-root.mode-source .preview-pane,
+.app-root.mode-source .result-pane {
+    display: none;
+}
+
+/* 结果模式 */
+.app-root.mode-result .editor-pane,
+.app-root.mode-result .preview-pane {
+    display: none !important;
+}
+
+.app-root.mode-result .result-pane {
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    display: block !important;
+    padding: 16px;
+    overflow: auto;
+    outline: none;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    word-wrap: break-word;
+    background: #ffffff;
+    color: #333;
+    cursor: text;
+    min-height: 100%;
+}
+
+.app-root.mode-result .result-pane:focus {
+    outline: none;
+}
+
+.app-root.mode-result .result-pane h1,
+.app-root.mode-result .result-pane h2,
+.app-root.mode-result .result-pane h3,
+.app-root.mode-result .result-pane h4,
+.app-root.mode-result .result-pane h5,
+.app-root.mode-result .result-pane h6 {
+    margin-top: 1em;
+    margin-bottom: 0.5em;
+    font-weight: bold;
+}
+
+.app-root.mode-result .result-pane p {
+    margin: 0.5em 0;
+}
+
+.app-root.mode-result .result-pane ul,
+.app-root.mode-result .result-pane ol {
+    margin: 0.5em 0;
+    padding-left: 2em;
+}
+
+.app-root.mode-result .result-pane code {
+    background: #f4f4f4;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-family: 'Consolas', 'Fira Code', monospace;
+}
+
+.app-root.mode-result .result-pane pre {
+    background: #f4f4f4;
+    padding: 12px;
+    border-radius: 4px;
+    overflow-x: auto;
+}
+
+.app-root.mode-result .result-pane blockquote {
+    border-left: 4px solid #ddd;
+    padding-left: 16px;
+    margin: 0.5em 0;
+    color: #666;
+}
+
+.app-root.mode-result .editor-pane,
+.app-root.mode-result .preview-pane {
+    display: none;
+}
+
+/* 默认隐藏结果面板 */
+.result-pane {
+    display: none;
+}
+
+/* 兼容旧代码 */
+.editor-pane,
+.preview-pane {
+    width: 50%;
+    height: 100%;
+    box-sizing: border-box;
+}
+
+.editor-pane {
+    border-right: 1px solid #e0e0e0;
+    position: relative;
+    overflow: hidden;
+}
+
+#editor {
+    width: 100%;
+    height: 100%;
+    padding: 16px;
+    border: none;
+    outline: none;
+    resize: none;
+    font-family: 'Consolas', 'Fira Code', monospace;
+    font-size: 14px;
+    line-height: 1.6;
+    overflow-y: auto;
+    overflow-x: auto;
+    box-sizing: border-box;
+}
+
+.preview-pane {
+    padding: 16px;
+    overflow: auto;
+    box-sizing: border-box;
+    position: relative;
+}
+
+.context-menu {
+    position: fixed;
+    z-index: 9999;
+    min-width: 200px;
+    background: #f8f9fa;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    border: 1px solid #e0e0e0;
+    font-size: 13px;
+    color: #333;
+    display: none;
+    padding: 4px 0;
+}
+
+.context-menu.visible {
+    display: block;
+}
+
+.context-menu-row {
+    display: flex;
+    padding: 2px 0;
+}
+
+.context-menu-row.context-menu-icons {
+    border-bottom: 1px solid #e0e0e0;
+    padding-bottom: 4px;
+    margin-bottom: 4px;
+}
+
+.context-menu-row:last-child {
+    border-bottom: none;
+}
+
+.context-menu-btn {
+    flex: 1;
+    padding: 8px;
+    text-align: center;
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 3px;
+    margin: 0 2px;
+    transition: background-color 0.15s;
+}
+
+.context-menu-btn svg {
+    width: 16px;
+    height: 16px;
+    fill: #555;
+}
+
+.context-menu-btn:hover {
+    background: #e9ecef;
+}
+
+.context-menu-btn.disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+.context-menu-item {
+    padding: 6px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    white-space: nowrap;
+    position: relative;
+    transition: background-color 0.15s;
+}
+
+.context-menu-item.has-submenu {
+    position: relative;
+}
+
+.context-menu-item:hover {
+    background: #e9ecef;
+}
+
+.context-menu-item-label {
+    flex: 1;
+}
+
+.context-menu-item-shortcut {
+    margin-left: 16px;
+    color: #999;
+    font-size: 11px;
+}
+
+.context-menu-item.has-submenu::after {
+    content: '▶';
+    font-size: 10px;
+    margin-left: 8px;
+    color: #999;
+}
+
+.context-menu-separator {
+    height: 1px;
+    background: #e0e0e0;
+    margin: 4px 0;
+}
+
+.context-submenu {
+    position: absolute;
+    top: -4px;
+    left: 100%;
+    margin-left: 4px;
+    min-width: 200px;
+    background: #f8f9fa;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    border: 1px solid #e0e0e0;
+    display: none;
+    padding: 4px 0;
+    z-index: 10000;
+}
+
+body.github-theme {
+    background-color: #ffffff;
+    color: #24292e;
+}
+
+body.newsprint-theme {
+    background-color: #f8f5e9;
+    color: #333333;
+}
+
+body.night-theme {
+    background-color: #0d1117;
+    color: #c9d1d9;
+}
+
+body.pixyll-theme {
+    background-color: #fdfdfd;
+    color: #2c3e50;
+}
+
+body.whitey-theme {
+    background-color: #f5f5f5;
+    color: #111111;
+}
+
+body.night-theme .preview-pane {
+    background-color: #0d1117;
+}
+
+/* ========== 滚动栏样式 ========== */
+
+/* 默认滚动栏样式（浅色主题） */
+#editor::-webkit-scrollbar,
+.preview-pane::-webkit-scrollbar,
+.result-pane::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+}
+
+#editor::-webkit-scrollbar-track,
+.preview-pane::-webkit-scrollbar-track,
+.result-pane::-webkit-scrollbar-track {
+    background: transparent;
+    border-left: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+#editor::-webkit-scrollbar-thumb,
+.preview-pane::-webkit-scrollbar-thumb,
+.result-pane::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+}
+
+#editor::-webkit-scrollbar-thumb:hover,
+.preview-pane::-webkit-scrollbar-thumb:hover,
+.result-pane::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.3);
+    background-clip: padding-box;
+}
+
+/* GitHub 主题滚动栏 */
+body.github-theme #editor::-webkit-scrollbar-thumb,
+body.github-theme .preview-pane::-webkit-scrollbar-thumb,
+body.github-theme .result-pane::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+body.github-theme #editor::-webkit-scrollbar-thumb:hover,
+body.github-theme .preview-pane::-webkit-scrollbar-thumb:hover,
+body.github-theme .result-pane::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.35);
+}
+
+body.github-theme #editor::-webkit-scrollbar-track,
+body.github-theme .preview-pane::-webkit-scrollbar-track,
+body.github-theme .result-pane::-webkit-scrollbar-track {
+    background: transparent;
+    border-left: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Newsprint 主题滚动栏 */
+body.newsprint-theme #editor::-webkit-scrollbar-thumb,
+body.newsprint-theme .preview-pane::-webkit-scrollbar-thumb,
+body.newsprint-theme .result-pane::-webkit-scrollbar-thumb {
+    background: rgba(51, 51, 51, 0.25);
+}
+
+body.newsprint-theme #editor::-webkit-scrollbar-thumb:hover,
+body.newsprint-theme .preview-pane::-webkit-scrollbar-thumb:hover,
+body.newsprint-theme .result-pane::-webkit-scrollbar-thumb:hover {
+    background: rgba(51, 51, 51, 0.4);
+}
+
+body.newsprint-theme #editor::-webkit-scrollbar-track,
+body.newsprint-theme .preview-pane::-webkit-scrollbar-track,
+body.newsprint-theme .result-pane::-webkit-scrollbar-track {
+    background: transparent;
+    border-left: 1px solid rgba(51, 51, 51, 0.08);
+}
+
+/* Night 主题滚动栏（深色） */
+body.night-theme #editor::-webkit-scrollbar-thumb,
+body.night-theme .preview-pane::-webkit-scrollbar-thumb,
+body.night-theme .result-pane::-webkit-scrollbar-thumb {
+    background: rgba(201, 209, 217, 0.3);
+}
+
+body.night-theme #editor::-webkit-scrollbar-thumb:hover,
+body.night-theme .preview-pane::-webkit-scrollbar-thumb:hover,
+body.night-theme .result-pane::-webkit-scrollbar-thumb:hover {
+    background: rgba(201, 209, 217, 0.5);
+}
+
+body.night-theme #editor::-webkit-scrollbar-track,
+body.night-theme .preview-pane::-webkit-scrollbar-track,
+body.night-theme .result-pane::-webkit-scrollbar-track {
+    background: transparent;
+    border-left: 1px solid rgba(201, 209, 217, 0.1);
+}
+
+/* Pixyll 主题滚动栏 */
+body.pixyll-theme #editor::-webkit-scrollbar-thumb,
+body.pixyll-theme .preview-pane::-webkit-scrollbar-thumb,
+body.pixyll-theme .result-pane::-webkit-scrollbar-thumb {
+    background: rgba(44, 62, 80, 0.2);
+}
+
+body.pixyll-theme #editor::-webkit-scrollbar-thumb:hover,
+body.pixyll-theme .preview-pane::-webkit-scrollbar-thumb:hover,
+body.pixyll-theme .result-pane::-webkit-scrollbar-thumb:hover {
+    background: rgba(44, 62, 80, 0.35);
+}
+
+body.pixyll-theme #editor::-webkit-scrollbar-track,
+body.pixyll-theme .preview-pane::-webkit-scrollbar-track,
+body.pixyll-theme .result-pane::-webkit-scrollbar-track {
+    background: transparent;
+    border-left: 1px solid rgba(44, 62, 80, 0.05);
+}
+
+/* Whitey 主题滚动栏 */
+body.whitey-theme #editor::-webkit-scrollbar-thumb,
+body.whitey-theme .preview-pane::-webkit-scrollbar-thumb,
+body.whitey-theme .result-pane::-webkit-scrollbar-thumb {
+    background: rgba(17, 17, 17, 0.2);
+}
+
+body.whitey-theme #editor::-webkit-scrollbar-thumb:hover,
+body.whitey-theme .preview-pane::-webkit-scrollbar-thumb:hover,
+body.whitey-theme .result-pane::-webkit-scrollbar-thumb:hover {
+    background: rgba(17, 17, 17, 0.35);
+}
+
+body.whitey-theme #editor::-webkit-scrollbar-track,
+body.whitey-theme .preview-pane::-webkit-scrollbar-track,
+body.whitey-theme .result-pane::-webkit-scrollbar-track {
+    background: transparent;
+    border-left: 1px solid rgba(17, 17, 17, 0.05);
+}

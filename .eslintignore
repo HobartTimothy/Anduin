@@ -1,0 +1,29 @@
+# 依赖目录
+node_modules/
+dist/
+build/
+
+# 构建输出
+*.min.js
+*.bundle.js
+
+# 配置文件
+package-lock.json
+
+# 资源文件
+resources/
+*.jpg
+*.png
+*.ico
+*.svg
+
+# 文档
+*.md
+README.md
+LICENSE
+
+# 其他
+.git/
+.vscode/
+.idea/
+

@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8"/>
+    <title>偏好设置</title>
+    <link rel="stylesheet" href="preferences.css"/>
+</head>
+<body>
+<div class="preferences-container">
+    <!-- 左侧菜单 -->
+    <div class="sidebar">
+        <div class="search-box">
+            <input type="text" placeholder="查找..." id="search-input"/>
+        </div>
+        <nav class="menu">
+            <div class="menu-item" data-section="file">文件</div>
+            <div class="menu-item" data-section="editor">编辑器</div>
+            <div class="menu-item" data-section="image">图像</div>
+            <div class="menu-item" data-section="markdown">Markdown</div>
+            <div class="menu-item" data-section="export">导出</div>
+            <div class="menu-item" data-section="appearance">外观</div>
+            <div class="menu-item" data-section="general">通用</div>
+        </nav>
+    </div>
+
+    <!-- 右侧内容区 -->
+    <div class="content">
+        <!-- 文件设置 -->
+        <div class="section" id="section-file">
+            <h2>文件</h2>
+
+            <div class="setting-group">
+                <label class="setting-label">启动操作</label>
+                <select class="setting-select">
+                    <option>打开新文件</option>
+                    <option>打开上次文件</option>
+                    <option>显示欢迎页</option>
+                </select>
+            </div>
+
+            <div class="setting-group">
+                <label class="setting-label">大纲</label>
+                <div class="setting-row">
+                    <input type="checkbox" id="file-outline-numbering"/>
+                    <label for="file-outline-numbering">对折叠章节进行编号生成大纲序号</label>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <label class="setting-label">默认文件类型/扩展名</label>
+                <select class="setting-select">
+                    <option>Markdown (.md)</option>
+                    <option>文本文件 (.txt)</option>
+                </select>
+            </div>
+
+            <div class="setting-group">
+                <label class="setting-label">保存 & 恢复</label>
+                <div class="setting-row">
+                    <input type="checkbox" id="file-auto-save"/>
+                    <label for="file-auto-save">自动保存</label>
+                </div>
+                <div class="setting-row">
+                    <input type="checkbox" id="file-auto-save-content"/>
+                    <label for="file-auto-save-content">切换文件时自动保存对上个文件的更改</label>
+                </div>
+                <button class="setting-btn">依赖未保存的更改</button>
+            </div>
+
+            <div class="setting-group">
+                <label class="setting-label">最近使用的目录</label>
+                <div class="setting-row">
+                    <input type="checkbox" id="file-recent-history" checked/>
+                    <label for="file-recent-history">记录历史文件和文件夹</label>
+                </div>
+                <button class="setting-btn">清除历史文件记录</button>
+            </div>
+
+            <div class="setting-group">
+                <label class="setting-label">当输入文件/文件夹关于 Typora 窗口时</label>
+                <div class="setting-row">
+                    <select class="setting-select">
+                        <option>在 Typora 中打开</option>
+                        <option>忽略</option>
+                    </select>
+                </div>
+                <div class="setting-row">
+                    <label>当输入 Markdown 文件时</label>
+                    <select class="setting-select">
+                        <option>在 Typora 中打开</option>
+                        <option>忽略</option>
+                    </select>
+                </div>
+                <div class="setting-row">
+                    <label>当输入其他类型的文件时</label>
+                    <select class="setting-select">
+                        <option>导入文件</option>
+                        <option>忽略</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- 编辑器设置 -->
+        <div class="section" id="section-editor">
+            <h2>编辑器</h2>
+            <p class="section-note">（一些项调整要重启 Typora 后生效）</p>
+
+            <div class="setting-group">
+                <label class="setting-label">默认缩进</label>
+                <select class="setting-select small">
+                    <option>2</option>
+                    <option>4</option>
+                    <option>8</option>
+                </select>
+                <div class="setting-row">
+                    <input type="checkbox" id="editor-indent"/>
+                    <label for="editor-indent">对齐缩进</label>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <label class="setting-label">使用成对的符号</label>
+                <div class="setting-row">
+                    <input type="checkbox" id="editor-pairs" checked/>
+                    <label for="editor-pairs">匹配括号和引号</label>
+                </div>
+                <div class="setting-row">
+                    <input type="checkbox" id="editor-markdown-pairs"/>
+                    <label for="editor-markdown-pairs">匹配 Markdown 字符</label>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <label class="setting-label">即时渲染</label>
+                <div class="setting-row">
+                    <input type="checkbox" id="editor-instant-render"/>
+                    <label for="editor-instant-render">显示当前块元素的 Markdown 源码（支持标题等块元素）</label>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <label class="setting-label">默认复制行为 (ctrl+c)</label>
+                <div class="setting-row">
+                    <input type="checkbox" id="editor-copy-behavior" checked/>
+                    <label for="editor-copy-behavior">当复制纯文本时复制 Markdown 源码</label>
+                </div>
+                <div class="setting-row">
+                    <input type="checkbox" id="editor-copy-selected"/>
+                    <label for="editor-copy-selected">复制或更明时，若没有文字被选中，则复制或更选标所在行</label>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <label class="setting-label">默认换行符</label>
+                <div class="setting-row">
+                    <label>新文件的默认换行符序</label>
+                </div>
+                <div class="setting-row">
+                    <input type="radio" name="line-ending" id="line-ending-lf"/>
+                    <label for="line-ending-lf">LF (Unix Style)</label>
+                    <input type="radio" name="line-ending" id="line-ending-crlf" checked style="margin-left: 20px;"/>
+                    <label for="line-ending-crlf">CRLF (Windows Style)</label>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <label class="setting-label">拼写检查</label>
+                <div class="setting-row">
+                    <label>默认的拼写检查语言</label>
+                </div>
+                <select class="setting-select">
+                    <option>自动按照语言</option>
+                    <option>English (US)</option>
+                    <option>简体中文</option>
+                </select>
+            </div>
+
+            <div class="setting-group">
+                <label class="setting-label">打字机模式</label>
+                <div class="setting-row">
+                    <input type="checkbox" id="editor-typewriter" checked/>
+                    <label for="editor-typewriter">在打字机模式下，始终保证光标在屏幕中间</label>
+                </div>
+                <button class="setting-btn">关闭 打字机模式 / 专注模式</button>
+            </div>
+        </div>
+
+        <!-- 图像设置 -->
+        <div class="section" id="section-image">
+            <h2>图像</h2>
+
+            <div class="setting-group">
+                <label class="setting-label">插入图片时...</label>
+                <a href="#" class="setting-link">了解更多...</a>
+                <select class="setting-select">
+                    <option>无特殊操作</option>
+                    <option>复制到指定路径</option>
+                    <option>上传图片</option>
+                    <option>使用相对路径</option>
+                </select>
+                <div class="setting-row">
+                    <input type="checkbox" id="image-local-path" checked/>
+                    <label for="image-local-path">对本地位置的图片应用上述规则</label>
+                </div>
+                <div class="setting-row">
+                    <input type="checkbox" id="image-online-path"/>
+                    <label for="image-online-path">对网络位置的图片应用上述规则</label>
+                </div>
+                <div class="setting-row">
+                    <input type="checkbox" id="image-ignore-yaml"/>
+                    <label for="image-ignore-yaml">允许根据 YAML 设置动态上传图片</label>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <label class="setting-label">图片语法偏好</label>
+                <a href="#" class="setting-link">了解更多...</a>
+                <div class="setting-row">
+                    <input type="checkbox" id="image-prefer-relative"/>
+                    <label for="image-prefer-relative">优先使用相对路径</label>
+                </div>
+                <label class="setting-sublabel">为相对路径添加 ./</label>
+                <div class="setting-row">
+                    <input type="checkbox" id="image-auto-escape"/>
+                    <label for="image-auto-escape">插入时自动转义图片 URL</label>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <label class="setting-label">上传服务设置</label>
+                <a href="#" class="setting-link">了解更多...</a>
+                <label class="setting-sublabel">上传服务</label>
+                <select class="setting-select">
+                    <option>无</option>
+                    <option>PicGo</option>
+                    <option>uPic</option>
+                    <option>自定义</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Markdown 设置 -->
+        <div class="section" id="section-markdown">
+            <h2>Markdown</h2>
+            <p class="section-note">（下述选项将在 Typora 重启后生效）</p>
+
+            <div class="setting-group">
+                <label class="setting-label">Markdown 语法偏好</label>
+                <div class="setting-row">
+                    <input type="checkbox" id="md-strict-mode" checked/>
+                    <label for="md-strict-mode">严格模式</label>
+                    <a href="#" class="setting-link">了解更多...</a>
+                </div>
+                <div class="setting-row">
+                    <label class="setting-sublabel">标题样式</label>
+                    <select class="setting-select small">
+                        <option>atx (# )</option>
+                        <option>Setext</option>
+                    </select>
+                </div>
+                <div class="setting-row">
+                    <label class="setting-sublabel">无序列编</label>
+                    <select class="setting-select small">
+                        <option>-</option>
+                        <option>*</option>
+                        <option>+</option>
+                    </select>
+                </div>
+                <div class="setting-row">
+                    <label class="setting-sublabel">有序列编</label>
+                    <select class="setting-select small">
+                        <option>1... 2... 3...</option>
+                        <option>1... 1... 1...</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <label class="setting-label">Markdown 扩展语法</label>
+                <div class="setting-row">
+                    <input type="checkbox" id="md-auto-number" checked/>
+                    <label for="md-auto-number">自动化对理顺格（例：https://typora.io）</label>
+                </div>
+                <div class="setting-row">
+                    <input type="checkbox" id="md-internal-link"/>
+                    <label for="md-internal-link">内接公式（例：$\LaTeX$）</label>
+                </div>
+                <div class="setting-row">
+                    <input type="checkbox" id="md-code-block-math" checked/>
+                    <label for="md-code-block-math">Code Block Math（```math 代码块）</label>
+                </div>
+                <div class="setting-row">
+                    <input type="checkbox" id="md-subscript"/>
+                    <label for="md-subscript">下标（例：H~2~O）</label>
+                </div>
+                <div class="setting-row">
+                    <input type="checkbox" id="md-superscript"/>
+                    <label for="md-superscript">上标（例：X^2^）</label>
+                </div>
+                <div class="setting-row">
+                    <input type="checkbox" id="md-highlight"/>
+                    <label for="md-highlight">高亮（例：==key==）</label>
+                </div>
+                <div class="setting-row">
+                    <input type="checkbox" id="md-github-emoji" checked/>
+                    <label for="md-github-emoji">Github 风格颜察换接</label>
+                </div>
+                <div class="setting-row">
+                    <input type="checkbox" id="md-mermaid" checked/>
+                    <label for="md-mermaid">图表（序列图、流程图转化 Mermaid 图）</label>
+                    <button class="setting-btn-inline">图画选项</button>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <label class="setting-label">智能标点</label>
+                <a href="#" class="setting-link">了解更多...</a>
+                <div class="setting-row">
+                    <input type="text" class="setting-input" placeholder="输入对符号键"/>
+                </div>
+                <div class="setting-row">
+                    <input type="checkbox" id="smart-pair-single"/>
+                    <label for="smart-pair-single">智能引号</label>
+                </div>
+                <div class="setting-row">
+                    <input type="checkbox" id="smart-pair-double"/>
+                    <label for="smart-pair-double">智能倡号序字</label>
+                </div>
+                <div class="setting-row">
+                    <input type="checkbox" id="smart-esc-unicode"/>
+                    <label for="smart-esc-unicode">解析 Markdown 时允许并转化 Unicode 检码</label>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <label class="setting-label">代码块</label>
+                <div class="setting-row">
+                    <input type="checkbox" id="code-indent"/>
+                    <label for="code-indent">显示行号</label>
+                </div>
+                <div class="setting-row">
+                    <input type="checkbox" id="code-fences" checked/>
+                    <label for="code-fences">代码块自动换行</label>
+                </div>
+                <div class="setting-row">
+                    <input type="checkbox" id="code-tab-convert"/>
+                    <label for="code-tab-convert">使用 Shift+Tab 自动缩进到所代码编辑器</label>
+                </div>
+                <div class="setting-row">
+                    <label class="setting-sublabel">代码缩编</label>
+                    <select class="setting-select small">
+                        <option>4</option>
+                        <option>2</option>
+                        <option>8</option>
+                    </select>
+                </div>
+                <div class="setting-row">
+                    <label class="setting-sublabel">默认的代码格检查语言</label>
+                    <button class="setting-btn-inline">□</button>
+                </div>
+                <div class="setting-row">
+                    <label class="setting-sublabel">以下哪些项决定代码绑高清语言</label>
+                    <select class="setting-select">
+                        <option>当编辑Markdown代码时插入代码块</option>
+                        <option>仅当编辑空代码块时</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <label class="setting-label">公式</label>
+                <a href="#" class="setting-link">了解更多...</a>
+                <div class="setting-row">
+                    <input type="checkbox" id="formula-newline" checked/>
+                    <label for="formula-newline">支持使用 \\ 和 \newline 换行</label>
+                </div>
+                <div class="setting-row">
+                    <input type="checkbox" id="formula-physics"/>
+                    <label for="formula-physics">启用 physics 包</label>
+                </div>
+                <div class="setting-row">
+                    <label class="setting-sublabel">自动编码适应</label>
+                    <select class="setting-select">
+                        <option>不启用松松对访问换码自公式</option>
+                        <option>自动按需决定</option>
+                    </select>
+                </div>
+                <div class="setting-row">
+                    <label class="setting-sublabel">当数敢或倍功为 无标底被的HTML 时</label>
+                    <select class="setting-select">
+                        <option>使用 SVG</option>
+                        <option>使用 MathML</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <label class="setting-label">文档与导行</label>
+                <a href="#" class="setting-link">了解更多...</a>
+                <div class="setting-row">
+                    <input type="checkbox" id="doc-br"/>
+                    <label for="doc-br">直行练进</label>
+                </div>
+                <div class="setting-row">
+                    <label class="setting-sublabel">编辑时</label>
+                    <input type="checkbox" id="doc-edit-br" checked/>
+                    <label for="doc-edit-br">显示 &lt;br/&gt;</label>
+                </div>
+                <div class="setting-row">
+                    <label class="setting-sublabel">保留换编号</label>
+                    <select class="setting-select">
+                        <option>保留每包的空行选号个换行</option>
+                        <option>保留所有空行</option>
+                    </select>
+                </div>
+                <div class="setting-row">
+                    <label class="setting-sublabel">导出时导印编</label>
+                    <select class="setting-select">
+                        <option>保留每包的空行选号个换行</option>
+                        <option>保留所有空行</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- 导出设置 -->
+        <div class="section" id="section-export">
+            <h2>Export</h2>
+
+            <div class="setting-group">
+                <label class="setting-label">默认的导出文件夹</label>
+                <select class="setting-select">
+                    <option>自动</option>
+                    <option>自定义</option>
+                </select>
+            </div>
+
+            <div class="setting-group">
+                <label class="setting-label">Pandoc 路径</label>
+                <a href="#" class="setting-link">了解更多...</a>
+                <div class="setting-row">
+                    <input type="text" class="setting-input-full" placeholder="(自动侦测)"/>
+                    <button class="setting-btn-inline">📁</button>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <label class="setting-label">输出框</label>
+                <div class="setting-row">
+                    <input type="checkbox" id="export-sidebar" checked/>
+                    <label for="export-sidebar">打开生活文件后自动</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- 外观设置 -->
+        <div class="section" id="section-appearance">
+            <h2>外观</h2>
+
+            <div class="setting-group">
+                <label class="setting-label">窗口样式</label>
+                <p class="setting-note">（重启 Typora 后生效）</p>
+                <div class="setting-row">
+                    <input type="radio" name="window-style" id="window-classic" checked/>
+                    <label for="window-classic">经典</label>
+                    <input type="radio" name="window-style" id="window-unified" style="margin-left: 20px;"/>
+                    <label for="window-unified">一体化</label>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <label class="setting-label">字体大小</label>
+                <div class="setting-row">
+                    <input type="radio" name="font-size" id="font-auto" checked/>
+                    <label for="font-auto">自动（推荐）</label>
+                    <input type="radio" name="font-size" id="font-custom" style="margin-left: 20px;"/>
+                    <label for="font-custom">自定义</label>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <label class="setting-label">Zoom</label>
+                <select class="setting-select small">
+                    <option>100%</option>
+                    <option>110%</option>
+                    <option>125%</option>
+                    <option>150%</option>
+                </select>
+                <button class="setting-btn-inline">重置</button>
+                <div class="setting-row">
+                    <input type="checkbox" id="zoom-ctrl-scroll"/>
+                    <label for="zoom-ctrl-scroll">按住 Ctrl 时使用鼠标滚轮缩放</label>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <label class="setting-label">状态栏</label>
+                <div class="setting-row">
+                    <input type="checkbox" id="statusbar-show" checked/>
+                    <label for="statusbar-show">显示状态栏</label>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <label class="setting-label">字数统计</label>
+                <div class="setting-row">
+                    <label>阅读速度</label>
+                    <input type="number" class="setting-input-number" value="382"/>
+                    <label>词每分钟</label>
+                    <button class="setting-btn-inline">重置</button>
+                    <button class="setting-btn-dropdown">▼</button>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <label class="setting-label">主题</label>
+                <a href="#" class="setting-link">了解更多...</a>
+                <select class="setting-select">
+                    <option>Newsprint</option>
+                    <option>Github</option>
+                    <option>Night</option>
+                    <option>Whitey</option>
+                </select>
+                <div class="setting-row">
+                    <input type="checkbox" id="theme-dark"/>
+                    <label for="theme-dark">在深色模式下使用暗的主题</label>
+                </div>
+                <div class="setting-row">
+                    <button class="setting-btn">打开主题文件夹</button>
+                    <button class="setting-btn">获取主题</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 通用设置 -->
+        <div class="section" id="section-general">
+            <h2>通用</h2>
+
+            <div class="setting-group">
+                <label class="setting-label">语言</label>
+                <p class="setting-note">（重启 Typora 后生效）</p>
+                <select class="setting-select">
+                    <option>系统语言</option>
+                    <option>English</option>
+                    <option>简体中文</option>
+                    <option>繁體中文</option>
+                </select>
+            </div>
+
+            <div class="setting-group">
+                <label class="setting-label">更新</label>
+                <button class="setting-btn">检查更新</button>
+                <div class="setting-row">
+                    <input type="checkbox" id="update-auto"/>
+                    <label for="update-auto">自动检查更新</label>
+                </div>
+                <div class="setting-row">
+                    <input type="checkbox" id="update-dev"/>
+                    <label for="update-dev">更新至开发版</label>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <label class="setting-label">许可证信息</label>
+                <div class="setting-info-box">
+                    您的 Typora 已被激活
+                </div>
+                <button class="setting-btn">详情</button>
+            </div>
+
+            <div class="setting-group">
+                <label class="setting-label">快捷键</label>
+                <button class="setting-btn">自定义快捷键</button>
+            </div>
+
+            <div class="setting-group">
+                <label class="setting-label">操作系统</label>
+                <button class="setting-btn">向 Windows 资源管理器"新建" 菜单添加语境的"Markdown" 选项</button>
+                <button class="setting-btn">向 Windows 资源管理器"新建" 菜单移除语境的"Markdown" 选项</button>
+            </div>
+
+            <div class="setting-group">
+                <label class="setting-label">对话框</label>
+                <button class="setting-btn">重置全部密笺对话不内容转</button>
+            </div>
+
+            <div class="setting-group">
+                <label class="setting-label">高级设置</label>
+                <div class="setting-row">
+                    <input type="checkbox" id="advanced-debug"/>
+                    <label for="advanced-debug">开启调试模式</label>
+                </div>
+                <div class="setting-row">
+                    <input type="checkbox" id="advanced-send-anonymous" checked/>
+                    <label for="advanced-send-anonymous">发送匿名使用数据</label>
+                </div>
+                <button class="setting-btn">打开高级设置</button>
+                <button class="setting-btn">重置高级设置</button>
+            </div>
+
+            <div class="setting-group">
+                <label class="setting-label">Typora 服务器</label>
+                <div class="setting-row">
+                    <input type="checkbox" id="typora-service"/>
+                    <label for="typora-service">Typora 服务器使用国内服务器</label>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="preferences.js"></script>
+</body>
+</html>
