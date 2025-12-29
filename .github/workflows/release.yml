@@ -106,6 +106,49 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate changelog from commits
+        id: changelog
+        run: |
+          # 获取当前 tag
+          CURRENT_TAG="${{ github.event.release.tag_name }}"
+          
+          # 获取所有 tag
+          git fetch --tags
+          
+          # 获取上一个 tag（当前 tag 之前的最新 tag）
+          ALL_TAGS=$(git tag --sort=-version:refname)
+          PREVIOUS_TAG=$(echo "$ALL_TAGS" | grep -A1 "^${CURRENT_TAG}$" | tail -n1 || echo "")
+          
+          if [ -z "$PREVIOUS_TAG" ] || [ "$PREVIOUS_TAG" = "$CURRENT_TAG" ]; then
+            # 如果没有找到上一个 tag，尝试获取所有 tag 中第二新的
+            TAG_COUNT=$(echo "$ALL_TAGS" | wc -l)
+            if [ "$TAG_COUNT" -gt 1 ]; then
+              PREVIOUS_TAG=$(echo "$ALL_TAGS" | sed -n '2p')
+            fi
+          fi
+          
+          if [ -z "$PREVIOUS_TAG" ] || [ "$PREVIOUS_TAG" = "$CURRENT_TAG" ]; then
+            # 如果仍然没有找到上一个 tag，获取最近的提交
+            echo "未找到上一个 tag，获取最近的提交记录"
+            COMMITS=$(git log --pretty=format:"- %s (%h)" --no-merges -20)
+          else
+            # 获取两个 tag 之间的提交
+            echo "获取 ${PREVIOUS_TAG} 到 ${CURRENT_TAG} 之间的提交"
+            COMMITS=$(git log ${PREVIOUS_TAG}..${CURRENT_TAG} --pretty=format:"- %s (%h)" --no-merges)
+          fi
+          
+          # 如果提交日志为空，使用默认消息
+          if [ -z "$COMMITS" ]; then
+            COMMITS="- 本次发布无提交记录"
+          fi
+          
+          # 输出到 GitHub Actions 输出
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          echo "$COMMITS" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Download all artifacts
         uses: actions/download-artifact@v4
@@ -127,7 +170,11 @@ jobs:
             artifacts/linux-installer/*.deb
           tag_name: ${{ github.event.release.tag_name }}
           body: |
-            ## 🎉 新版本发布
+            ## 🎉 新版本发布 - ${{ github.event.release.tag_name }}
+
+            ### 📝 更新日志
+
+            ${{ steps.changelog.outputs.changelog }}
 
             ### 📦 安装包
 
@@ -136,7 +183,7 @@ jobs:
 
             #### macOS
             - **Intel & Apple Silicon**: `Anduin-*.dmg`
-            > ⚠️ 注意：由于没有购买 Apple 证书，首次打开可能提示“文件已损坏”。请在终端运行 `xattr -cr /Applications/Anduin.app` 即可修复。
+            > ⚠️ 注意：由于没有购买 Apple 证书，首次打开可能提示"文件已损坏"。请在终端运行 `xattr -cr /Applications/Anduin.app` 即可修复。
 
             #### Linux
             - **64位 AppImage (x64)**: `Anduin-*.AppImage`
