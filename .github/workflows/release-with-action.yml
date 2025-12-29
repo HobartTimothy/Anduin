@@ -1,0 +1,95 @@
+name: Release (with action-gh-release)
+
+on:
+  push:
+    tags:
+      - 'v*'  # 匹配所有以 v 开头的 tag，如 v1.0.0
+      - '*'   # 或者匹配所有 tag
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        include:
+          - os: ubuntu-latest
+            platform: linux
+          - os: windows-latest
+            platform: win
+          - os: macos-latest
+            platform: mac
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application (Windows)
+        if: matrix.platform == 'win'
+        run: npm run build -- --win --publish never
+
+      - name: Build application (macOS)
+        if: matrix.platform == 'mac'
+        run: npm run build:mac -- --publish never
+
+      - name: Build application (Linux)
+        if: matrix.platform == 'linux'
+        run: npm run build:linux -- --publish never
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.platform }}-build
+          path: dist/*
+          retention-days: 1
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+
+      - name: Get tag name
+        id: tag
+        run: echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.TAG_NAME }}
+          name: Release ${{ steps.tag.outputs.TAG_NAME }}
+          body: |
+            ## Changes
+            
+            See [CHANGELOG.md](CHANGELOG.md) for details.
+            
+            ## Downloads
+            
+            - **Windows**: Installer (.exe)
+            - **macOS**: DMG (Intel + Apple Silicon)
+            - **Linux**: AppImage and DEB package
+          files: |
+            dist/**/*
+          draft: false
+          prerelease: ${{ contains(steps.tag.outputs.TAG_NAME, '-') }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+

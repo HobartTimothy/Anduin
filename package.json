@@ -8,7 +8,13 @@
     "dev": "electron .",
     "build": "electron-builder --win",
     "build:dir": "electron-builder --win --dir",
+    "build:mac": "electron-builder --mac",
+    "build:linux": "electron-builder --linux",
+    "build:all": "electron-builder --win --mac --linux",
     "dist": "electron-builder --win --publish never",
+    "dist:mac": "electron-builder --mac --publish never",
+    "dist:linux": "electron-builder --linux --publish never",
+    "dist:all": "electron-builder --win --mac --linux --publish never",
     "lint": "eslint . --ext .js",
     "lint:fix": "eslint . --ext .js --fix"
   },
@@ -39,6 +45,47 @@
       ],
       "icon": "resources/icons/icon.jpg"
     },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "icon": "resources/icons/icon.jpg",
+      "category": "public.app-category.productivity",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "resources/mac/entitlements.mac.plist",
+      "entitlementsInherit": "resources/mac/entitlements.mac.plist"
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "deb",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "resources/icons/icon.jpg",
+      "category": "Office",
+      "desktop": {
+        "Name": "Anduin",
+        "Comment": "Markdown 文本编辑器",
+        "Categories": "Office;TextEditor;",
+        "MimeType": "text/markdown;"
+      }
+    },
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
@@ -49,6 +96,28 @@
       "installerIcon": "resources/icons/icon.jpg",
       "uninstallerIcon": "resources/icons/icon.jpg",
       "installerHeaderIcon": "resources/icons/icon.jpg"
+    },
+    "dmg": {
+      "title": "${productName} ${version}",
+      "icon": "resources/icons/icon.jpg",
+      "background": null,
+      "contents": [
+        {
+          "x": 410,
+          "y": 150,
+          "type": "link",
+          "path": "/Applications"
+        },
+        {
+          "x": 130,
+          "y": 150,
+          "type": "file"
+        }
+      ],
+      "window": {
+        "width": 540,
+        "height": 380
+      }
     }
   },
   "devDependencies": {
