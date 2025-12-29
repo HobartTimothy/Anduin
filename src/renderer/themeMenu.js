@@ -4,6 +4,39 @@
  * 使用与右键菜单相同的样式
  */
 
+// 尝试获取主题管理模块（在渲染进程中可能不可用，需要从 preload 获取）
+let themeManager = null;
+try {
+    // 在 Node.js 环境中直接 require
+    if (typeof require !== 'undefined') {
+        themeManager = require('../util/theme');
+    }
+} catch (e) {
+    // 如果 require 失败，说明在渲染进程中，需要通过 window.themeAPI 获取
+    console.log('无法直接 require themeManager，将在运行时从 window.themeAPI 获取');
+}
+
+/**
+ * 获取主题列表
+ * @returns {Array} 主题列表
+ */
+function getThemes() {
+    if (themeManager) {
+        return themeManager.getAvailableThemes().map(t => ({
+            id: t.id,
+            label: t.name
+        }));
+    }
+    // 回退到默认主题列表
+    return [
+        { id: 'github', label: 'Github' },
+        { id: 'newsprint', label: 'Newsprint' },
+        { id: 'night', label: 'Night' },
+        { id: 'pixyll', label: 'Pixyll' },
+        { id: 'whitey', label: 'Whitey' }
+    ];
+}
+
 /**
  * 构建主题菜单
  * @param {Function} handleThemeChange - 处理主题切换的函数
@@ -15,13 +48,7 @@ function buildThemeMenu(handleThemeChange, currentTheme = 'github') {
     menu.id = 'md-theme-menu';
     menu.className = 'context-menu'; // 使用与右键菜单相同的样式类
 
-    const themes = [
-        { id: 'github', label: 'Github' },
-        { id: 'newsprint', label: 'Newsprint' },
-        { id: 'night', label: 'Night' },
-        { id: 'pixyll', label: 'Pixyll' },
-        { id: 'whitey', label: 'Whitey' }
-    ];
+    const themes = getThemes();
 
     let menuHTML = '';
     themes.forEach((theme, index) => {

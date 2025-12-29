@@ -2,12 +2,15 @@
 const {ipcRenderer} = require('electron');
 const i18n = require('../util/i18n');
 const i18nUI = require('../util/i18nUI'); // 引入 UI 更新工具
+const themeManager = require('../util/theme');
+const themeUI = require('../util/themeUI');
 
 // 获取所有菜单项和内容区域
 const menuItems = document.querySelectorAll('.menu-item');
 const sections = document.querySelectorAll('.section');
 const searchInput = document.getElementById('search-input');
 const languageSelect = document.getElementById('app-language');
+const themeSelect = document.getElementById('theme-select');
 
 // 默认显示第一个部分（文件）
 let currentSection = 'file';
@@ -74,6 +77,39 @@ searchInput.addEventListener('input', (e) => {
         console.log('未找到匹配的设置项');
     }
 });
+
+// 初始化主题选择框
+function initThemeSelect() {
+    if (!themeSelect) return;
+    
+    // 1. 清空现有选项
+    themeSelect.innerHTML = '';
+    
+    // 2. 动态生成选项
+    const themes = themeManager.getAvailableThemes();
+    themes.forEach(theme => {
+        const option = document.createElement('option');
+        option.value = theme.id;
+        option.textContent = theme.name;
+        themeSelect.appendChild(option);
+    });
+    
+    // 3. 选中当前主题
+    const currentTheme = themeManager.getCurrentTheme();
+    if (currentTheme) {
+        themeSelect.value = currentTheme.id;
+    }
+    
+    // 4. 绑定变更事件
+    themeSelect.addEventListener('change', (e) => {
+        const newThemeId = e.target.value;
+        // 通知主进程切换主题（主进程会广播到所有窗口）
+        ipcRenderer.send('change-theme', newThemeId);
+        // 本地立即更新预览
+        themeManager.setTheme(newThemeId);
+        themeUI.applyTheme();
+    });
+}
 
 // 加载保存的设置
 function loadSettings() {
@@ -155,6 +191,22 @@ ipcRenderer.on('language-changed', (event, locale) => {
     }, 0);
 });
 
+// 监听主题变化事件
+ipcRenderer.on('theme-changed', (event, themeId) => {
+    console.log('[Preferences] 收到主题变化事件:', themeId);
+    
+    // 更新内存中的状态
+    themeManager.setTheme(themeId);
+    
+    // 更新主题选择框
+    if (themeSelect && themeSelect.value !== themeId) {
+        themeSelect.value = themeId;
+    }
+    
+    // 应用新样式
+    themeUI.applyTheme();
+});
+
 // 设置语言选择框的值（使用多重保障确保设置成功）
 function setLanguageSelectValue(locale) {
     if (!languageSelect) {
@@ -207,10 +259,16 @@ function initialize() {
     // 3. 加载其他设置
     loadSettings();
     
-    // 4. 更新当前页面的文本
+    // 4. 初始化主题选择框
+    initThemeSelect();
+    
+    // 5. 应用当前主题
+    themeUI.applyTheme();
+    
+    // 6. 更新当前页面的文本
     i18nUI.updateUI();
     
-    // 5. 等待一小段时间，让主进程有机会发送 language-changed 事件
+    // 7. 等待一小段时间，让主进程有机会发送 language-changed 事件
     // 如果主进程没有发送，我们就使用本地的语言设置
     setTimeout(() => {
         if (!initialLanguageReceived) {

@@ -10,27 +10,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const fs = require('fs');
     const i18n = require('../util/i18n');
     const i18nUI = require('../util/i18nUI');
+    const themeUI = require('../util/themeUI');
 
     // 应用主题
-    function applyTheme() {
-        try {
-            const settings = ipcRenderer.sendSync('get-settings');
-            const theme = settings?.theme || 'github'; // 默认使用 github 主题
-            const themes = ['github-theme', 'newsprint-theme', 'night-theme', 'pixyll-theme', 'whitey-theme'];
-            // 移除所有主题类
-            themes.forEach((t) => document.body.classList.remove(t));
-            // 添加当前主题类
-            const themeClass = `${theme}-theme`;
-            document.body.classList.add(themeClass);
-        } catch (error) {
-            console.error('应用主题失败:', error);
-            // 默认使用 github 主题
-            document.body.classList.add('github-theme');
-        }
-    }
-
-    // 应用主题
-    applyTheme();
+    themeUI.applyTheme(document);
 
     // 初始化国际化
     i18nUI.updateUI(document);
@@ -52,6 +35,12 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // 语言变化后，需要重新更新平台信息（因为 i18n 可能覆盖了它）
         updatePlatformInfo();
+    });
+
+    // 监听主题变化事件
+    ipcRenderer.on('theme-changed', (event, themeId) => {
+        console.log('[About] 收到主题变化事件:', themeId);
+        themeUI.applyTheme(document);
     });
 
     // 获取应用信息

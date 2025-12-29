@@ -24,6 +24,7 @@ const {initContextMenu} = window.contextMenuAPI; // 上下文菜单模块
 const {showThemeMenu, hideThemeMenu, initThemeMenu} = window.themeMenuAPI || {}; // 主题菜单模块
 const i18n = window.i18nAPI || {}; // i18n 模块
 const i18nUI = window.i18nUIAPI || {}; // i18nUI 模块
+const themeAPI = window.themeAPI || {}; // 主题管理模块
 
 // ==================== DOM 元素引用 ====================
 const editor = document.getElementById('editor'); // Markdown 编辑器文本域
@@ -142,20 +143,7 @@ function setMode(mode) {
 // 初始化默认模式为对比模式
 setMode('split');
 
-// 加载保存的主题设置
-try {
-    const settings = ipcRenderer.sendSync('get-settings') || {};
-    if (settings.theme) {
-        setTheme(settings.theme, false); // 加载时不保存，避免覆盖
-    } else {
-        // 默认使用 github 主题，首次使用时保存
-        setTheme('github', true);
-    }
-} catch (error) {
-    console.error('加载主题失败:', error);
-    // 默认使用 github 主题
-    setTheme('github', true);
-}
+// 主题初始化由 themeAPI.applyTheme() 在 DOMContentLoaded 事件中处理
 
 // ==================== 事件监听 ====================
 /**
@@ -654,6 +642,11 @@ function adjustHeadingLevel(delta) {
  * @returns {string} 当前主题名称
  */
 function getCurrentTheme() {
+    if (themeAPI && themeAPI.getCurrentTheme) {
+        const theme = themeAPI.getCurrentTheme();
+        return theme ? theme.id : 'github';
+    }
+    // 回退到旧方法
     const themes = ['github-theme', 'newsprint-theme', 'night-theme', 'pixyll-theme', 'whitey-theme'];
     for (const theme of themes) {
         if (document.body.classList.contains(theme)) {
@@ -665,25 +658,37 @@ function getCurrentTheme() {
 
 /**
  * 设置应用主题
- * @param {string} theme - 主题名称（如 'github'、'newsprint'、'night' 等）
+ * @param {string} themeId - 主题 ID（如 'github'、'newsprint'、'night' 等）
  * @param {boolean} save - 是否保存到设置，默认为 true
  */
-function setTheme(theme, save = true) {
-    const themes = ['github-theme', 'newsprint-theme', 'night-theme', 'pixyll-theme', 'whitey-theme'];
-    // 移除所有主题类
-    themes.forEach((t) => document.body.classList.remove(t));
-    // 添加新主题类
-    const cls = `${theme}-theme`;
-    document.body.classList.add(cls);
+function setTheme(themeId, save = true) {
+    if (themeAPI && themeAPI.setTheme) {
+        // 使用新的主题管理模块
+        if (save) {
+            // 通知主进程切换主题（主进程会广播到所有窗口）
+            ipcRenderer.send('change-theme', themeId);
+        } else {
+            // 只更新本地，不保存
+            themeAPI.setTheme(themeId);
+        }
+    } else {
+        // 回退到旧方法
+        const themes = ['github-theme', 'newsprint-theme', 'night-theme', 'pixyll-theme', 'whitey-theme'];
+        // 移除所有主题类
+        themes.forEach((t) => document.body.classList.remove(t));
+        // 添加新主题类
+        const cls = `${themeId}-theme`;
+        document.body.classList.add(cls);
 
-    // 保存主题到设置
-    if (save) {
-        try {
-            const settings = ipcRenderer.sendSync('get-settings') || {};
-            settings.theme = theme;
-            ipcRenderer.send('save-settings', settings);
-        } catch (error) {
-            console.error('保存主题失败:', error);
+        // 保存主题到设置
+        if (save) {
+            try {
+                const settings = ipcRenderer.sendSync('get-settings') || {};
+                settings.theme = themeId;
+                ipcRenderer.send('save-settings', settings);
+            } catch (error) {
+                console.error('保存主题失败:', error);
+            }
         }
     }
 }
@@ -1491,6 +1496,16 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (i18n && i18n.updateUI) {
         i18n.updateUI();
     }
+    
+    // 初始化主题
+    if (themeAPI && themeAPI.applyTheme) {
+        themeAPI.applyTheme();
+    }
+    
+    // 监听主题变化
+    if (themeAPI && themeAPI.listenForThemeChanges) {
+        themeAPI.listenForThemeChanges();
+    }
 });
 
 // 监听语言改变事件
@@ -1511,6 +1526,19 @@ if (ipcRenderer && ipcRenderer.on) {
             i18nUI.updateUI();
         } else if (i18n && i18n.updateUI) {
             i18n.updateUI();
+        }
+    });
+    
+    // 监听主题改变事件
+    ipcRenderer.on('theme-changed', (event, themeId) => {
+        console.log('[Renderer] 主题切换为:', themeId);
+        
+        // 使用主题管理模块更新界面
+        if (themeAPI && themeAPI.setTheme) {
+            themeAPI.setTheme(themeId);
+        } else {
+            // 回退到旧方法
+            setTheme(themeId, false);
         }
     });
 }

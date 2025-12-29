@@ -35,6 +35,8 @@ function changeLanguage(lang, sendToRenderer, fileUtils, mainWindow, createPrefe
  * @param {Function} createPreferencesWindow - 创建偏好设置窗口的函数
  * @returns {Array} 菜单模板数组
  */
+const themeManager = require('../util/theme');
+
 function createMenuTemplate(sendToRenderer, fileUtils, mainWindow, createPreferencesWindow) {
     return [
         {
@@ -463,15 +465,28 @@ function createMenuTemplate(sendToRenderer, fileUtils, mainWindow, createPrefere
         },
         {
             label: i18n.t('menu.theme'),
-            submenu: [
-                {label: i18n.t('menu.theme.select'), click: () => sendToRenderer('theme-show-menu')},
-                {type: 'separator'},
-                {label: i18n.t('menu.theme.github'), type: 'radio', checked: true, click: () => sendToRenderer('theme-github')},
-                {label: i18n.t('menu.theme.newsprint'), type: 'radio', click: () => sendToRenderer('theme-newsprint')},
-                {label: i18n.t('menu.theme.night'), type: 'radio', click: () => sendToRenderer('theme-night')},
-                {label: i18n.t('menu.theme.pixyll'), type: 'radio', click: () => sendToRenderer('theme-pixyll')},
-                {label: i18n.t('menu.theme.whitey'), type: 'radio', click: () => sendToRenderer('theme-whitey')}
-            ]
+            submenu: (() => {
+                const currentTheme = themeManager.getCurrentTheme();
+                const themes = themeManager.getAvailableThemes();
+                
+                // 构建主题子菜单
+                const submenu = [
+                    {label: i18n.t('menu.theme.select'), click: () => sendToRenderer('theme-show-menu')},
+                    {type: 'separator'}
+                ];
+                
+                // 动态添加主题选项
+                themes.forEach(theme => {
+                    submenu.push({
+                        label: theme.name,
+                        type: 'radio',
+                        checked: theme.id === currentTheme.id,
+                        click: () => sendToRenderer(`theme-${theme.id}`)
+                    });
+                });
+                
+                return submenu;
+            })()
         },
         {
             label: i18n.t('menu.help'),

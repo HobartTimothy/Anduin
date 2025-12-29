@@ -43,6 +43,7 @@ const fs = require('fs'); // 文件系统操作
 const FileUtils = require('../util/fileUtils');
 const {createMenuTemplate, changeLanguage} = require('./menus');
 const i18n = require('../util/i18n');
+const themeManager = require('../util/theme');
 
 // 配置常量
 const WINDOW_CONFIG = {
@@ -131,6 +132,10 @@ function createWindow(filePath = null) {
         // 发送当前的语言设置，确保渲染进程同步
         const currentLocale = i18n.currentLocale() || 'en';
         mainWindow.webContents.send('language-changed', currentLocale);
+        
+        // 发送当前的主题设置，确保渲染进程同步
+        const currentThemeId = themeManager.getCurrentTheme().id;
+        mainWindow.webContents.send('theme-changed', currentThemeId);
         
         if (filePath) {
             fileUtils.openFile(filePath);
@@ -372,6 +377,26 @@ ipcMain.on('change-language', (event, locale) => {
     // 4. 广播通知所有打开的窗口（主窗口、偏好设置窗口、关于窗口等）
     BrowserWindow.getAllWindows().forEach(win => {
         win.webContents.send('language-changed', locale);
+    });
+});
+
+/**
+ * 处理主题切换
+ */
+ipcMain.on('change-theme', (event, themeId) => {
+    console.log('[Main] 收到主题切换请求:', themeId);
+    
+    // 1. 保存主题设置
+    themeManager.setTheme(themeId);
+    
+    // 2. 同步更新 settings.json 中的主题设置（保持向后兼容）
+    const settings = readSettings();
+    settings.theme = themeId;
+    writeSettings(settings);
+    
+    // 3. 广播通知所有打开的窗口（主窗口、偏好设置窗口、关于窗口等）
+    BrowserWindow.getAllWindows().forEach(win => {
+        win.webContents.send('theme-changed', themeId);
     });
 });
 

@@ -71,6 +71,31 @@ contextBridge.exposeInMainWorld('i18nUIAPI', {
     setLocale: (locale) => i18nUI.setLocale(locale)
 });
 
+// 暴露主题管理模块
+const themeUI = require('../util/themeUI');
+const themeManager = require('../util/theme');
+
+contextBridge.exposeInMainWorld('themeAPI', {
+    applyTheme: () => {
+        if (typeof document !== 'undefined') {
+            themeUI.applyTheme(document);
+        }
+    },
+    getCurrentTheme: () => themeUI.getCurrentTheme(),
+    getAvailableThemes: () => themeUI.getAvailableThemes(),
+    setTheme: (themeId) => {
+        themeUI.setTheme(themeId);
+        if (typeof document !== 'undefined') {
+            themeUI.applyTheme(document);
+        }
+    },
+    listenForThemeChanges: () => {
+        if (typeof window !== 'undefined' && window.electronAPI) {
+            themeUI.listenForThemeChanges(window.electronAPI);
+        }
+    }
+});
+
 // 加载并暴露 commandHandlers 模块
 const commandHandlersPath = path.join(__dirname, '..', 'renderer', 'commandHandlers.js');
 const {createCommandHandlers} = require(commandHandlersPath);
