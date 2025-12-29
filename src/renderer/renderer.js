@@ -24,13 +24,19 @@ const {initContextMenu} = window.contextMenuAPI; // 上下文菜单模块
 const {showThemeMenu, hideThemeMenu, initThemeMenu} = window.themeMenuAPI || {}; // 主题菜单模块
 const i18n = window.i18nAPI || {}; // i18n 模块
 const i18nUI = window.i18nUIAPI || {}; // i18nUI 模块
-const themeAPI = window.themeAPI || {}; // 主题管理模块
+// [修复] 重命名为 themeManager 以避免与全局 window.themeAPI 冲突
+const themeManager = window.themeAPI || {}; // 主题管理模块
 
 // ==================== DOM 元素引用 ====================
 const markdownInput = document.getElementById('editor'); // Markdown 编辑器文本域（源码输入）
 const previewContainerContainer = document.getElementById('previewContainer'); // 预览面板
+// 注意：如果 HTML 中 id 是 preview，这里变量名最好对应，但根据之前代码这里可能是 previewContainer
+const previewContainer = document.getElementById('preview'); // 修正：根据 index.html id="preview"
 const wysiwygEditor = document.getElementById('result-pane'); // 结果模式编辑面板（富文本编辑器）
 const appRoot = document.getElementById('app-root'); // 应用根容器，用于切换模式样式
+
+// 兼容代码中使用的 previewContainerContainer 变量名 (如果之前代码依赖它)
+// 建议后续统一使用 previewContainer
 
 // ==================== 全局状态变量 ====================
 
@@ -84,14 +90,20 @@ function _doRenderMarkdown(text) {
     try {
         const rawHtml = marked.parse(text || '');
         // 对于桌面本地应用，简单场景下可以直接使用 marked 的输出
-        previewContainerContainer.innerHTML = rawHtml;
+        // 修正：使用正确的容器变量
+        if (previewContainer) previewContainer.innerHTML = rawHtml;
+        if (previewContainerContainer && previewContainerContainer !== previewContainer) {
+            previewContainerContainer.innerHTML = rawHtml;
+        }
+
         // 如果当前是结果模式，同时更新结果面板
         if (viewMode === 'result') {
             wysiwygEditor.innerHTML = rawHtml;
         }
     } catch (error) {
         console.error('Markdown 渲染错误:', error);
-        previewContainerContainer.innerHTML = '<p style="color: red;">渲染错误: ' + error.message + '</p>';
+        const errorMsg = '<p style="color: red;">渲染错误: ' + error.message + '</p>';
+        if (previewContainer) previewContainer.innerHTML = errorMsg;
     }
 }
 
@@ -143,7 +155,7 @@ function setMode(mode) {
 // 初始化默认模式为对比模式
 setMode('split');
 
-// 主题初始化由 themeAPI.applyTheme() 在 DOMContentLoaded 事件中处理
+// 主题初始化由 themeManager.applyTheme() 在 DOMContentLoaded 事件中处理
 
 // ==================== 事件监听 ====================
 /**
@@ -554,7 +566,8 @@ function insertTextAtCursor(text) {
     }
 
     // 确保编辑器存在且可用
-    if (!editor) {
+    // [修复] 使用 markdownInput 而不是未定义的 editor 变量
+    if (!markdownInput) {
         console.error('insertTextAtCursor: 编辑器元素不存在');
         return;
     }
@@ -642,8 +655,9 @@ function adjustHeadingLevel(delta) {
  * @returns {string} 当前主题名称
  */
 function getCurrentTheme() {
-    if (themeAPI && themeAPI.getCurrentTheme) {
-        const theme = themeAPI.getCurrentTheme();
+    // [修复] 使用 themeManager
+    if (themeManager && themeManager.getCurrentTheme) {
+        const theme = themeManager.getCurrentTheme();
         return theme ? theme.id : 'github';
     }
     // 回退到旧方法
@@ -662,14 +676,15 @@ function getCurrentTheme() {
  * @param {boolean} save - 是否保存到设置，默认为 true
  */
 function setTheme(themeId, save = true) {
-    if (themeAPI && themeAPI.setTheme) {
+    // [修复] 使用 themeManager
+    if (themeManager && themeManager.setTheme) {
         // 使用新的主题管理模块
         if (save) {
             // 通知主进程切换主题（主进程会广播到所有窗口）
             ipcRenderer.send('change-theme', themeId);
         } else {
             // 只更新本地，不保存
-            themeAPI.setTheme(themeId);
+            themeManager.setTheme(themeId);
         }
     } else {
         // 回退到旧方法
@@ -720,7 +735,7 @@ function showThemeMenuAt(x, y) {
  * @param {string} featureName - 功能名称
  */
 function notImplemented(featureName) {
-    const message = i18n && i18n.t 
+    const message = i18n && i18n.t
         ? i18n.t('message.notImplemented', {feature: featureName})
         : `"${featureName}" feature is not yet implemented.`;
     alert(message);
@@ -997,12 +1012,13 @@ function showInputDialog(message, defaultValue = '') {
             // 延迟恢复焦点，确保对话框完全关闭
             setTimeout(() => {
                 // 如果之前有活动元素且是编辑器，恢复焦点
-                if (previousActiveElement && (previousActiveElement === editor || previousActiveElement === wysiwygEditor)) {
+                // [修复] 使用 markdownInput 而不是 editor
+                if (previousActiveElement && (previousActiveElement === markdownInput || previousActiveElement === wysiwygEditor)) {
                     previousActiveElement.focus();
                 } else if (viewMode === 'result' && wysiwygEditor) {
                     // 结果模式：聚焦结果面板
                     wysiwygEditor.focus();
-                } else if (editor) {
+                } else if (markdownInput) {
                     // 其他模式：聚焦编辑器
                     markdownInput.focus();
                 }
@@ -1199,11 +1215,12 @@ function showInsertTableDialog() {
         // 恢复焦点的辅助函数
         const restoreFocus = () => {
             setTimeout(() => {
-                if (previousActiveElement && (previousActiveElement === editor || previousActiveElement === wysiwygEditor)) {
+                // [修复] 使用 markdownInput 而不是 editor
+                if (previousActiveElement && (previousActiveElement === markdownInput || previousActiveElement === wysiwygEditor)) {
                     previousActiveElement.focus();
                 } else if (viewMode === 'result' && wysiwygEditor) {
                     wysiwygEditor.focus();
-                } else if (editor) {
+                } else if (markdownInput) {
                     markdownInput.focus();
                 }
             }, 50);
@@ -1380,7 +1397,7 @@ showInsertTableDialogRef.current = showInsertTableDialog;
 
 // 创建命令处理器映射对象，传入所有依赖
 const commandHandlers = createCommandHandlers({
-    editor,
+    editor: markdownInput, // [修复] 显式传递 markdownInput 作为 editor
     renderMarkdown,
     setMode,
     setTheme,
@@ -1496,15 +1513,17 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (i18n && i18n.updateUI) {
         i18n.updateUI();
     }
-    
+
     // 初始化主题
-    if (themeAPI && themeAPI.applyTheme) {
-        themeAPI.applyTheme();
+    // [修复] 使用 themeManager
+    if (themeManager && themeManager.applyTheme) {
+        themeManager.applyTheme();
     }
-    
+
     // 监听主题变化
-    if (themeAPI && themeAPI.listenForThemeChanges) {
-        themeAPI.listenForThemeChanges();
+    // [修复] 使用 themeManager
+    if (themeManager && themeManager.listenForThemeChanges) {
+        themeManager.listenForThemeChanges();
     }
 });
 
@@ -1512,7 +1531,7 @@ document.addEventListener('DOMContentLoaded', () => {
 if (ipcRenderer && ipcRenderer.on) {
     ipcRenderer.on('language-changed', (event, locale) => {
         console.log('[Renderer] 语言切换为:', locale);
-        
+
         // 重新加载语言包（注意：这里只加载内存即可，因为 preferences 已经保存了文件）
         if (i18n && i18n.loadLanguage) {
             i18n.loadLanguage(locale);
@@ -1520,7 +1539,7 @@ if (ipcRenderer && ipcRenderer.on) {
             // 如果没有 loadLanguage，使用 setLocale（但不要保存，因为 preferences 已经保存了）
             i18n.setLocale(locale);
         }
-        
+
         // 更新界面（使用统一的 i18nUI 工具）
         if (i18nUI && i18nUI.updateUI) {
             i18nUI.updateUI();
@@ -1528,14 +1547,15 @@ if (ipcRenderer && ipcRenderer.on) {
             i18n.updateUI();
         }
     });
-    
+
     // 监听主题改变事件
     ipcRenderer.on('theme-changed', (event, themeId) => {
         console.log('[Renderer] 主题切换为:', themeId);
-        
+
         // 使用主题管理模块更新界面
-        if (themeAPI && themeAPI.setTheme) {
-            themeAPI.setTheme(themeId);
+        // [修复] 使用 themeManager
+        if (themeManager && themeManager.setTheme) {
+            themeManager.setTheme(themeId);
         } else {
             // 回退到旧方法
             setTheme(themeId, false);
@@ -1549,15 +1569,16 @@ renderMarkdown('', true);
 
 // ==================== 右键上下文菜单 ====================
 // 初始化上下文菜单（在 commandHandlers 创建后调用）
-if (editor && handleMenuCommand && initContextMenu) {
+// [修复] 使用 markdownInput 而不是 editor
+if (markdownInput && handleMenuCommand && initContextMenu) {
     try {
-        initContextMenu(editor, handleMenuCommand);
+        initContextMenu(markdownInput, handleMenuCommand);
     } catch (error) {
         console.error('右键菜单初始化失败:', error);
     }
 } else {
     console.error('右键菜单初始化失败: 缺少必要的参数', {
-        editor: !!editor,
+        editor: !!markdownInput,
         handleMenuCommand: !!handleMenuCommand,
         initContextMenu: !!initContextMenu
     });
@@ -1609,15 +1630,18 @@ if (typeof createTableToolbar !== 'undefined') {
     });
 
     // 在 previewContainer-pane 中也可以显示工具栏（只读模式）
-    previewContainer.addEventListener('click', (e) => {
-        const table = e.target.closest('table');
-        if (table && viewMode === 'split') {
-            // 在预览模式下，可以显示工具栏但可能功能受限
-            if (typeof showTableToolbar !== 'undefined') {
-                showTableToolbar(table, tableToolbar);
+    // 修正：确保 previewContainer 存在
+    if (previewContainer) {
+        previewContainer.addEventListener('click', (e) => {
+            const table = e.target.closest('table');
+            if (table && viewMode === 'split') {
+                // 在预览模式下，可以显示工具栏但可能功能受限
+                if (typeof showTableToolbar !== 'undefined') {
+                    showTableToolbar(table, tableToolbar);
+                }
             }
-        }
-    });
+        });
+    }
 
     // 点击其他地方隐藏工具栏
     document.addEventListener('click', (e) => {
@@ -1634,6 +1658,7 @@ if (typeof createTableToolbar !== 'undefined') {
      */
     function getCurrentTable() {
         const pane = viewMode === 'result' ? wysiwygEditor : previewContainer;
+        if (!pane) return null; // 安全检查
         const tables = pane.querySelectorAll('table');
         return tables.length > 0 ? tables[tables.length - 1] : null;
     }
@@ -1642,7 +1667,7 @@ if (typeof createTableToolbar !== 'undefined') {
     document.addEventListener('table-align', (e) => {
         const {align} = e.detail;
         const targetTable = getCurrentTable();
-        
+
         if (targetTable) {
             const cells = targetTable.querySelectorAll('th, td');
             cells.forEach(cell => {
@@ -1654,7 +1679,7 @@ if (typeof createTableToolbar !== 'undefined') {
     // 监听删除表格事件
     document.addEventListener('table-delete', () => {
         const targetTable = getCurrentTable();
-        
+
         if (targetTable) {
             targetTable.remove();
             if (typeof hideTableToolbar !== 'undefined') {
