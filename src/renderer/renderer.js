@@ -96,7 +96,12 @@ function setMode(mode) {
         // 切换到结果模式时，将当前 markdown 渲染到结果面板
         isUpdatingResultPane = true;
         const markdown = editor.value || '';
-        resultPane.innerHTML = marked.parse(markdown);
+        try {
+            resultPane.innerHTML = marked.parse(markdown);
+        } catch (error) {
+            console.error('Markdown 渲染错误:', error);
+            resultPane.innerHTML = '<p style="color: red;">渲染错误: ' + error.message + '</p>';
+        }
 
         // 确保 result-pane 可以编辑
         resultPane.contentEditable = 'true';

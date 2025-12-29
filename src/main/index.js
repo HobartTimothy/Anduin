@@ -202,7 +202,9 @@ ipcMain.on('open-themes-folder', () => {
         fs.mkdirSync(themesPath, {recursive: true});
     }
     // 在文件管理器中打开主题文件夹
-    shell.openPath(themesPath);
+    shell.openPath(themesPath).catch((err) => {
+        console.error('打开主题文件夹失败:', err);
+    });
 });
 
 /**
@@ -210,7 +212,9 @@ ipcMain.on('open-themes-folder', () => {
  * 在默认浏览器中打开 Typora 主题网站
  */
 ipcMain.on('open-themes-website', () => {
-    shell.openExternal('https://theme.typora.io/');
+    shell.openExternal('https://theme.typora.io/').catch((err) => {
+        console.error('打开主题网站失败:', err);
+    });
 });
 
 /**

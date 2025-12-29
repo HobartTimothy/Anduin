@@ -457,7 +457,9 @@ function createMenuTemplate(sendToRenderer, fileUtils, mainWindow, createPrefere
                     label: '反馈',
                     click: () => {
                         const {shell} = require('electron');
-                        shell.openExternal('https://github.com/HobartTimothy/Anduin/issues');
+                        shell.openExternal('https://github.com/HobartTimothy/Anduin/issues').catch((err) => {
+                            console.error('打开反馈链接失败:', err);
+                        });
                     }
                 },
                 {type: 'separator'},
