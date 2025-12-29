@@ -5,10 +5,13 @@ const fs = require('fs');
 class I18n {
     constructor() {
         this.app = electron.app || electron.remote?.app;
-        this.userDataPath = this.app ? this.app.getPath('userData') : path.join(require('os').homedir(), '.anduin');
+        this.userDataPath = this.app 
+            ? this.app.getPath('userData') 
+            : path.join(require('os').homedir(), '.anduin');
         this.configPath = path.join(this.userDataPath, 'user-language-config.json');
         this.loadedLanguage = null;
         this.locale = null;
+        this.defaultLocale = 'en';
         
         // 初始化语言
         this.init();
@@ -16,69 +19,154 @@ class I18n {
 
     init() {
         // 1. 尝试从本地配置文件读取
+        this.locale = this._readLocaleFromConfig();
+        
+        // 2. 如果没有配置，使用默认语言
+        if (!this.locale) {
+            this.locale = this.defaultLocale;
+        }
+
+        // 3. 加载语言包
+        this.loadLanguage(this.locale);
+    }
+    
+    /**
+     * 从配置文件读取语言设置
+     * @returns {string|null} 语言代码，失败返回 null
+     * @private
+     */
+    _readLocaleFromConfig() {
         try {
             if (fs.existsSync(this.configPath)) {
                 const config = JSON.parse(fs.readFileSync(this.configPath, 'utf-8'));
-                this.locale = config.language;
+                if (config.language && typeof config.language === 'string') {
+                    return config.language;
+                }
             }
-        } catch (e) {
-            console.error('Error reading language config', e);
+        } catch (error) {
+            console.error('读取语言配置失败:', error.message);
         }
-
-        // 2. 如果没有配置，默认使用英文（或者检测系统语言）
-        if (!this.locale) {
-            this.locale = 'en';
-        }
-
-        this.loadLanguage(this.locale);
+        return null;
     }
 
     loadLanguage(locale) {
         this.locale = locale;
+        
+        // 尝试加载指定语言
+        const localePath = path.join(__dirname, '..', 'locales', `${locale}.js`);
+        if (this._tryLoadLanguageFile(localePath)) {
+            return;
+        }
+        
+        // 加载失败，尝试加载默认语言
+        console.warn(`无法加载语言包: ${locale}, 回退到默认语言: ${this.defaultLocale}`);
+        const fallbackPath = path.join(__dirname, '..', 'locales', `${this.defaultLocale}.js`);
+        if (this._tryLoadLanguageFile(fallbackPath)) {
+            this.locale = this.defaultLocale;
+            return;
+        }
+        
+        // 如果连默认语言都加载失败，使用空对象
+        console.error('无法加载任何语言包，使用空对象');
+        this.loadedLanguage = {};
+    }
+    
+    /**
+     * 尝试加载语言文件
+     * @param {string} filePath - 语言文件路径
+     * @returns {boolean} 是否加载成功
+     * @private
+     */
+    _tryLoadLanguageFile(filePath) {
         try {
-            // 动态引入对应的语言包
-            // 注意：根据你的打包方式，路径可能需要调整，这里假设在 src/locales 下
-            const localePath = path.join(__dirname, '..', 'locales', `${locale}.js`);
-            this.loadedLanguage = require(localePath);
-        } catch (e) {
-            // 如果加载失败，回退到英文
-            console.error(`Could not load locale: ${locale}`, e);
-            try {
-                const enPath = path.join(__dirname, '..', 'locales', 'en.js');
-                this.loadedLanguage = require(enPath);
-                this.locale = 'en';
-            } catch (e2) {
-                console.error('Could not load fallback locale (en)', e2);
-                this.loadedLanguage = {};
-            }
+            this.loadedLanguage = require(filePath);
+            return true;
+        } catch (error) {
+            console.error(`加载语言文件失败 (${filePath}):`, error.message);
+            return false;
         }
     }
 
-    // 获取翻译文本的核心函数
-    t(key) {
-        if (!this.loadedLanguage) return key;
-        return this.loadedLanguage[key] || key;
+    /**
+     * 获取翻译文本的核心函数
+     * @param {string} key - 翻译键名
+     * @param {Object} params - 可选的参数对象，用于替换占位符
+     * @returns {string} 翻译后的文本
+     */
+    t(key, params = null) {
+        if (!this.loadedLanguage) {
+            return key;
+        }
+        
+        let text = this.loadedLanguage[key] || key;
+        
+        // 如果提供了参数，替换占位符
+        if (params && typeof text === 'string') {
+            Object.keys(params).forEach(paramKey => {
+                const placeholder = `{${paramKey}}`;
+                text = text.replace(new RegExp(placeholder, 'g'), params[paramKey]);
+            });
+        }
+        
+        return text;
     }
 
-    // 切换语言并保存
+    /**
+     * 切换语言并保存配置
+     * @param {string} locale - 语言代码
+     * @returns {boolean} 是否切换成功
+     */
     setLocale(locale) {
-        if (this.locale !== locale) {
-            this.loadLanguage(locale);
-            try {
-                // 确保目录存在
-                if (!fs.existsSync(this.userDataPath)) {
-                    fs.mkdirSync(this.userDataPath, { recursive: true });
-                }
-                fs.writeFileSync(this.configPath, JSON.stringify({ language: locale }, null, 2), 'utf-8');
-            } catch (e) {
-                console.error('Error saving language config', e);
+        if (this.locale === locale) {
+            return true;
+        }
+        
+        // 加载新语言
+        this.loadLanguage(locale);
+        
+        // 保存到配置文件
+        return this._saveLocaleToConfig(locale);
+    }
+    
+    /**
+     * 保存语言设置到配置文件
+     * @param {string} locale - 语言代码
+     * @returns {boolean} 是否保存成功
+     * @private
+     */
+    _saveLocaleToConfig(locale) {
+        try {
+            // 确保目录存在
+            if (!fs.existsSync(this.userDataPath)) {
+                fs.mkdirSync(this.userDataPath, {recursive: true});
             }
+            
+            fs.writeFileSync(
+                this.configPath, 
+                JSON.stringify({language: locale}, null, 2), 
+                'utf-8'
+            );
+            return true;
+        } catch (error) {
+            console.error('保存语言配置失败:', error.message);
+            return false;
         }
     }
     
-    // 获取当前语言代码
+    /**
+     * 获取当前语言代码
+     * @returns {string} 当前语言代码
+     */
     currentLocale() {
-        return this.locale;
+        return this.locale || this.defaultLocale;
+    }
+    
+    /**
+     * 检查语言包是否已加载
+     * @returns {boolean} 是否已加载
+     */
+    isLoaded() {
+        return this.loadedLanguage !== null && typeof this.loadedLanguage === 'object';
     }
 }
 

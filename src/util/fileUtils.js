@@ -37,18 +37,19 @@ class FileUtils {
      * @returns {string|null} 文件内容，读取失败返回 null
      */
     readFileWithEncoding(filePath) {
-        try {
-            // 尝试以 UTF-8 编码读取文件
-            return fs.readFileSync(filePath, 'utf-8');
-        } catch (encodingError) {
-            // 如果 UTF-8 读取失败，尝试 Latin1 编码（兼容更多编码）
+        const encodings = ['utf-8', 'latin1'];
+        
+        for (const encoding of encodings) {
             try {
-                return fs.readFileSync(filePath, 'latin1');
+                return fs.readFileSync(filePath, encoding);
             } catch (error) {
-                console.error('读取文件失败:', error);
-                return null;
+                // 继续尝试下一个编码
+                if (encoding === encodings[encodings.length - 1]) {
+                    console.error(`读取文件失败 (尝试了 ${encodings.join(', ')} 编码):`, error.message);
+                }
             }
         }
+        return null;
     }
 
     /**
@@ -125,19 +126,16 @@ class FileUtils {
      */
     async importFromFile() {
         if (!this.mainWindow) {
+            console.warn('主窗口未初始化');
             return;
         }
 
         try {
-            // 显示文件选择对话框
-            // @type {Electron.BrowserWindow}
-            const window = this.mainWindow;
-            const result = await dialog.showOpenDialog(window, {
+            const result = await dialog.showOpenDialog(this.mainWindow, {
                 title: '选择要导入的txt文件',
                 filters: [
                     {name: '文本文件', extensions: ['txt']}
                 ],
-                // 只能选择单个文件
                 properties: ['openFile']
             });
 
@@ -146,7 +144,6 @@ class FileUtils {
                 return;
             }
 
-            // 获取文件路径
             const filePath = result.filePaths[0];
 
             // 验证文件是否存在
@@ -179,14 +176,12 @@ class FileUtils {
      */
     async importFromWord() {
         if (!this.mainWindow) {
+            console.warn('主窗口未初始化');
             return;
         }
 
         try {
-            // 显示文件选择对话框
-            // @type {Electron.BrowserWindow}
-            const window = this.mainWindow;
-            const result = await dialog.showOpenDialog(window, {
+            const result = await dialog.showOpenDialog(this.mainWindow, {
                 title: '选择要导入的Word文档',
                 filters: [
                     {name: 'Word文档', extensions: ['docx']},
@@ -233,19 +228,48 @@ class FileUtils {
     }
 
     /**
+     * 配置 TurndownService 实例
+     * @returns {TurndownService} 配置好的 TurndownService 实例
+     * @private
+     */
+    _configureTurndownService() {
+        const turndownService = new TurndownService({
+            headingStyle: 'atx', // 使用 # 风格的标题（如：## 标题）
+            codeBlockStyle: 'fenced', // 使用 ``` 风格的代码块
+            bulletListMarker: '-', // 使用 - 作为无序列表标记
+            emDelimiter: '*', // 使用 * 作为斜体标记
+            strongDelimiter: '**', // 使用 ** 作为粗体标记
+            linkStyle: 'inlined', // 使用内联链接样式 [text](url)
+            linkReferenceStyle: 'full' // 使用完整引用样式
+        });
+
+        // 添加自定义规则：删除线
+        turndownService.addRule('strikethrough', {
+            filter: ['del', 's', 'strike'],
+            replacement: (content) => `~~${content}~~`
+        });
+
+        // 添加自定义规则：下划线（Markdown 不支持，保留 HTML）
+        turndownService.addRule('underline', {
+            filter: 'u',
+            replacement: (content) => `<u>${content}</u>`
+        });
+
+        return turndownService;
+    }
+
+    /**
      * 从 HTML 文件导入内容并转换为 Markdown
      * 使用 TurndownService 库进行转换
      */
     async importFromHTML() {
         if (!this.mainWindow) {
+            console.warn('主窗口未初始化');
             return;
         }
 
         try {
-            // 显示文件选择对话框
-            // @type {Electron.BrowserWindow}
-            const window = this.mainWindow;
-            const result = await dialog.showOpenDialog(window, {
+            const result = await dialog.showOpenDialog(this.mainWindow, {
                 title: '选择要导入的HTML文件',
                 filters: [
                     {name: 'HTML文件', extensions: ['html', 'htm']},
@@ -274,35 +298,8 @@ class FileUtils {
                 return;
             }
 
-            // 初始化 TurndownService，配置转换选项
-            /** @type {TurndownService} */
-            const turndownService = new TurndownService({
-                headingStyle: 'atx', // 使用 # 风格的标题（如：## 标题）
-                codeBlockStyle: 'fenced', // 使用 ``` 风格的代码块
-                bulletListMarker: '-', // 使用 - 作为无序列表标记
-                emDelimiter: '*', // 使用 * 作为斜体标记
-                strongDelimiter: '**', // 使用 ** 作为粗体标记
-                linkStyle: 'inlined', // 使用内联链接样式 [text](url)
-                linkReferenceStyle: 'full' // 使用完整引用样式
-            });
-
-            // 添加自定义规则：删除线（<del>, <s>, <strike> 标签）
-            turndownService.addRule('strikethrough', {
-                filter: ['del', 's', 'strike'],
-                replacement: function (content) {
-                    return '~~' + content + '~~';
-                }
-            });
-
-            // 添加自定义规则：下划线（<u> 标签，Markdown 不支持，保留 HTML 标签）
-            turndownService.addRule('underline', {
-                filter: 'u',
-                replacement: function (content) {
-                    return '<u>' + content + '</u>';
-                }
-            });
-
-            // 转换 HTML 为 Markdown
+            // 配置并使用 TurndownService 转换 HTML 为 Markdown
+            const turndownService = this._configureTurndownService();
             const markdownContent = turndownService.turndown(htmlContent);
 
             // 发送导入的内容到渲染进程

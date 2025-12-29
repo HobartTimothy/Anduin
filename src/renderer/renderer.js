@@ -1595,26 +1595,21 @@ if (typeof createTableToolbar !== 'undefined') {
         }
     });
 
+    /**
+     * 获取当前可见的最后一个表格
+     * @returns {HTMLElement|null} 表格元素，未找到返回 null
+     */
+    function getCurrentTable() {
+        const pane = currentMode === 'result' ? resultPane : preview;
+        const tables = pane.querySelectorAll('table');
+        return tables.length > 0 ? tables[tables.length - 1] : null;
+    }
+
     // 监听表格对齐事件
     document.addEventListener('table-align', (e) => {
         const {align} = e.detail;
-        // 查找当前显示的表格
-        let targetTable = null;
-
-        // 优先查找 result-pane 中的表格
-        if (currentMode === 'result') {
-            const resultTables = resultPane.querySelectorAll('table');
-            if (resultTables.length > 0) {
-                targetTable = resultTables[resultTables.length - 1];
-            }
-        } else {
-            // 查找预览面板中的表格
-            const previewTables = preview.querySelectorAll('table');
-            if (previewTables.length > 0) {
-                targetTable = previewTables[previewTables.length - 1];
-            }
-        }
-
+        const targetTable = getCurrentTable();
+        
         if (targetTable) {
             const cells = targetTable.querySelectorAll('th, td');
             cells.forEach(cell => {
@@ -1625,23 +1620,8 @@ if (typeof createTableToolbar !== 'undefined') {
 
     // 监听删除表格事件
     document.addEventListener('table-delete', () => {
-        // 查找当前显示的表格
-        let targetTable = null;
-
-        // 优先查找 result-pane 中的表格
-        if (currentMode === 'result') {
-            const resultTables = resultPane.querySelectorAll('table');
-            if (resultTables.length > 0) {
-                targetTable = resultTables[resultTables.length - 1];
-            }
-        } else {
-            // 查找预览面板中的表格
-            const previewTables = preview.querySelectorAll('table');
-            if (previewTables.length > 0) {
-                targetTable = previewTables[previewTables.length - 1];
-            }
-        }
-
+        const targetTable = getCurrentTable();
+        
         if (targetTable) {
             targetTable.remove();
             if (typeof hideTableToolbar !== 'undefined') {

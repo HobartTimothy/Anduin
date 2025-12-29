@@ -44,6 +44,17 @@ const FileUtils = require('../util/fileUtils');
 const {createMenuTemplate, changeLanguage} = require('./menus');
 const i18n = require('../util/i18n');
 
+// 配置常量
+const WINDOW_CONFIG = {
+    MAIN: {width: 1280, height: 800},
+    PREFERENCES: {width: 900, height: 600},
+    ABOUT: {width: 550, height: 280}
+};
+
+const FOCUS_DELAY = 100; // 窗口聚焦延迟时间(毫秒)
+const RENDER_DELAY = 500; // PDF/打印渲染延迟时间(毫秒)
+const CLOSE_DELAY = 1000; // 打印窗口关闭延迟时间(毫秒)
+
 // 全局变量
 let mainWindow; // 主窗口实例
 let preferencesWindow = null; // 偏好设置窗口实例
@@ -59,8 +70,8 @@ let fileUtils = null; // 文件处理工具类实例
 function createWindow(filePath = null) {
     // 创建主窗口实例
     mainWindow = new BrowserWindow({
-        width: 1280, // 窗口宽度
-        height: 800, // 窗口高度
+        width: WINDOW_CONFIG.MAIN.width,
+        height: WINDOW_CONFIG.MAIN.height,
         icon: path.join(__dirname, '../../resources/icons/icon.jpg'), // 窗口图标
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'), // 预加载脚本
@@ -92,7 +103,7 @@ function createWindow(filePath = null) {
             if (mainWindow && !mainWindow.isDestroyed()) {
                 mainWindow.webContents.focus();
             }
-        }, 100);
+        }, FOCUS_DELAY);
     });
 
     // 初始化文件处理工具类
@@ -161,8 +172,8 @@ function createPreferencesWindow() {
 
     // 创建偏好设置窗口
     preferencesWindow = new BrowserWindow({
-        width: 900, // 窗口宽度
-        height: 600, // 窗口高度
+        width: WINDOW_CONFIG.PREFERENCES.width,
+        height: WINDOW_CONFIG.PREFERENCES.height,
         parent: mainWindow, // 父窗口
         modal: false, // 非模态窗口
         icon: path.join(__dirname, '../../resources/icons/icon.jpg'), // 窗口图标
@@ -207,8 +218,8 @@ function createAboutWindow() {
 
     // 创建关于窗口
     aboutWindow = new BrowserWindow({
-        width: 550, // 窗口宽度
-        height: 280, // 窗口高度
+        width: WINDOW_CONFIG.ABOUT.width,
+        height: WINDOW_CONFIG.ABOUT.height,
         parent: mainWindow, // 父窗口
         modal: true, // 模态窗口
         icon: path.join(__dirname, '../../resources/icons/icon.jpg'), // 窗口图标
@@ -262,18 +273,52 @@ ipcMain.on('open-themes-website', () => {
 });
 
 /**
+ * 获取设置文件路径
+ * @returns {string} 设置文件完整路径
+ */
+function getSettingsPath() {
+    return path.join(app.getPath('userData'), 'settings.json');
+}
+
+/**
+ * 读取用户设置
+ * @returns {Object} 设置对象
+ */
+function readSettings() {
+    const settingsPath = getSettingsPath();
+    try {
+        if (fs.existsSync(settingsPath)) {
+            return JSON.parse(fs.readFileSync(settingsPath, 'utf-8'));
+        }
+    } catch (error) {
+        console.error('读取设置失败:', error);
+    }
+    return {};
+}
+
+/**
+ * 写入用户设置
+ * @param {Object} settings - 要保存的设置对象
+ * @returns {boolean} 是否保存成功
+ */
+function writeSettings(settings) {
+    const settingsPath = getSettingsPath();
+    try {
+        fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2), 'utf-8');
+        return true;
+    } catch (error) {
+        console.error('保存设置失败:', error);
+        return false;
+    }
+}
+
+/**
  * 保存用户设置
  * @param {Object} event - IPC 事件对象
  * @param {Object} settings - 要保存的设置对象
  */
 ipcMain.on('save-settings', (event, settings) => {
-    const settingsPath = path.join(app.getPath('userData'), 'settings.json');
-    try {
-        // 将设置对象序列化为 JSON 并保存到文件
-        fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2), 'utf-8');
-    } catch (error) {
-        console.error('保存设置失败:', error);
-    }
+    writeSettings(settings);
 });
 
 /**
@@ -282,27 +327,12 @@ ipcMain.on('save-settings', (event, settings) => {
  * @returns {Object} 设置对象，如果文件不存在则返回空对象
  */
 ipcMain.on('get-settings', (event) => {
-    const settingsPath = path.join(app.getPath('userData'), 'settings.json');
-    try {
-        let settings = {};
-        if (fs.existsSync(settingsPath)) {
-            // 读取并解析设置文件
-            settings = JSON.parse(fs.readFileSync(settingsPath, 'utf-8'));
-        }
-        
-        // 确保语言设置存在，如果不存在则从 i18n 获取
-        if (!settings.language) {
-            settings.language = i18n.currentLocale() || 'en';
-        }
-        
-        event.returnValue = settings;
-    } catch (error) {
-        console.error('读取设置失败:', error);
-        // 即使出错，也返回包含当前语言的对象
-        event.returnValue = {
-            language: i18n.currentLocale() || 'en'
-        };
+    const settings = readSettings();
+    // 确保语言设置存在，如果不存在则从 i18n 获取
+    if (!settings.language) {
+        settings.language = i18n.currentLocale() || 'en';
     }
+    event.returnValue = settings;
 });
 
 /**
@@ -319,17 +349,9 @@ ipcMain.on('change-language', (event, locale) => {
     changeLanguage(locale, sendToRenderer, fileUtils, mainWindow, createPreferencesWindow);
     
     // 同步更新 settings.json 中的语言设置
-    const settingsPath = path.join(app.getPath('userData'), 'settings.json');
-    try {
-        let settings = {};
-        if (fs.existsSync(settingsPath)) {
-            settings = JSON.parse(fs.readFileSync(settingsPath, 'utf-8'));
-        }
-        settings.language = locale;
-        fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2), 'utf-8');
-    } catch (error) {
-        console.error('更新设置中的语言失败:', error);
-    }
+    const settings = readSettings();
+    settings.language = locale;
+    writeSettings(settings);
     
     // 通知偏好设置窗口语言已更改
     if (preferencesWindow) {
@@ -390,8 +412,8 @@ ipcMain.handle('export-pdf', async (event, data) => {
         // 通过 data URL 加载 HTML 内容
         await pdfWindow.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(fullHtml));
 
-        // 等待页面完全加载（500ms 延迟确保样式和内容都已渲染）
-        await new Promise(resolve => setTimeout(resolve, 500));
+        // 等待页面完全加载（延迟确保样式和内容都已渲染）
+        await new Promise(resolve => setTimeout(resolve, RENDER_DELAY));
 
         // 使用 Electron 的 printToPDF API 生成 PDF
         const pdfData = await pdfWindow.webContents.printToPDF({
@@ -472,8 +494,8 @@ ipcMain.handle('print-document', async (event, data) => {
         // 通过 data URL 加载 HTML 内容
         await printWindow.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(fullHtml));
 
-        // 等待页面完全加载（500ms 延迟确保样式和内容都已渲染）
-        await new Promise(resolve => setTimeout(resolve, 500));
+        // 等待页面完全加载（延迟确保样式和内容都已渲染）
+        await new Promise(resolve => setTimeout(resolve, RENDER_DELAY));
 
         // 使用 Electron 的 print API 弹出打印对话框
         const printOptions = {
@@ -491,7 +513,7 @@ ipcMain.handle('print-document', async (event, data) => {
                 if (printWindow && !printWindow.isDestroyed()) {
                     printWindow.close();
                 }
-            }, 1000);
+            }, CLOSE_DELAY);
         });
 
         return {success: true};

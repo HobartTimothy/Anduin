@@ -1,8 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8"/>
-    <title>偏好设置</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title data-i18n="preferences.title">偏好设置</title>
     <link rel="stylesheet" href="preferences.css"/>
 </head>
 <body>
@@ -10,17 +11,17 @@
     <!-- 左侧菜单 -->
     <div class="sidebar">
         <div class="search-box">
-            <label for="search-input" class="sr-only">查找设置</label>
-            <input type="text" placeholder="查找..." id="search-input" aria-label="查找设置"/>
+            <label for="search-input" class="sr-only" data-i18n="preferences.search.label">查找设置</label>
+            <input type="text" placeholder="" id="search-input" data-i18n-placeholder="preferences.search.placeholder" aria-label="" data-i18n-aria-label="preferences.search.label"/>
         </div>
         <nav class="menu">
-            <div class="menu-item" data-section="file">文件</div>
-            <div class="menu-item" data-section="editor">编辑器</div>
-            <div class="menu-item" data-section="image">图像</div>
-            <div class="menu-item" data-section="markdown">Markdown</div>
-            <div class="menu-item" data-section="export">导出</div>
-            <div class="menu-item" data-section="appearance">外观</div>
-            <div class="menu-item" data-section="general">通用</div>
+            <div class="menu-item" data-section="file" data-i18n="preferences.menu.file">文件</div>
+            <div class="menu-item" data-section="editor" data-i18n="preferences.menu.editor">编辑器</div>
+            <div class="menu-item" data-section="image" data-i18n="preferences.menu.image">图像</div>
+            <div class="menu-item" data-section="markdown" data-i18n="preferences.menu.markdown">Markdown</div>
+            <div class="menu-item" data-section="export" data-i18n="preferences.menu.export">导出</div>
+            <div class="menu-item" data-section="appearance" data-i18n="preferences.menu.appearance">外观</div>
+            <div class="menu-item" data-section="general" data-i18n="preferences.menu.general">通用</div>
         </nav>
     </div>
 
@@ -28,76 +29,76 @@
     <div class="content">
         <!-- 文件设置 -->
         <div class="section" id="section-file">
-            <h2>文件</h2>
+            <h2 data-i18n="preferences.menu.file">文件</h2>
 
             <div class="setting-group">
-                <label for="startup-action" class="setting-label">启动操作</label>
+                <label for="startup-action" class="setting-label" data-i18n="preferences.file.startupAction">启动操作</label>
                 <select id="startup-action" class="setting-select">
-                    <option>打开新文件</option>
-                    <option>打开上次文件</option>
-                    <option>显示欢迎页</option>
+                    <option data-i18n="preferences.file.startupAction.newFile">打开新文件</option>
+                    <option data-i18n="preferences.file.startupAction.lastFile">打开上次文件</option>
+                    <option data-i18n="preferences.file.startupAction.welcome">显示欢迎页</option>
                 </select>
             </div>
 
             <div class="setting-group">
-                <label class="setting-label">大纲</label>
+                <label class="setting-label" data-i18n="preferences.file.outline">大纲</label>
                 <div class="setting-row">
                     <input type="checkbox" id="file-outline-numbering"/>
-                    <label for="file-outline-numbering">对折叠章节进行编号生成大纲序号</label>
+                    <label for="file-outline-numbering" data-i18n="preferences.file.outlineNumbering">对折叠章节进行编号生成大纲序号</label>
                 </div>
             </div>
 
             <div class="setting-group">
-                <label for="default-file-type" class="setting-label">默认文件类型/扩展名</label>
+                <label for="default-file-type" class="setting-label" data-i18n="preferences.file.defaultFileType">默认文件类型/扩展名</label>
                 <select id="default-file-type" class="setting-select">
-                    <option>Markdown (.md)</option>
-                    <option>文本文件 (.txt)</option>
+                    <option data-i18n="preferences.file.defaultFileType.markdown">Markdown (.md)</option>
+                    <option data-i18n="preferences.file.defaultFileType.txt">文本文件 (.txt)</option>
                 </select>
             </div>
 
             <div class="setting-group">
-                <label class="setting-label">保存 & 恢复</label>
+                <label class="setting-label" data-i18n="preferences.file.saveRestore">保存 & 恢复</label>
                 <div class="setting-row">
                     <input type="checkbox" id="file-auto-save"/>
-                    <label for="file-auto-save">自动保存</label>
+                    <label for="file-auto-save" data-i18n="preferences.file.autoSave">自动保存</label>
                 </div>
                 <div class="setting-row">
                     <input type="checkbox" id="file-auto-save-content"/>
-                    <label for="file-auto-save-content">切换文件时自动保存对上个文件的更改</label>
+                    <label for="file-auto-save-content" data-i18n="preferences.file.autoSaveOnSwitch">切换文件时自动保存对上个文件的更改</label>
                 </div>
-                <button class="setting-btn">依赖未保存的更改</button>
+                <button class="setting-btn" data-i18n="preferences.file.dependUnsaved">依赖未保存的更改</button>
             </div>
 
             <div class="setting-group">
-                <label class="setting-label">最近使用的目录</label>
+                <label class="setting-label" data-i18n="preferences.file.recentDirectories">最近使用的目录</label>
                 <div class="setting-row">
                     <input type="checkbox" id="file-recent-history" checked/>
-                    <label for="file-recent-history">记录历史文件和文件夹</label>
+                    <label for="file-recent-history" data-i18n="preferences.file.recordHistory">记录历史文件和文件夹</label>
                 </div>
-                <button class="setting-btn">清除历史文件记录</button>
+                <button class="setting-btn" data-i18n="preferences.file.clearHistory">清除历史文件记录</button>
             </div>
 
             <div class="setting-group">
-                <label class="setting-label">当输入文件/文件夹关于 Typora 窗口时</label>
+                <label class="setting-label" data-i18n="preferences.file.dragDrop">当输入文件/文件夹关于 Typora 窗口时</label>
                 <div class="setting-row">
-                    <label for="drag-drop-action" class="sr-only">拖放文件操作</label>
-                    <select id="drag-drop-action" class="setting-select" aria-label="拖放文件操作">
-                        <option>在 Typora 中打开</option>
-                        <option>忽略</option>
+                    <label for="drag-drop-action" class="sr-only" data-i18n="preferences.file.dragDropAction">拖放文件操作</label>
+                    <select id="drag-drop-action" class="setting-select" data-i18n-aria-label="preferences.file.dragDropAction">
+                        <option data-i18n="preferences.file.dragDropAction.open">在 Typora 中打开</option>
+                        <option data-i18n="preferences.file.dragDropAction.ignore">忽略</option>
                     </select>
                 </div>
                 <div class="setting-row">
-                    <label for="drag-drop-markdown">当输入 Markdown 文件时</label>
+                    <label for="drag-drop-markdown" data-i18n="preferences.file.dragDropMarkdown">当输入 Markdown 文件时</label>
                     <select id="drag-drop-markdown" class="setting-select">
-                        <option>在 Typora 中打开</option>
-                        <option>忽略</option>
+                        <option data-i18n="preferences.file.dragDropAction.open">在 Typora 中打开</option>
+                        <option data-i18n="preferences.file.dragDropAction.ignore">忽略</option>
                     </select>
                 </div>
                 <div class="setting-row">
-                    <label for="drag-drop-other">当输入其他类型的文件时</label>
+                    <label for="drag-drop-other" data-i18n="preferences.file.dragDropOther">当输入其他类型的文件时</label>
                     <select id="drag-drop-other" class="setting-select">
-                        <option>导入文件</option>
-                        <option>忽略</option>
+                        <option data-i18n="preferences.file.dragDropAction.import">导入文件</option>
+                        <option data-i18n="preferences.file.dragDropAction.ignore">忽略</option>
                     </select>
                 </div>
             </div>
@@ -105,11 +106,11 @@
 
         <!-- 编辑器设置 -->
         <div class="section" id="section-editor">
-            <h2>编辑器</h2>
-            <p class="section-note">（一些项调整要重启 Typora 后生效）</p>
+            <h2 data-i18n="preferences.menu.editor">编辑器</h2>
+            <p class="section-note" data-i18n="preferences.editor.note">（一些项调整要重启 Typora 后生效）</p>
 
             <div class="setting-group">
-                <label for="default-indent" class="setting-label">默认缩进</label>
+                <label for="default-indent" class="setting-label" data-i18n="preferences.editor.defaultIndent">默认缩进</label>
                 <select id="default-indent" class="setting-select small">
                     <option>2</option>
                     <option>4</option>
@@ -117,135 +118,135 @@
                 </select>
                 <div class="setting-row">
                     <input type="checkbox" id="editor-indent"/>
-                    <label for="editor-indent">对齐缩进</label>
+                    <label for="editor-indent" data-i18n="preferences.editor.alignIndent">对齐缩进</label>
                 </div>
             </div>
 
             <div class="setting-group">
-                <label class="setting-label">使用成对的符号</label>
+                <label class="setting-label" data-i18n="preferences.editor.pairedSymbols">使用成对的符号</label>
                 <div class="setting-row">
                     <input type="checkbox" id="editor-pairs" checked/>
-                    <label for="editor-pairs">匹配括号和引号</label>
+                    <label for="editor-pairs" data-i18n="preferences.editor.matchBrackets">匹配括号和引号</label>
                 </div>
                 <div class="setting-row">
                     <input type="checkbox" id="editor-markdown-pairs"/>
-                    <label for="editor-markdown-pairs">匹配 Markdown 字符</label>
+                    <label for="editor-markdown-pairs" data-i18n="preferences.editor.matchMarkdown">匹配 Markdown 字符</label>
                 </div>
             </div>
 
             <div class="setting-group">
-                <label class="setting-label">即时渲染</label>
+                <label class="setting-label" data-i18n="preferences.editor.instantRender">即时渲染</label>
                 <div class="setting-row">
                     <input type="checkbox" id="editor-instant-render"/>
-                    <label for="editor-instant-render">显示当前块元素的 Markdown 源码（支持标题等块元素）</label>
+                    <label for="editor-instant-render" data-i18n="preferences.editor.showBlockSource">显示当前块元素的 Markdown 源码（支持标题等块元素）</label>
                 </div>
             </div>
 
             <div class="setting-group">
-                <label class="setting-label">默认复制行为 (ctrl+c)</label>
+                <label class="setting-label" data-i18n="preferences.editor.defaultCopyBehavior">默认复制行为 (ctrl+c)</label>
                 <div class="setting-row">
                     <input type="checkbox" id="editor-copy-behavior" checked/>
-                    <label for="editor-copy-behavior">当复制纯文本时复制 Markdown 源码</label>
+                    <label for="editor-copy-behavior" data-i18n="preferences.editor.copyMarkdownSource">当复制纯文本时复制 Markdown 源码</label>
                 </div>
                 <div class="setting-row">
                     <input type="checkbox" id="editor-copy-selected"/>
-                    <label for="editor-copy-selected">复制或更明时，若没有文字被选中，则复制或更选标所在行</label>
+                    <label for="editor-copy-selected" data-i18n="preferences.editor.copyLineIfNoSelection">复制或更明时，若没有文字被选中，则复制或更选标所在行</label>
                 </div>
             </div>
 
             <div class="setting-group">
-                <label class="setting-label">默认换行符</label>
+                <label class="setting-label" data-i18n="preferences.editor.defaultLineEnding">默认换行符</label>
                 <div class="setting-row">
-                    <label>新文件的默认换行符序</label>
+                    <label data-i18n="preferences.editor.defaultLineEndingForNewFiles">新文件的默认换行符序</label>
                 </div>
                 <div class="setting-row">
                     <input type="radio" name="line-ending" id="line-ending-lf"/>
-                    <label for="line-ending-lf">LF (Unix Style)</label>
+                    <label for="line-ending-lf" data-i18n="preferences.editor.lineEndingLF">LF (Unix Style)</label>
                     <input type="radio" name="line-ending" id="line-ending-crlf" checked style="margin-left: 20px;"/>
-                    <label for="line-ending-crlf">CRLF (Windows Style)</label>
+                    <label for="line-ending-crlf" data-i18n="preferences.editor.lineEndingCRLF">CRLF (Windows Style)</label>
                 </div>
             </div>
 
             <div class="setting-group">
-                <label class="setting-label">拼写检查</label>
+                <label class="setting-label" data-i18n="preferences.editor.spellCheck">拼写检查</label>
                 <div class="setting-row">
-                    <label for="spell-check-language">默认的拼写检查语言</label>
+                    <label for="spell-check-language" data-i18n="preferences.editor.spellCheckLanguage">默认的拼写检查语言</label>
                 </div>
                 <select id="spell-check-language" class="setting-select">
-                    <option>自动按照语言</option>
-                    <option>English (US)</option>
-                    <option>简体中文</option>
+                    <option data-i18n="preferences.editor.spellCheckAuto">自动按照语言</option>
+                    <option data-i18n="preferences.editor.spellCheckEnglish">English (US)</option>
+                    <option data-i18n="preferences.editor.spellCheckChinese">简体中文</option>
                 </select>
             </div>
 
             <div class="setting-group">
-                <label class="setting-label">打字机模式</label>
+                <label class="setting-label" data-i18n="preferences.editor.typewriterMode">打字机模式</label>
                 <div class="setting-row">
                     <input type="checkbox" id="editor-typewriter" checked/>
-                    <label for="editor-typewriter">在打字机模式下，始终保证光标在屏幕中间</label>
+                    <label for="editor-typewriter" data-i18n="preferences.editor.typewriterKeepCenter">在打字机模式下，始终保证光标在屏幕中间</label>
                 </div>
-                <button class="setting-btn">关闭 打字机模式 / 专注模式</button>
+                <button class="setting-btn" data-i18n="preferences.editor.closeTypewriterFocus">关闭 打字机模式 / 专注模式</button>
             </div>
         </div>
 
         <!-- 图像设置 -->
         <div class="section" id="section-image">
-            <h2>图像</h2>
+            <h2 data-i18n="preferences.menu.image">图像</h2>
 
             <div class="setting-group">
-                <label for="insert-image-action" class="setting-label">插入图片时...</label>
-                <a href="#" class="setting-link">了解更多...</a>
+                <label for="insert-image-action" class="setting-label" data-i18n="preferences.image.insertImageAction">插入图片时...</label>
+                <a href="#" class="setting-link" data-i18n="preferences.image.learnMore">了解更多...</a>
                 <select id="insert-image-action" class="setting-select">
-                    <option>无特殊操作</option>
-                    <option>复制到指定路径</option>
-                    <option>上传图片</option>
-                    <option>使用相对路径</option>
+                    <option data-i18n="preferences.image.insertImageAction.none">无特殊操作</option>
+                    <option data-i18n="preferences.image.insertImageAction.copy">复制到指定路径</option>
+                    <option data-i18n="preferences.image.insertImageAction.upload">上传图片</option>
+                    <option data-i18n="preferences.image.insertImageAction.relative">使用相对路径</option>
                 </select>
                 <div class="setting-row">
                     <input type="checkbox" id="image-local-path" checked/>
-                    <label for="image-local-path">对本地位置的图片应用上述规则</label>
+                    <label for="image-local-path" data-i18n="preferences.image.applyToLocal">对本地位置的图片应用上述规则</label>
                 </div>
                 <div class="setting-row">
                     <input type="checkbox" id="image-online-path"/>
-                    <label for="image-online-path">对网络位置的图片应用上述规则</label>
+                    <label for="image-online-path" data-i18n="preferences.image.applyToOnline">对网络位置的图片应用上述规则</label>
                 </div>
                 <div class="setting-row">
                     <input type="checkbox" id="image-ignore-yaml"/>
-                    <label for="image-ignore-yaml">允许根据 YAML 设置动态上传图片</label>
+                    <label for="image-ignore-yaml" data-i18n="preferences.image.allowYamlUpload">允许根据 YAML 设置动态上传图片</label>
                 </div>
             </div>
 
             <div class="setting-group">
-                <label class="setting-label">图片语法偏好</label>
-                <a href="#" class="setting-link">了解更多...</a>
+                <label class="setting-label" data-i18n="preferences.image.imageSyntaxPreference">图片语法偏好</label>
+                <a href="#" class="setting-link" data-i18n="preferences.image.learnMore">了解更多...</a>
                 <div class="setting-row">
                     <input type="checkbox" id="image-prefer-relative"/>
-                    <label for="image-prefer-relative">优先使用相对路径</label>
+                    <label for="image-prefer-relative" data-i18n="preferences.image.preferRelativePath">优先使用相对路径</label>
                 </div>
-                <label class="setting-sublabel">为相对路径添加 ./</label>
+                <label class="setting-sublabel" data-i18n="preferences.image.addDotSlash">为相对路径添加 ./</label>
                 <div class="setting-row">
                     <input type="checkbox" id="image-auto-escape"/>
-                    <label for="image-auto-escape">插入时自动转义图片 URL</label>
+                    <label for="image-auto-escape" data-i18n="preferences.image.autoEscapeUrl">插入时自动转义图片 URL</label>
                 </div>
             </div>
 
             <div class="setting-group">
-                <label class="setting-label">上传服务设置</label>
-                <a href="#" class="setting-link">了解更多...</a>
-                <label for="upload-service" class="setting-sublabel">上传服务</label>
+                <label class="setting-label" data-i18n="preferences.image.uploadService">上传服务设置</label>
+                <a href="#" class="setting-link" data-i18n="preferences.image.learnMore">了解更多...</a>
+                <label for="upload-service" class="setting-sublabel" data-i18n="preferences.image.uploadServiceLabel">上传服务</label>
                 <select id="upload-service" class="setting-select">
-                    <option>无</option>
-                    <option>PicGo</option>
-                    <option>uPic</option>
-                    <option>自定义</option>
+                    <option data-i18n="preferences.image.uploadService.none">无</option>
+                    <option data-i18n="preferences.image.uploadService.picgo">PicGo</option>
+                    <option data-i18n="preferences.image.uploadService.upic">uPic</option>
+                    <option data-i18n="preferences.image.uploadService.custom">自定义</option>
                 </select>
             </div>
         </div>
 
         <!-- Markdown 设置 -->
         <div class="section" id="section-markdown">
-            <h2>Markdown</h2>
-            <p class="section-note">（下述选项将在 Typora 重启后生效）</p>
+            <h2 data-i18n="preferences.menu.markdown">Markdown</h2>
+            <p class="section-note" data-i18n="preferences.markdown.note">（下述选项将在 Typora 重启后生效）</p>
 
             <div class="setting-group">
                 <label class="setting-label">Markdown 语法偏好</label>
@@ -429,7 +430,7 @@
 
         <!-- 导出设置 -->
         <div class="section" id="section-export">
-            <h2>Export</h2>
+            <h2 data-i18n="preferences.menu.export">Export</h2>
 
             <div class="setting-group">
                 <label for="export-folder" class="setting-label">默认的导出文件夹</label>
@@ -460,7 +461,7 @@
 
         <!-- 外观设置 -->
         <div class="section" id="section-appearance">
-            <h2>外观</h2>
+            <h2 data-i18n="preferences.menu.appearance">外观</h2>
 
             <div class="setting-group">
                 <label class="setting-label">窗口样式</label>
@@ -539,7 +540,7 @@
 
         <!-- 通用设置 -->
         <div class="section" id="section-general">
-            <h2>通用</h2>
+            <h2 data-i18n="preferences.menu.general">通用</h2>
 
             <div class="setting-group">
                 <label for="app-language" class="setting-label" data-i18n="preferences.general.language">语言</label>
@@ -550,46 +551,46 @@
             </div>
 
             <div class="setting-group">
-                <label class="setting-label">更新</label>
-                <button class="setting-btn">检查更新</button>
+                <label class="setting-label" data-i18n="preferences.general.update">更新</label>
+                <button class="setting-btn" data-i18n="preferences.general.checkUpdate">检查更新</button>
                 <div class="setting-row">
                     <input type="checkbox" id="update-auto"/>
-                    <label for="update-auto">自动检查更新</label>
+                    <label for="update-auto" data-i18n="preferences.general.autoCheckUpdate">自动检查更新</label>
                 </div>
                 <div class="setting-row">
                     <input type="checkbox" id="update-dev"/>
-                    <label for="update-dev">更新至开发版</label>
+                    <label for="update-dev" data-i18n="preferences.general.updateToDev">更新至开发版</label>
                 </div>
             </div>
 
             <div class="setting-group">
-                <label class="setting-label">快捷键</label>
-                <button class="setting-btn">自定义快捷键</button>
+                <label class="setting-label" data-i18n="preferences.general.shortcuts">快捷键</label>
+                <button class="setting-btn" data-i18n="preferences.general.customizeShortcuts">自定义快捷键</button>
             </div>
 
             <div class="setting-group">
-                <label class="setting-label">操作系统</label>
-                <button class="setting-btn">向 Windows 资源管理器"新建" 菜单添加语境的"Markdown" 选项</button>
-                <button class="setting-btn">向 Windows 资源管理器"新建" 菜单移除语境的"Markdown" 选项</button>
+                <label class="setting-label" data-i18n="preferences.general.operatingSystem">操作系统</label>
+                <button class="setting-btn" data-i18n="preferences.general.addMarkdownToContextMenu">向 Windows 资源管理器"新建" 菜单添加语境的"Markdown" 选项</button>
+                <button class="setting-btn" data-i18n="preferences.general.removeMarkdownFromContextMenu">向 Windows 资源管理器"新建" 菜单移除语境的"Markdown" 选项</button>
             </div>
 
             <div class="setting-group">
-                <label class="setting-label">对话框</label>
-                <button class="setting-btn">重置全部密笺对话不内容转</button>
+                <label class="setting-label" data-i18n="preferences.general.dialogs">对话框</label>
+                <button class="setting-btn" data-i18n="preferences.general.resetAllDialogs">重置全部密笺对话不内容转</button>
             </div>
 
             <div class="setting-group">
-                <label class="setting-label">高级设置</label>
+                <label class="setting-label" data-i18n="preferences.general.advanced">高级设置</label>
                 <div class="setting-row">
                     <input type="checkbox" id="advanced-debug"/>
-                    <label for="advanced-debug">开启调试模式</label>
+                    <label for="advanced-debug" data-i18n="preferences.general.enableDebug">开启调试模式</label>
                 </div>
                 <div class="setting-row">
                     <input type="checkbox" id="advanced-send-anonymous" checked/>
-                    <label for="advanced-send-anonymous">发送匿名使用数据</label>
+                    <label for="advanced-send-anonymous" data-i18n="preferences.general.sendAnonymousData">发送匿名使用数据</label>
                 </div>
-                <button class="setting-btn">打开高级设置</button>
-                <button class="setting-btn">重置高级设置</button>
+                <button class="setting-btn" data-i18n="preferences.general.openAdvanced">打开高级设置</button>
+                <button class="setting-btn" data-i18n="preferences.general.resetAdvanced">重置高级设置</button>
             </div>
         </div>
     </div>
