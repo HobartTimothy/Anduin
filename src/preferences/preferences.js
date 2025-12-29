@@ -1,10 +1,12 @@
 // 偏好设置页面交互逻辑
 const {ipcRenderer} = require('electron');
+const i18n = require('../util/i18n');
 
 // 获取所有菜单项和内容区域
 const menuItems = document.querySelectorAll('.menu-item');
 const sections = document.querySelectorAll('.section');
 const searchInput = document.getElementById('search-input');
+const languageSelect = document.getElementById('app-language');
 
 // 默认显示第一个部分（文件）
 let currentSection = 'file';
@@ -76,27 +78,59 @@ searchInput.addEventListener('input', (e) => {
 function loadSettings() {
     try {
         const settings = ipcRenderer.sendSync('get-settings');
-        if (settings) {
-            applySettings(settings);
-        }
+        applySettings(settings || {});
     } catch (error) {
         console.error('加载设置失败:', error);
+        // 如果加载失败，使用当前 i18n 的语言
+        applySettings({});
     }
 }
 
 // 应用设置到界面
-function applySettings(_settings) {
-    // 这里可以根据保存的设置更新界面状态
-    // 例如：
-    // document.getElementById('some-checkbox').checked = settings.someOption;
+function applySettings(settings) {
+    // 更新语言选择框
+    if (languageSelect) {
+        // 优先使用设置中的语言，如果没有则使用 i18n 的当前语言
+        const language = settings.language || i18n.currentLocale() || 'en';
+        languageSelect.value = language;
+        
+        // 如果设置中的语言与 i18n 不一致，确保同步
+        if (settings.language && settings.language !== i18n.currentLocale()) {
+            // 这种情况不应该发生，但如果发生了，使用设置中的语言
+            console.warn('语言设置不一致，使用设置中的语言:', settings.language);
+        }
+    }
+}
+
+// 更新 UI 文本（使用 i18n）
+function updateUIText() {
+    // 更新所有带有 data-i18n 属性的元素
+    document.querySelectorAll('[data-i18n]').forEach(element => {
+        const key = element.getAttribute('data-i18n');
+        const translation = i18n.t(key);
+        if (translation && translation !== key) {
+            element.textContent = translation;
+        }
+    });
+    
+    // 更新语言选择框的选项文本
+    if (languageSelect) {
+        Array.from(languageSelect.options).forEach(option => {
+            const i18nKey = option.getAttribute('data-i18n');
+            if (i18nKey) {
+                const translation = i18n.t(i18nKey);
+                if (translation && translation !== i18nKey) {
+                    option.textContent = translation;
+                }
+            }
+        });
+    }
 }
 
 // 保存设置
 function saveSettings() {
     const settings = {
-    // 收集所有设置项的值
-    // 例如：
-    // someOption: document.getElementById('some-checkbox').checked,
+        language: languageSelect ? languageSelect.value : i18n.currentLocale() || 'en'
     };
 
     try {
@@ -109,14 +143,50 @@ function saveSettings() {
 // 监听所有输入变化，自动保存
 document.addEventListener('change', (e) => {
     if (e.target.matches('input, select')) {
-    // 延迟保存，避免频繁写入
+        // 如果是语言选择框，立即切换语言
+        if (e.target.id === 'app-language') {
+            const selectedLanguage = e.target.value;
+            ipcRenderer.send('change-language', selectedLanguage);
+        }
+        // 延迟保存，避免频繁写入
         clearTimeout(window.saveTimeout);
         window.saveTimeout = setTimeout(saveSettings, 500);
     }
 });
 
-// 加载设置
-loadSettings();
+// 监听语言变化事件
+ipcRenderer.on('language-changed', (event, locale) => {
+    // 更新语言选择框
+    if (languageSelect) {
+        languageSelect.value = locale;
+    }
+    // 更新 UI 文本
+    updateUIText();
+});
+
+// 初始化函数
+function initialize() {
+    // 先加载设置
+    loadSettings();
+    // 然后更新 UI 文本
+    updateUIText();
+    
+    // 如果语言选择框还没有值，从主进程获取当前语言
+    if (languageSelect && !languageSelect.value) {
+        const currentLocale = i18n.currentLocale() || 'en';
+        languageSelect.value = currentLocale;
+    }
+}
+
+// 初始化：等待 DOM 加载完成后加载设置并更新 UI
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        initialize();
+    });
+} else {
+    // DOM 已经加载完成
+    initialize();
+}
 
 // 处理关闭窗口
 window.addEventListener('beforeunload', () => {

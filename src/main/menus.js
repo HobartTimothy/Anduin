@@ -3,6 +3,30 @@
  * 定义应用程序的所有菜单项和快捷键
  */
 
+const { app, Menu, BrowserWindow } = require('electron');
+const i18n = require('../util/i18n');
+
+/**
+ * 切换语言的辅助函数
+ * @param {string} lang - 语言代码 ('en' 或 'zh')
+ * @param {Function} sendToRenderer - 向渲染进程发送消息的函数
+ * @param {Object} fileUtils - 文件工具类实例
+ * @param {Object} mainWindow - 主窗口实例
+ * @param {Function} createPreferencesWindow - 创建偏好设置窗口的函数
+ */
+function changeLanguage(lang, sendToRenderer, fileUtils, mainWindow, createPreferencesWindow) {
+    i18n.setLocale(lang);
+    
+    // 1. 重建菜单
+    const menu = Menu.buildFromTemplate(createMenuTemplate(sendToRenderer, fileUtils, mainWindow, createPreferencesWindow));
+    Menu.setApplicationMenu(menu);
+
+    // 2. 通知所有窗口更新 UI (如果渲染进程也需要更新)
+    BrowserWindow.getAllWindows().forEach(win => {
+        win.webContents.send('language-changed', lang);
+    });
+}
+
 /**
  * 创建菜单模板
  * @param {Function} sendToRenderer - 向渲染进程发送消息的函数
@@ -14,347 +38,347 @@
 function createMenuTemplate(sendToRenderer, fileUtils, mainWindow, createPreferencesWindow) {
     return [
         {
-            label: '文件(F)',
+            label: i18n.t('menu.file'),
             submenu: [
-                {label: '新建', accelerator: 'Ctrl+N', click: () => sendToRenderer('file-new')},
-                {label: '新建窗口', accelerator: 'Ctrl+Shift+N', click: () => sendToRenderer('file-new-window')},
+                {label: i18n.t('menu.file.new'), accelerator: 'Ctrl+N', click: () => sendToRenderer('file-new')},
+                {label: i18n.t('menu.file.newWindow'), accelerator: 'Ctrl+Shift+N', click: () => sendToRenderer('file-new-window')},
                 {type: 'separator'},
-                {label: '打开...', accelerator: 'Ctrl+O', click: () => sendToRenderer('file-open')},
-                {label: '打开文件夹...', click: () => sendToRenderer('file-open-folder')},
+                {label: i18n.t('menu.file.open'), accelerator: 'Ctrl+O', click: () => sendToRenderer('file-open')},
+                {label: i18n.t('menu.file.openFolder'), click: () => sendToRenderer('file-open-folder')},
                 {type: 'separator'},
-                {label: '快速打开...', accelerator: 'Ctrl+P', click: () => sendToRenderer('file-quick-open')},
+                {label: i18n.t('menu.file.quickOpen'), accelerator: 'Ctrl+P', click: () => sendToRenderer('file-quick-open')},
                 {
-                    label: '打开最近文件',
+                    label: i18n.t('menu.file.recentFiles'),
                     submenu: [
-                        {label: '（暂无最近文件）', enabled: false}
+                        {label: i18n.t('menu.file.noRecentFiles'), enabled: false}
                     ]
                 },
                 {type: 'separator'},
-                {label: '保存', accelerator: 'Ctrl+S', click: () => sendToRenderer('file-save')},
-                {label: '另存为...', accelerator: 'Ctrl+Shift+S', click: () => sendToRenderer('file-save-as')},
-                {label: '移动到...', click: () => sendToRenderer('file-move-to')},
-                {label: '保存全部打开的文件...', click: () => sendToRenderer('file-save-all')},
+                {label: i18n.t('menu.file.save'), accelerator: 'Ctrl+S', click: () => sendToRenderer('file-save')},
+                {label: i18n.t('menu.file.saveAs'), accelerator: 'Ctrl+Shift+S', click: () => sendToRenderer('file-save-as')},
+                {label: i18n.t('menu.file.moveTo'), click: () => sendToRenderer('file-move-to')},
+                {label: i18n.t('menu.file.saveAll'), click: () => sendToRenderer('file-save-all')},
                 {type: 'separator'},
-                {label: '属性...', click: () => sendToRenderer('file-properties')},
-                {label: '打开文件位置...', click: () => sendToRenderer('file-open-location')},
-                {label: '在侧边栏中显示', click: () => sendToRenderer('file-show-sidebar')},
-                {label: '删除...', click: () => sendToRenderer('file-delete')},
+                {label: i18n.t('menu.file.properties'), click: () => sendToRenderer('file-properties')},
+                {label: i18n.t('menu.file.openLocation'), click: () => sendToRenderer('file-open-location')},
+                {label: i18n.t('menu.file.showSidebar'), click: () => sendToRenderer('file-show-sidebar')},
+                {label: i18n.t('menu.file.delete'), click: () => sendToRenderer('file-delete')},
                 {type: 'separator'},
                 {
-                    label: '导入...',
+                    label: i18n.t('menu.file.import'),
                     submenu: [
-                        {label: '从txt中导入...', click: () => fileUtils.importFromFile()},
-                        {label: '从 Word 导入...', click: () => fileUtils.importFromWord()},
-                        {label: '从 HTML 导入...', click: () => fileUtils.importFromHTML()}
+                        {label: i18n.t('menu.file.importFromTxt'), click: () => fileUtils.importFromFile()},
+                        {label: i18n.t('menu.file.importFromWord'), click: () => fileUtils.importFromWord()},
+                        {label: i18n.t('menu.file.importFromHTML'), click: () => fileUtils.importFromHTML()}
                     ]
                 },
                 {
-                    label: '导出',
+                    label: i18n.t('menu.file.export'),
                     submenu: [
-                        {label: 'PDF', click: () => sendToRenderer('file-export-pdf')},
-                        {label: 'HTML', click: () => sendToRenderer('file-export-html')},
-                        {label: 'HTML (without styles)', click: () => sendToRenderer('file-export-html-plain')},
-                        {label: '图像', click: () => sendToRenderer('file-export-image')},
+                        {label: i18n.t('menu.file.exportPDF'), click: () => sendToRenderer('file-export-pdf')},
+                        {label: i18n.t('menu.file.exportHTML'), click: () => sendToRenderer('file-export-html')},
+                        {label: i18n.t('menu.file.exportHTMLPlain'), click: () => sendToRenderer('file-export-html-plain')},
+                        {label: i18n.t('menu.file.exportImage'), click: () => sendToRenderer('file-export-image')},
                         {type: 'separator'},
-                        {label: 'Word (.docx)', click: () => sendToRenderer('file-export-docx')},
-                        {label: 'OpenOffice', click: () => sendToRenderer('file-export-odt')},
-                        {label: 'RTF', click: () => sendToRenderer('file-export-rtf')},
-                        {label: 'Epub', click: () => sendToRenderer('file-export-epub')},
-                        {label: 'LaTeX', click: () => sendToRenderer('file-export-latex')},
-                        {label: 'Media Wiki', click: () => sendToRenderer('file-export-mediawiki')},
-                        {label: 'reStructuredText', click: () => sendToRenderer('file-export-rst')},
-                        {label: 'Textile', click: () => sendToRenderer('file-export-textile')},
-                        {label: 'OPML', click: () => sendToRenderer('file-export-opml')},
+                        {label: i18n.t('menu.file.exportDocx'), click: () => sendToRenderer('file-export-docx')},
+                        {label: i18n.t('menu.file.exportODT'), click: () => sendToRenderer('file-export-odt')},
+                        {label: i18n.t('menu.file.exportRTF'), click: () => sendToRenderer('file-export-rtf')},
+                        {label: i18n.t('menu.file.exportEpub'), click: () => sendToRenderer('file-export-epub')},
+                        {label: i18n.t('menu.file.exportLaTeX'), click: () => sendToRenderer('file-export-latex')},
+                        {label: i18n.t('menu.file.exportMediaWiki'), click: () => sendToRenderer('file-export-mediawiki')},
+                        {label: i18n.t('menu.file.exportRST'), click: () => sendToRenderer('file-export-rst')},
+                        {label: i18n.t('menu.file.exportTextile'), click: () => sendToRenderer('file-export-textile')},
+                        {label: i18n.t('menu.file.exportOPML'), click: () => sendToRenderer('file-export-opml')},
                         {type: 'separator'},
                         {
-                            label: '使用上一次设置导出',
+                            label: i18n.t('menu.file.exportLast'),
                             accelerator: 'Ctrl+Shift+E',
                             click: () => sendToRenderer('file-export-last')
                         },
-                        {label: '导出并覆盖上一次导出的文件', click: () => sendToRenderer('file-export-overwrite')},
-                        {label: '导出设置...', click: () => sendToRenderer('file-export-settings')}
+                        {label: i18n.t('menu.file.exportOverwrite'), click: () => sendToRenderer('file-export-overwrite')},
+                        {label: i18n.t('menu.file.exportSettings'), click: () => sendToRenderer('file-export-settings')}
                     ]
                 },
-                {label: '打印...', accelerator: 'Alt+Shift+P', click: () => sendToRenderer('file-print')},
+                {label: i18n.t('menu.file.print'), accelerator: 'Alt+Shift+P', click: () => sendToRenderer('file-print')},
                 {type: 'separator'},
-                {label: '偏好设置...', accelerator: 'Ctrl+,', click: () => createPreferencesWindow()},
+                {label: i18n.t('menu.file.preferences'), accelerator: 'Ctrl+,', click: () => createPreferencesWindow()},
                 {type: 'separator'},
-                {label: '关闭', accelerator: 'Ctrl+W', click: () => sendToRenderer('file-close')}
+                {label: i18n.t('menu.file.close'), accelerator: 'Ctrl+W', click: () => sendToRenderer('file-close')}
             ]
         },
         {
-            label: '编辑(E)',
+            label: i18n.t('menu.edit'),
             submenu: [
-                {role: 'undo', label: '撤销', accelerator: 'Ctrl+Z'},
-                {role: 'redo', label: '重做', accelerator: 'Ctrl+Y'},
+                {role: 'undo', label: i18n.t('menu.edit.undo'), accelerator: 'Ctrl+Z'},
+                {role: 'redo', label: i18n.t('menu.edit.redo'), accelerator: 'Ctrl+Y'},
                 {type: 'separator'},
-                {role: 'cut', label: '剪切', accelerator: 'Ctrl+X'},
-                {role: 'copy', label: '复制', accelerator: 'Ctrl+C'},
-                {label: '拷贝图片', click: () => sendToRenderer('edit-copy-image')},
-                {role: 'paste', label: '粘贴', accelerator: 'Ctrl+V'},
+                {role: 'cut', label: i18n.t('menu.edit.cut'), accelerator: 'Ctrl+X'},
+                {role: 'copy', label: i18n.t('menu.edit.copy'), accelerator: 'Ctrl+C'},
+                {label: i18n.t('menu.edit.copyImage'), click: () => sendToRenderer('edit-copy-image')},
+                {role: 'paste', label: i18n.t('menu.edit.paste'), accelerator: 'Ctrl+V'},
                 {type: 'separator'},
-                {label: '复制为纯文本', click: () => sendToRenderer('edit-copy-plain')},
-                {label: '复制为 Markdown', accelerator: 'Ctrl+Shift+C', click: () => sendToRenderer('edit-copy-md')},
-                {label: '复制为 HTML 代码', click: () => sendToRenderer('edit-copy-html')},
-                {label: '复制内容并保留格式', click: () => sendToRenderer('edit-copy-rich')},
+                {label: i18n.t('menu.edit.copyPlain'), click: () => sendToRenderer('edit-copy-plain')},
+                {label: i18n.t('menu.edit.copyMarkdown'), accelerator: 'Ctrl+Shift+C', click: () => sendToRenderer('edit-copy-md')},
+                {label: i18n.t('menu.edit.copyHTML'), click: () => sendToRenderer('edit-copy-html')},
+                {label: i18n.t('menu.edit.copyRich'), click: () => sendToRenderer('edit-copy-rich')},
                 {type: 'separator'},
-                {label: '粘贴为纯文本', accelerator: 'Ctrl+Shift+V', click: () => sendToRenderer('edit-paste-plain')},
+                {label: i18n.t('menu.edit.pastePlain'), accelerator: 'Ctrl+Shift+V', click: () => sendToRenderer('edit-paste-plain')},
                 {type: 'separator'},
                 {
-                    label: '选择',
-                    submenu: [{role: 'selectAll', label: '全选'}]
+                    label: i18n.t('menu.edit.select'),
+                    submenu: [{role: 'selectAll', label: i18n.t('menu.edit.selectAll')}]
                 },
-                {label: '上移表行', accelerator: 'Alt+Up', click: () => sendToRenderer('edit-move-row-up')},
-                {label: '下移表行', accelerator: 'Alt+Down', click: () => sendToRenderer('edit-move-row-down')},
+                {label: i18n.t('menu.edit.moveRowUp'), accelerator: 'Alt+Up', click: () => sendToRenderer('edit-move-row-up')},
+                {label: i18n.t('menu.edit.moveRowDown'), accelerator: 'Alt+Down', click: () => sendToRenderer('edit-move-row-down')},
                 {type: 'separator'},
-                {label: '删除', click: () => sendToRenderer('edit-delete')},
+                {label: i18n.t('menu.edit.delete'), click: () => sendToRenderer('edit-delete')},
                 {
-                    label: '删除范围',
+                    label: i18n.t('menu.edit.deleteRange'),
                     submenu: [
-                        {label: '删除本段', click: () => sendToRenderer('edit-delete-range-paragraph')},
-                        {label: '删除本行', click: () => sendToRenderer('edit-delete-range-line')}
+                        {label: i18n.t('menu.edit.deleteParagraph'), click: () => sendToRenderer('edit-delete-range-paragraph')},
+                        {label: i18n.t('menu.edit.deleteLine'), click: () => sendToRenderer('edit-delete-range-line')}
                     ]
                 },
                 {type: 'separator'},
                 {
-                    label: '数学工具',
-                    submenu: [{label: '公式块', click: () => sendToRenderer('edit-math-block')}]
+                    label: i18n.t('menu.edit.mathTools'),
+                    submenu: [{label: i18n.t('menu.edit.mathBlock'), click: () => sendToRenderer('edit-math-block')}]
                 },
                 {type: 'separator'},
                 {
-                    label: '智能标点',
+                    label: i18n.t('menu.edit.smartPunctuation'),
                     type: 'checkbox',
                     checked: false,
                     click: () => sendToRenderer('edit-smart-punctuation')
                 },
                 {
-                    label: '换行符',
+                    label: i18n.t('menu.edit.newline'),
                     submenu: [
-                        {label: '转换为 \\n', click: () => sendToRenderer('edit-newline-n')},
-                        {label: '转换为 \\r\\n', click: () => sendToRenderer('edit-newline-rn')}
+                        {label: i18n.t('menu.edit.newlineN'), click: () => sendToRenderer('edit-newline-n')},
+                        {label: i18n.t('menu.edit.newlineRN'), click: () => sendToRenderer('edit-newline-rn')}
                     ]
                 },
-                {label: '空格与换行', click: () => sendToRenderer('edit-spaces-newlines')},
-                {label: '拼写检查...', click: () => sendToRenderer('edit-spellcheck')},
+                {label: i18n.t('menu.edit.spacesNewlines'), click: () => sendToRenderer('edit-spaces-newlines')},
+                {label: i18n.t('menu.edit.spellcheck'), click: () => sendToRenderer('edit-spellcheck')},
                 {type: 'separator'},
                 {
-                    label: '查找和替换',
+                    label: i18n.t('menu.edit.findReplace'),
                     submenu: [
-                        {label: '查找', accelerator: 'Ctrl+F', click: () => sendToRenderer('edit-find')},
-                        {label: '查找下一个', accelerator: 'F3', click: () => sendToRenderer('edit-find-next')},
-                        {label: '替换', accelerator: 'Ctrl+H', click: () => sendToRenderer('edit-replace')}
+                        {label: i18n.t('menu.edit.find'), accelerator: 'Ctrl+F', click: () => sendToRenderer('edit-find')},
+                        {label: i18n.t('menu.edit.findNext'), accelerator: 'F3', click: () => sendToRenderer('edit-find-next')},
+                        {label: i18n.t('menu.edit.replace'), accelerator: 'Ctrl+H', click: () => sendToRenderer('edit-replace')}
                     ]
                 },
-                {label: '表情与符号', accelerator: 'Super+.', click: () => sendToRenderer('edit-emoji')}
+                {label: i18n.t('menu.edit.emoji'), accelerator: 'Super+.', click: () => sendToRenderer('edit-emoji')}
             ]
         },
         {
-            label: '段落(P)',
+            label: i18n.t('menu.paragraph'),
             submenu: [
                 {
-                    label: '一级标题',
+                    label: i18n.t('menu.paragraph.heading1'),
                     accelerator: 'Ctrl+1',
                     click: () => sendToRenderer('toggle-heading-1')
                 },
                 {
-                    label: '二级标题',
+                    label: i18n.t('menu.paragraph.heading2'),
                     accelerator: 'Ctrl+2',
                     click: () => sendToRenderer('toggle-heading-2')
                 },
                 {
-                    label: '三级标题',
+                    label: i18n.t('menu.paragraph.heading3'),
                     accelerator: 'Ctrl+3',
                     click: () => sendToRenderer('toggle-heading-3')
                 },
                 {
-                    label: '四级标题',
+                    label: i18n.t('menu.paragraph.heading4'),
                     accelerator: 'Ctrl+4',
                     click: () => sendToRenderer('toggle-heading-4')
                 },
                 {
-                    label: '五级标题',
+                    label: i18n.t('menu.paragraph.heading5'),
                     accelerator: 'Ctrl+5',
                     click: () => sendToRenderer('toggle-heading-5')
                 },
                 {
-                    label: '六级标题',
+                    label: i18n.t('menu.paragraph.heading6'),
                     accelerator: 'Ctrl+6',
                     click: () => sendToRenderer('toggle-heading-6')
                 },
                 {type: 'separator'},
                 {
-                    label: '段落',
+                    label: i18n.t('menu.paragraph.paragraph'),
                     accelerator: 'Ctrl+0',
                     click: () => sendToRenderer('toggle-paragraph')
                 },
                 {
-                    label: '提升标题级别',
+                    label: i18n.t('menu.paragraph.promoteHeading'),
                     accelerator: 'Ctrl+=',
                     click: () => sendToRenderer('heading-promote')
                 },
                 {
-                    label: '降低标题级别',
+                    label: i18n.t('menu.paragraph.demoteHeading'),
                     accelerator: 'Ctrl+-',
                     click: () => sendToRenderer('heading-demote')
                 },
                 {type: 'separator'},
                 {
-                    label: '有序列表',
+                    label: i18n.t('menu.paragraph.orderedList'),
                     accelerator: 'Ctrl+Shift+[',
                     click: () => sendToRenderer('toggle-ol')
                 },
                 {
-                    label: '无序列表',
+                    label: i18n.t('menu.paragraph.unorderedList'),
                     accelerator: 'Ctrl+Shift+]',
                     click: () => sendToRenderer('toggle-ul')
                 },
                 {
-                    label: '任务列表',
+                    label: i18n.t('menu.paragraph.taskList'),
                     accelerator: 'Ctrl+Shift+X',
                     click: () => sendToRenderer('toggle-task-list')
                 },
                 {type: 'separator'},
                 {
-                    label: '表格',
+                    label: i18n.t('menu.paragraph.table'),
                     click: () => sendToRenderer('paragraph-insert-table')
                 },
                 {
-                    label: '公式块',
+                    label: i18n.t('menu.paragraph.mathBlock'),
                     accelerator: 'Ctrl+Shift+M',
                     click: () => sendToRenderer('paragraph-math-block')
                 },
                 {
-                    label: '代码块',
+                    label: i18n.t('menu.paragraph.codeBlock'),
                     accelerator: 'Ctrl+Shift+K',
                     click: () => sendToRenderer('insert-code-block')
                 },
                 {
-                    label: '代码工具',
+                    label: i18n.t('menu.paragraph.codeTools'),
                     submenu: [
-                        {label: '运行代码（占位）', click: () => sendToRenderer('paragraph-code-tools-run')}
+                        {label: i18n.t('menu.paragraph.codeToolsRun'), click: () => sendToRenderer('paragraph-code-tools-run')}
                     ]
                 },
                 {type: 'separator'},
                 {
-                    label: '引用',
+                    label: i18n.t('menu.paragraph.quote'),
                     accelerator: 'Ctrl+Shift+Q',
                     click: () => sendToRenderer('paragraph-toggle-quote')
                 },
                 {type: 'separator'},
                 {
-                    label: '任务状态',
+                    label: i18n.t('menu.paragraph.taskState'),
                     submenu: [
-                        {label: '切换完成状态', click: () => sendToRenderer('paragraph-task-toggle-state')}
+                        {label: i18n.t('menu.paragraph.taskToggleState'), click: () => sendToRenderer('paragraph-task-toggle-state')}
                     ]
                 },
                 {
-                    label: '列表缩进',
+                    label: i18n.t('menu.paragraph.listIndent'),
                     submenu: [
-                        {label: '增加缩进', click: () => sendToRenderer('paragraph-list-indent')},
-                        {label: '减少缩进', click: () => sendToRenderer('paragraph-list-outdent')}
+                        {label: i18n.t('menu.paragraph.listIndentIncrease'), click: () => sendToRenderer('paragraph-list-indent')},
+                        {label: i18n.t('menu.paragraph.listIndentDecrease'), click: () => sendToRenderer('paragraph-list-outdent')}
                     ]
                 },
                 {type: 'separator'},
                 {
-                    label: '在上方插入段落',
+                    label: i18n.t('menu.paragraph.insertAbove'),
                     click: () => sendToRenderer('paragraph-insert-above')
                 },
                 {
-                    label: '在下方插入段落',
+                    label: i18n.t('menu.paragraph.insertBelow'),
                     click: () => sendToRenderer('paragraph-insert-below')
                 },
                 {type: 'separator'},
                 {
-                    label: '链接引用',
+                    label: i18n.t('menu.paragraph.linkRef'),
                     click: () => sendToRenderer('paragraph-link-ref')
                 },
                 {
-                    label: '脚注',
+                    label: i18n.t('menu.paragraph.footnote'),
                     click: () => sendToRenderer('paragraph-footnote')
                 },
                 {type: 'separator'},
                 {
-                    label: '水平分割线',
+                    label: i18n.t('menu.paragraph.hr'),
                     click: () => sendToRenderer('paragraph-hr')
                 },
                 {
-                    label: '内容目录',
+                    label: i18n.t('menu.paragraph.toc'),
                     click: () => sendToRenderer('paragraph-toc')
                 },
                 {
-                    label: 'YAML Front Matter',
+                    label: i18n.t('menu.paragraph.yamlFrontMatter'),
                     click: () => sendToRenderer('paragraph-yaml-front-matter')
                 }
             ]
         },
         {
-            label: '格式(O)',
+            label: i18n.t('menu.format'),
             submenu: [
-                {label: '加粗', accelerator: 'Ctrl+B', click: () => sendToRenderer('toggle-bold')},
-                {label: '斜体', accelerator: 'Ctrl+I', click: () => sendToRenderer('toggle-italic')},
-                {label: '下划线', accelerator: 'Ctrl+U', click: () => sendToRenderer('toggle-underline')},
+                {label: i18n.t('menu.format.bold'), accelerator: 'Ctrl+B', click: () => sendToRenderer('toggle-bold')},
+                {label: i18n.t('menu.format.italic'), accelerator: 'Ctrl+I', click: () => sendToRenderer('toggle-italic')},
+                {label: i18n.t('menu.format.underline'), accelerator: 'Ctrl+U', click: () => sendToRenderer('toggle-underline')},
                 {
-                    label: '代码',
+                    label: i18n.t('menu.format.code'),
                     accelerator: 'Ctrl+Shift+`',
                     click: () => sendToRenderer('toggle-inline-code')
                 },
                 {
-                    label: '删除线',
+                    label: i18n.t('menu.format.strike'),
                     accelerator: 'Alt+Shift+5',
                     click: () => sendToRenderer('format-strike')
                 },
                 {
-                    label: '注释',
+                    label: i18n.t('menu.format.comment'),
                     click: () => sendToRenderer('format-comment')
                 },
                 {type: 'separator'},
                 {
-                    label: '超链接',
+                    label: i18n.t('menu.format.link'),
                     accelerator: 'Ctrl+K',
                     click: () => sendToRenderer('format-link')
                 },
                 {
-                    label: '链接操作',
+                    label: i18n.t('menu.format.linkActions'),
                     submenu: [
-                        {label: '编辑链接', click: () => sendToRenderer('format-link-edit')},
-                        {label: '移除链接', click: () => sendToRenderer('format-link-remove')}
+                        {label: i18n.t('menu.format.linkEdit'), click: () => sendToRenderer('format-link-edit')},
+                        {label: i18n.t('menu.format.linkRemove'), click: () => sendToRenderer('format-link-remove')}
                     ]
                 },
                 {
-                    label: '图像',
+                    label: i18n.t('menu.format.image'),
                     submenu: [
-                        {label: '插入图片', click: () => sendToRenderer('format-image-insert')},
-                        {label: '编辑图片', click: () => sendToRenderer('format-image-edit')}
+                        {label: i18n.t('menu.format.imageInsert'), click: () => sendToRenderer('format-image-insert')},
+                        {label: i18n.t('menu.format.imageEdit'), click: () => sendToRenderer('format-image-edit')}
                     ]
                 },
                 {type: 'separator'},
                 {
-                    label: '清除样式',
+                    label: i18n.t('menu.format.clearStyle'),
                     accelerator: 'Ctrl+\\',
                     click: () => sendToRenderer('format-clear-style')
                 }
             ]
         },
         {
-            label: '视图(V)',
+            label: i18n.t('menu.view'),
             submenu: [
                 {
-                    label: '编辑模式',
+                    label: i18n.t('menu.view.editMode'),
                     submenu: [
                         {
-                            label: '对比模式',
+                            label: i18n.t('menu.view.modeSplit'),
                             type: 'radio',
                             checked: true,
                             click: () => sendToRenderer('view-mode-split')
                         },
                         {
-                            label: '源代码模式',
+                            label: i18n.t('menu.view.modeSource'),
                             type: 'radio',
                             accelerator: 'Ctrl+/',
                             click: () => sendToRenderer('toggle-source-mode')
                         },
                         {
-                            label: '结果模式',
+                            label: i18n.t('menu.view.modeResult'),
                             type: 'radio',
                             click: () => sendToRenderer('toggle-result-mode')
                         }
@@ -362,60 +386,60 @@ function createMenuTemplate(sendToRenderer, fileUtils, mainWindow, createPrefere
                 },
                 {type: 'separator'},
                 {
-                    label: '显示 / 隐藏侧边栏',
+                    label: i18n.t('menu.view.toggleSidebar'),
                     accelerator: 'Ctrl+Shift+L',
                     click: () => sendToRenderer('view-toggle-sidebar')
                 },
                 {
-                    label: '大纲',
+                    label: i18n.t('menu.view.outline'),
                     accelerator: 'Ctrl+Shift+1',
                     click: () => sendToRenderer('view-outline')
                 },
                 {
-                    label: '文档列表',
+                    label: i18n.t('menu.view.documents'),
                     accelerator: 'Ctrl+Shift+2',
                     click: () => sendToRenderer('view-documents')
                 },
                 {
-                    label: '文件树',
+                    label: i18n.t('menu.view.fileTree'),
                     accelerator: 'Ctrl+Shift+3',
                     click: () => sendToRenderer('view-file-tree')
                 },
                 {
-                    label: '窗格',
+                    label: i18n.t('menu.view.pane'),
                     accelerator: 'Ctrl+Shift+F',
                     click: () => sendToRenderer('view-pane')
                 },
                 {type: 'separator'},
                 {
-                    label: '专注模式',
+                    label: i18n.t('menu.view.focusMode'),
                     accelerator: 'F8',
                     click: () => sendToRenderer('view-focus-mode')
                 },
                 {
-                    label: '打字机模式',
+                    label: i18n.t('menu.view.typewriterMode'),
                     accelerator: 'F9',
                     click: () => sendToRenderer('view-typewriter-mode')
                 },
                 {type: 'separator'},
                 {
-                    label: '显示状态栏',
+                    label: i18n.t('menu.view.showStatusbar'),
                     type: 'checkbox',
                     checked: true,
                     click: () => sendToRenderer('view-toggle-statusbar')
                 },
                 {
-                    label: '字数统计窗口',
+                    label: i18n.t('menu.view.wordCount'),
                     click: () => sendToRenderer('view-word-count')
                 },
                 {type: 'separator'},
                 {
-                    label: '切换全屏',
+                    label: i18n.t('menu.view.toggleFullscreen'),
                     role: 'togglefullscreen',
                     accelerator: 'F11'
                 },
                 {
-                    label: '保持窗口在最前端',
+                    label: i18n.t('menu.view.alwaysOnTop'),
                     type: 'checkbox',
                     click: (menuItem) => {
                         if (mainWindow) {
@@ -424,39 +448,39 @@ function createMenuTemplate(sendToRenderer, fileUtils, mainWindow, createPrefere
                     }
                 },
                 {type: 'separator'},
-                {role: 'resetZoom', label: '实际大小', accelerator: 'Ctrl+Shift+9'},
-                {role: 'zoomIn', label: '放大', accelerator: 'Ctrl+Shift+='},
-                {role: 'zoomOut', label: '缩小', accelerator: 'Ctrl+Shift+-'},
+                {role: 'resetZoom', label: i18n.t('menu.view.actualSize'), accelerator: 'Ctrl+Shift+9'},
+                {role: 'zoomIn', label: i18n.t('menu.view.zoomIn'), accelerator: 'Ctrl+Shift+='},
+                {role: 'zoomOut', label: i18n.t('menu.view.zoomOut'), accelerator: 'Ctrl+Shift+-'},
                 {type: 'separator'},
                 {
-                    label: '应用内窗口切换',
+                    label: i18n.t('menu.view.switchWindow'),
                     accelerator: 'Ctrl+Tab',
                     click: () => sendToRenderer('view-switch-window')
                 },
-                {role: 'reload', label: '重新加载'},
-                {role: 'toggleDevTools', label: '开发者工具', accelerator: 'Shift+F12'}
+                {role: 'reload', label: i18n.t('menu.view.reload')},
+                {role: 'toggleDevTools', label: i18n.t('menu.view.toggleDevTools'), accelerator: 'Shift+F12'}
             ]
         },
         {
-            label: '主题(T)',
+            label: i18n.t('menu.theme'),
             submenu: [
-                {label: '选择主题...', click: () => sendToRenderer('theme-show-menu')},
+                {label: i18n.t('menu.theme.select'), click: () => sendToRenderer('theme-show-menu')},
                 {type: 'separator'},
-                {label: 'Github', type: 'radio', checked: true, click: () => sendToRenderer('theme-github')},
-                {label: 'Newsprint', type: 'radio', click: () => sendToRenderer('theme-newsprint')},
-                {label: 'Night', type: 'radio', click: () => sendToRenderer('theme-night')},
-                {label: 'Pixyll', type: 'radio', click: () => sendToRenderer('theme-pixyll')},
-                {label: 'Whitey', type: 'radio', click: () => sendToRenderer('theme-whitey')}
+                {label: i18n.t('menu.theme.github'), type: 'radio', checked: true, click: () => sendToRenderer('theme-github')},
+                {label: i18n.t('menu.theme.newsprint'), type: 'radio', click: () => sendToRenderer('theme-newsprint')},
+                {label: i18n.t('menu.theme.night'), type: 'radio', click: () => sendToRenderer('theme-night')},
+                {label: i18n.t('menu.theme.pixyll'), type: 'radio', click: () => sendToRenderer('theme-pixyll')},
+                {label: i18n.t('menu.theme.whitey'), type: 'radio', click: () => sendToRenderer('theme-whitey')}
             ]
         },
         {
-            label: '帮助(H)',
+            label: i18n.t('menu.help'),
             submenu: [
-                {label: '更新日志', click: () => sendToRenderer('help-changelog')},
-                {label: '隐私条款', click: () => sendToRenderer('help-privacy')},
-                {label: '官方网站', click: () => sendToRenderer('help-website')},
+                {label: i18n.t('menu.help.changelog'), click: () => sendToRenderer('help-changelog')},
+                {label: i18n.t('menu.help.privacy'), click: () => sendToRenderer('help-privacy')},
+                {label: i18n.t('menu.help.website'), click: () => sendToRenderer('help-website')},
                 {
-                    label: '反馈',
+                    label: i18n.t('menu.help.feedback'),
                     click: () => {
                         const {shell} = require('electron');
                         shell.openExternal('https://github.com/HobartTimothy/Anduin/issues').catch((err) => {
@@ -465,12 +489,12 @@ function createMenuTemplate(sendToRenderer, fileUtils, mainWindow, createPrefere
                     }
                 },
                 {type: 'separator'},
-                {label: '检查更新...', click: () => sendToRenderer('help-check-updates')},
-                {label: '关于', click: () => sendToRenderer('help-about')}
+                {label: i18n.t('menu.help.checkUpdates'), click: () => sendToRenderer('help-check-updates')},
+                {label: i18n.t('menu.help.about'), click: () => sendToRenderer('help-about')}
             ]
         }
     ];
 }
 
-module.exports = {createMenuTemplate};
+module.exports = {createMenuTemplate, changeLanguage};
 

@@ -26,6 +26,14 @@ contextBridge.exposeInMainWorld('nodeAPI', {
     marked: marked
 });
 
+// 暴露 i18n 模块
+const i18n = require('../util/i18n');
+contextBridge.exposeInMainWorld('i18nAPI', {
+    t: (key) => i18n.t(key),
+    currentLocale: () => i18n.currentLocale(),
+    loadLanguage: (locale) => i18n.loadLanguage(locale)
+});
+
 // 加载并暴露 commandHandlers 模块
 const commandHandlersPath = path.join(__dirname, '..', 'renderer', 'commandHandlers.js');
 const {createCommandHandlers} = require(commandHandlersPath);

@@ -41,7 +41,8 @@ const fs = require('fs'); // 文件系统操作
 
 // 工具类
 const FileUtils = require('../util/fileUtils');
-const {createMenuTemplate} = require('./menus');
+const {createMenuTemplate, changeLanguage} = require('./menus');
+const i18n = require('../util/i18n');
 
 // 全局变量
 let mainWindow; // 主窗口实例
@@ -178,6 +179,12 @@ function createPreferencesWindow() {
     // 加载偏好设置页面
     preferencesWindow.loadFile(path.join(__dirname, '../preferences/preferences.html'));
 
+    // 窗口加载完成后，发送当前语言设置
+    preferencesWindow.webContents.once('did-finish-load', () => {
+        const currentLocale = i18n.currentLocale() || 'en';
+        preferencesWindow.webContents.send('language-changed', currentLocale);
+    });
+
     // 窗口关闭事件处理
     preferencesWindow.on('closed', () => {
         preferencesWindow = null;
@@ -277,16 +284,24 @@ ipcMain.on('save-settings', (event, settings) => {
 ipcMain.on('get-settings', (event) => {
     const settingsPath = path.join(app.getPath('userData'), 'settings.json');
     try {
+        let settings = {};
         if (fs.existsSync(settingsPath)) {
             // 读取并解析设置文件
-            event.returnValue = JSON.parse(fs.readFileSync(settingsPath, 'utf-8'));
-        } else {
-            // 文件不存在，返回空对象
-            event.returnValue = {};
+            settings = JSON.parse(fs.readFileSync(settingsPath, 'utf-8'));
         }
+        
+        // 确保语言设置存在，如果不存在则从 i18n 获取
+        if (!settings.language) {
+            settings.language = i18n.currentLocale() || 'en';
+        }
+        
+        event.returnValue = settings;
     } catch (error) {
         console.error('读取设置失败:', error);
-        event.returnValue = {};
+        // 即使出错，也返回包含当前语言的对象
+        event.returnValue = {
+            language: i18n.currentLocale() || 'en'
+        };
     }
 });
 
@@ -295,6 +310,31 @@ ipcMain.on('get-settings', (event) => {
  */
 ipcMain.on('open-preferences', () => {
     createPreferencesWindow();
+});
+
+/**
+ * 处理语言切换
+ */
+ipcMain.on('change-language', (event, locale) => {
+    changeLanguage(locale, sendToRenderer, fileUtils, mainWindow, createPreferencesWindow);
+    
+    // 同步更新 settings.json 中的语言设置
+    const settingsPath = path.join(app.getPath('userData'), 'settings.json');
+    try {
+        let settings = {};
+        if (fs.existsSync(settingsPath)) {
+            settings = JSON.parse(fs.readFileSync(settingsPath, 'utf-8'));
+        }
+        settings.language = locale;
+        fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2), 'utf-8');
+    } catch (error) {
+        console.error('更新设置中的语言失败:', error);
+    }
+    
+    // 通知偏好设置窗口语言已更改
+    if (preferencesWindow) {
+        preferencesWindow.webContents.send('language-changed', locale);
+    }
 });
 
 /**

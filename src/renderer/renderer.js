@@ -22,6 +22,7 @@ const path = window.nodeAPI.path; // 路径处理工具
 const {createCommandHandlers} = window.commandHandlersAPI; // 命令处理器模块
 const {initContextMenu} = window.contextMenuAPI; // 上下文菜单模块
 const {showThemeMenu, hideThemeMenu, initThemeMenu} = window.themeMenuAPI || {}; // 主题菜单模块
+const i18n = window.i18nAPI || {}; // i18n 模块
 
 // ==================== DOM 元素引用 ====================
 const editor = document.getElementById('editor'); // Markdown 编辑器文本域
@@ -1473,6 +1474,41 @@ ipcRenderer.on('file-imported', (event, data) => {
         editor.scrollTop = editor.scrollHeight;
     }
 });
+
+// ==================== 国际化支持 ====================
+/**
+ * 更新 UI 中的国际化文本
+ * 查找所有带有 data-i18n 属性的元素并更新其文本内容
+ */
+function updateUI() {
+    const elements = document.querySelectorAll('[data-i18n]');
+    elements.forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (key && i18n.t) {
+            const translation = i18n.t(key);
+            if (translation) {
+                el.innerText = translation;
+            }
+        }
+    });
+}
+
+// 初始化时更新一次 UI
+if (i18n.t) {
+    updateUI();
+}
+
+// 监听主进程的语言切换消息
+if (ipcRenderer && ipcRenderer.on) {
+    ipcRenderer.on('language-changed', (event, lang) => {
+        // 重新加载语言包
+        if (i18n.loadLanguage) {
+            i18n.loadLanguage(lang);
+        }
+        // 更新 UI
+        updateUI();
+    });
+}
 
 // ==================== 初始化渲染 ====================
 // 初始渲染空内容（立即渲染）
