@@ -2,11 +2,9 @@
  * 命令处理器模块
  * 包含所有菜单命令的处理函数
  * 这些命令由主进程通过 IPC 发送
+ * 
+ * 注意：path 和 ipcRenderer 现在通过 dependencies 参数传入
  */
-
-const path = require('path');
-// 优先使用暴露的 API，如果不存在则回退到直接 require（向后兼容）
-const ipcRenderer = window.electronAPI || require('electron').ipcRenderer;
 
 /**
  * 创建命令处理器映射对象
@@ -30,6 +28,8 @@ const ipcRenderer = window.electronAPI || require('electron').ipcRenderer;
  * @param {Function} dependencies.exportAndOverwrite - 覆盖上次导出函数
  * @param {Function} dependencies.printDocument - 打印文档函数
  * @param {Object} dependencies.currentFilePathRef - 当前文件路径的引用对象（用于修改）
+ * @param {Object} dependencies.ipcRenderer - IPC 渲染进程接口
+ * @param {Object} dependencies.path - 路径处理工具
  * @returns {Object} 命令处理器映射对象
  */
 function createCommandHandlers(dependencies) {
@@ -52,7 +52,9 @@ function createCommandHandlers(dependencies) {
         exportWithLastSettings,
         exportAndOverwrite,
         printDocument,
-        currentFilePathRef
+        currentFilePathRef,
+        ipcRenderer,
+        path
     } = dependencies;
 
     return {

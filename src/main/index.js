@@ -77,6 +77,21 @@ function createWindow(filePath = null) {
     // 初始化文件处理工具类
     fileUtils = new FileUtils(mainWindow);
 
+    // 过滤 DevTools 控制台中的无害错误消息
+    mainWindow.webContents.on('console-message', (event, level, message, line, sourceId) => {
+        // 过滤 DevTools Autofill API 相关的无害错误
+        // 这些错误是 DevTools 内部协议问题，不影响应用功能
+        if (message && (
+            message.includes("Autofill.enable") ||
+            message.includes("Autofill.setAddresses") ||
+            message.includes("'Autofill.enable' wasn't found") ||
+            message.includes("'Autofill.setAddresses' wasn't found")
+        )) {
+            event.preventDefault(); // 阻止错误消息显示
+            return;
+        }
+    });
+
     // 等待窗口加载完成后打开文件
     mainWindow.webContents.once('did-finish-load', () => {
         if (filePath) {

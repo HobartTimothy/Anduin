@@ -11,11 +11,14 @@
 
 
 // ==================== 模块导入 ====================
-const {marked} = require('marked'); // Markdown 解析库
-// 优先使用暴露的 API，如果不存在则回退到直接 require（向后兼容）
-const ipcRenderer = window.electronAPI || require('electron').ipcRenderer;
-const path = require('path'); // 路径处理工具
-const {createCommandHandlers} = require('./commandHandlers'); // 命令处理器模块
+// 使用暴露的 API（contextIsolation 启用后，require 不可用）
+if (!window.nodeAPI || !window.electronAPI || !window.commandHandlersAPI) {
+    throw new Error('必需的 API 未暴露。请确保 preload.js 正确加载。');
+}
+const marked = window.nodeAPI.marked; // Markdown 解析库
+const ipcRenderer = window.electronAPI; // IPC 渲染进程接口
+const path = window.nodeAPI.path; // 路径处理工具
+const {createCommandHandlers} = window.commandHandlersAPI; // 命令处理器模块
 
 // ==================== DOM 元素引用 ====================
 const editor = document.getElementById('editor'); // Markdown 编辑器文本域
@@ -709,7 +712,9 @@ const commandHandlers = createCommandHandlers({
     exportWithLastSettings,
     exportAndOverwrite,
     printDocument,
-    currentFilePathRef
+    currentFilePathRef,
+    ipcRenderer,
+    path
 });
 
 /**

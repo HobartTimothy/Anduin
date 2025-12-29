@@ -1,4 +1,6 @@
 const {contextBridge, ipcRenderer} = require('electron');
+const path = require('path');
+const marked = require('marked');
 
 // 暴露 IPC 通信 API
 contextBridge.exposeInMainWorld('electronAPI', {
@@ -14,6 +16,21 @@ contextBridge.exposeInMainWorld('electronAPI', {
     },
     removeListener: (channel, callback) => ipcRenderer.removeListener(channel, callback),
     removeAllListeners: (channel) => ipcRenderer.removeAllListeners(channel)
+});
+
+// 暴露 Node.js 模块
+contextBridge.exposeInMainWorld('nodeAPI', {
+    path: path,
+    marked: marked
+});
+
+// 加载并暴露 commandHandlers 模块
+const commandHandlersPath = path.join(__dirname, '..', 'renderer', 'commandHandlers.js');
+const {createCommandHandlers} = require(commandHandlersPath);
+
+// 暴露 commandHandlers 模块
+contextBridge.exposeInMainWorld('commandHandlersAPI', {
+    createCommandHandlers: createCommandHandlers
 });
 
 // 暴露菜单命令 API（保持向后兼容）
