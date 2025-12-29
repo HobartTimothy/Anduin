@@ -108,7 +108,6 @@
     "dmg": {
       "title": "${productName} ${version}",
       "icon": "resources/icons/icon.icns",
-      "background": null,
       "contents": [
         {
           "x": 410,
