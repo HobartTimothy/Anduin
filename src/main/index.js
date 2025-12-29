@@ -63,7 +63,15 @@ function createWindow(filePath = null) {
             preload: path.join(__dirname, 'preload.js'), // 预加载脚本
             nodeIntegration: true, // 启用 Node.js 集成（保持向后兼容）
             contextIsolation: true // 启用上下文隔离（contextBridge 需要）
-        }
+        },
+        focusable: true, // 确保窗口可以获得焦点
+        show: false // 先不显示，等待加载完成后再显示
+    });
+
+    // 窗口准备好后显示并聚焦
+    mainWindow.once('ready-to-show', () => {
+        mainWindow.show();
+        mainWindow.focus();
     });
 
     // 加载渲染进程的 HTML 文件
@@ -72,6 +80,16 @@ function createWindow(filePath = null) {
     // 窗口关闭事件处理
     mainWindow.on('closed', () => {
         mainWindow = null;
+    });
+    
+    // 窗口获得焦点时，确保编辑器能够获得焦点
+    mainWindow.on('focus', () => {
+        // 延迟执行，确保窗口完全获得焦点
+        setTimeout(() => {
+            if (mainWindow && !mainWindow.isDestroyed()) {
+                mainWindow.webContents.focus();
+            }
+        }, 100);
     });
 
     // 初始化文件处理工具类

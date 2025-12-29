@@ -836,6 +836,9 @@ function exportAndOverwrite() {
  */
 function showInputDialog(message, defaultValue = '') {
     return new Promise((resolve) => {
+        // 保存当前活动元素，以便对话框关闭后恢复焦点
+        const previousActiveElement = document.activeElement;
+        
         // 创建模态遮罩层
         const overlay = document.createElement('div');
         overlay.style.cssText = `
@@ -933,20 +936,41 @@ function showInputDialog(message, defaultValue = '') {
         overlay.appendChild(dialog);
         document.body.appendChild(overlay);
         
-        // 聚焦输入框并选中默认值
-        input.focus();
-        input.select();
+        // 聚焦输入框并选中默认值（延迟确保 DOM 已渲染）
+        setTimeout(() => {
+            input.focus();
+            input.select();
+        }, 10);
+        
+        // 恢复焦点的辅助函数
+        const restoreFocus = () => {
+            // 延迟恢复焦点，确保对话框完全关闭
+            setTimeout(() => {
+                // 如果之前有活动元素且是编辑器，恢复焦点
+                if (previousActiveElement && (previousActiveElement === editor || previousActiveElement === resultPane)) {
+                    previousActiveElement.focus();
+                } else if (currentMode === 'result' && resultPane) {
+                    // 结果模式：聚焦结果面板
+                    resultPane.focus();
+                } else if (editor) {
+                    // 其他模式：聚焦编辑器
+                    editor.focus();
+                }
+            }, 50);
+        };
         
         // 确定按钮处理
         const handleOk = () => {
             const value = input.value;
             document.body.removeChild(overlay);
+            restoreFocus();
             resolve(value);
         };
         
         // 取消按钮处理
         const handleCancel = () => {
             document.body.removeChild(overlay);
+            restoreFocus();
             resolve(null);
         };
         
@@ -988,9 +1012,12 @@ async function insertLink() {
     const selected = value.slice(start, end) || '链接文本';
     const md = `[${selected}](${url})`;
     editor.value = value.slice(0, start) + md + value.slice(end);
-    editor.focus();
-    editor.selectionStart = start;
-    editor.selectionEnd = start + md.length;
+    // 延迟聚焦，确保对话框完全关闭
+    setTimeout(() => {
+        editor.focus();
+        editor.selectionStart = start;
+        editor.selectionEnd = start + md.length;
+    }, 100);
     renderMarkdown(editor.value);
 }
 
@@ -1169,6 +1196,15 @@ ipcRenderer.on('file-imported', (event, data) => {
 
         // 更新预览（导入时立即渲染）
         renderMarkdown(editor.value, true);
+        
+        // 确保编辑器获得焦点（延迟执行，确保文件对话框已关闭）
+        setTimeout(() => {
+            if (currentMode !== 'result') {
+                editor.focus();
+            } else {
+                resultPane.focus();
+            }
+        }, 100);
 
         // 将光标移动到文档末尾
         editor.focus();

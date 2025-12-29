@@ -94,6 +94,11 @@ function createCommandHandlers(dependencies) {
             } else if (!result.cancelled) {
                 alert('保存失败：' + (result.error || '未知错误'));
             }
+            
+            // 恢复编辑器焦点（延迟执行，确保对话框已关闭）
+            setTimeout(() => {
+                editor.focus();
+            }, 100);
         },
         'file-save-as': async () => {
             const content = editor.value || '';
@@ -121,6 +126,11 @@ function createCommandHandlers(dependencies) {
             } else if (!result.cancelled) {
                 alert('保存失败：' + (result.error || '未知错误'));
             }
+            
+            // 恢复编辑器焦点（延迟执行，确保对话框已关闭）
+            setTimeout(() => {
+                editor.focus();
+            }, 100);
         },
         'file-move-to': () => notImplemented('移动到'),
         'file-save-all': () => notImplemented('保存全部打开的文件'),
