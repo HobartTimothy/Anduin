@@ -1,11 +1,11 @@
 /**
  * src/main/services/FileService.js
- * (原 src/util/fileUtils.js)
- * 文件服务类
- * 负责主进程中的所有文件 I/O 操作、导入导出及文件创建逻辑
+ * [优化版] 文件服务类
+ * 优化点：使用异步 I/O 替代同步操作，避免阻塞主进程事件循环
  */
 
 const fs = require('fs');
+const fsPromises = require('fs').promises; // 引入异步 fs API
 const path = require('path');
 const { dialog } = require('electron');
 const mammoth = require('mammoth');
@@ -20,24 +20,24 @@ class FileService {
     }
 
     /**
-     * 更新目标窗口引用 (当窗口重建时使用)
-     * @param {Electron.BrowserWindow} window 
+     * 更新目标窗口引用
+     * @param {Electron.BrowserWindow} window
      */
     setTargetWindow(window) {
         this.targetWindow = window;
     }
 
     /**
-     * 读取文件内容，自动尝试 UTF-8 和 Latin1 编码
+     * [异步] 读取文件内容，自动尝试 UTF-8 和 Latin1 编码
      * @param {string} filePath - 文件路径
-     * @returns {string|null} 文件内容
+     * @returns {Promise<string|null>} 文件内容
      */
-    readFileContent(filePath) {
+    async readFileContent(filePath) {
         const supportedEncodings = ['utf-8', 'latin1'];
-        
+
         for (const encoding of supportedEncodings) {
             try {
-                return fs.readFileSync(filePath, encoding);
+                return await fsPromises.readFile(filePath, encoding);
             } catch (error) {
                 if (encoding === supportedEncodings[supportedEncodings.length - 1]) {
                     console.error(`[FileService] 读取失败，已尝试编码: ${supportedEncodings.join(', ')}`, error.message);
@@ -48,33 +48,36 @@ class FileService {
     }
 
     /**
-     * 打开文件并将内容发送到渲染进程
-     * @param {string} filePath 
+     * [异步] 打开文件并将内容发送到渲染进程
+     * @param {string} filePath
      */
-    openFile(filePath) {
+    async openFile(filePath) {
         if (!this.targetWindow) return;
 
         try {
-            if (fs.existsSync(filePath)) {
-                const content = fs.readFileSync(filePath, 'utf-8');
-                
-                // 发送 'file-opened' 事件
-                this.targetWindow.webContents.send('file-opened', {
-                    path: filePath,
-                    content: content
-                });
-            }
+            // 使用 access 检查文件是否存在
+            await fsPromises.access(filePath, fs.constants.F_OK);
+
+            // 异步读取内容
+            const content = await fsPromises.readFile(filePath, 'utf-8');
+
+            // 发送 'file-opened' 事件
+            this.targetWindow.webContents.send('file-opened', {
+                path: filePath,
+                content: content
+            });
         } catch (error) {
             console.error('[FileService] 打开文件错误:', error);
+            // 仅在文件确实无法访问时报错，忽略 access 的错误如果是有意为之
             dialog.showErrorBox('打开失败', `无法打开文件: ${error.message}`);
         }
     }
 
     /**
-     * 在指定目录创建新的 Markdown 文件
+     * [异步] 在指定目录创建新的 Markdown 文件
      * @param {string} directoryPath - 目标目录
      */
-    createMarkdownFile(directoryPath) {
+    async createMarkdownFile(directoryPath) {
         if (!this.targetWindow) return;
 
         try {
@@ -82,20 +85,31 @@ class FileService {
             let filePath = path.join(directoryPath, fileName);
             let counter = 1;
 
-            // 避免文件名冲突
-            while (fs.existsSync(filePath)) {
+            // 异步检查文件是否存在，避免阻塞
+            // 辅助函数：检查文件是否存在
+            const fileExists = async (path) => {
+                try {
+                    await fsPromises.access(path, fs.constants.F_OK);
+                    return true;
+                } catch {
+                    return false;
+                }
+            };
+
+            while (await fileExists(filePath)) {
                 fileName = `新建文档 (${counter}).md`;
                 filePath = path.join(directoryPath, fileName);
                 counter++;
             }
 
-            fs.writeFileSync(filePath, '', 'utf-8');
+            // 异步写入空文件
+            await fsPromises.writeFile(filePath, '', 'utf-8');
 
             this.targetWindow.webContents.send('file-opened', {
                 path: filePath,
                 content: ''
             });
-            
+
             this.targetWindow.focus();
 
         } catch (error) {
@@ -105,7 +119,7 @@ class FileService {
     }
 
     /**
-     * 从 TXT 导入
+     * [异步] 从 TXT 导入
      */
     async importTextFile() {
         if (!this.targetWindow) return;
@@ -120,7 +134,7 @@ class FileService {
             if (canceled || filePaths.length === 0) return;
 
             const filePath = filePaths[0];
-            const content = this.readFileContent(filePath);
+            const content = await this.readFileContent(filePath);
 
             if (content === null) {
                 dialog.showErrorBox('导入失败', '无法读取文件内容或编码不支持');
@@ -139,7 +153,7 @@ class FileService {
     }
 
     /**
-     * 从 Word (.docx) 导入
+     * [异步] 从 Word (.docx) 导入
      */
     async importWordDoc() {
         if (!this.targetWindow) return;
@@ -154,7 +168,8 @@ class FileService {
             if (canceled || filePaths.length === 0) return;
 
             const filePath = filePaths[0];
-            const buffer = fs.readFileSync(filePath);
+            // 异步读取 buffer
+            const buffer = await fsPromises.readFile(filePath);
             const result = await mammoth.convertToMarkdown({ buffer });
 
             if (result.messages && result.messages.length > 0) {
@@ -201,7 +216,7 @@ class FileService {
     }
 
     /**
-     * 从 HTML 导入
+     * [异步] 从 HTML 导入
      */
     async importHtmlFile() {
         if (!this.targetWindow) return;
@@ -216,7 +231,7 @@ class FileService {
             if (canceled || filePaths.length === 0) return;
 
             const filePath = filePaths[0];
-            const htmlContent = this.readFileContent(filePath);
+            const htmlContent = await this.readFileContent(filePath);
 
             if (!htmlContent) {
                 dialog.showErrorBox('导入失败', '无法读取 HTML 文件');
@@ -239,4 +254,3 @@ class FileService {
 }
 
 module.exports = FileService;
-
