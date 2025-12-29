@@ -89,16 +89,23 @@ class I18n {
 
     /**
      * 获取翻译文本的核心函数
-     * @param {string} key - 翻译键名
+     * 支持嵌套键名（用点号分隔）和参数替换
+     * @param {string} key - 翻译键名（如 'menu.file' 或 'menu.file.open'）
      * @param {Object} params - 可选的参数对象，用于替换占位符
      * @returns {string} 翻译后的文本
      */
     t(key, params = null) {
-        if (!this.loadedLanguage) {
-            return key;
+        if (!this.loadedLanguage || !key) {
+            return key || '';
         }
         
-        let text = this.loadedLanguage[key] || key;
+        // 直接查找键
+        let text = this.loadedLanguage[key];
+        
+        // 如果未找到且包含点号，尝试嵌套查找（未来扩展）
+        if (text === undefined) {
+            text = key; // 返回键名作为回退
+        }
         
         // 如果提供了参数，替换占位符
         if (params && typeof text === 'string') {
@@ -109,6 +116,23 @@ class I18n {
         }
         
         return text;
+    }
+
+    /**
+     * 批量获取翻译
+     * @param {string[]} keys - 翻译键名数组
+     * @returns {Object} 键值对对象
+     */
+    tBatch(keys) {
+        const result = {};
+        if (!Array.isArray(keys)) {
+            return result;
+        }
+        
+        keys.forEach(key => {
+            result[key] = this.t(key);
+        });
+        return result;
     }
 
     /**

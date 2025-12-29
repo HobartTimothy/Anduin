@@ -274,14 +274,21 @@ module.exports = {
     'preferences.general.shortcuts': '快捷键',
     'preferences.general.customizeShortcuts': '自定义快捷键',
     'preferences.general.operatingSystem': '操作系统',
-    'preferences.general.addMarkdownToContextMenu': '向 Windows 资源管理器"新建" 菜单添加语境的"Markdown" 选项',
-    'preferences.general.removeMarkdownFromContextMenu': '向 Windows 资源管理器"新建" 菜单移除语境的"Markdown" 选项',
+    'preferences.general.addMarkdownToContextMenu': '向 Windows 资源管理器"新建" 菜单添加"Markdown" 选项',
+    'preferences.general.removeMarkdownFromContextMenu': '从 Windows 资源管理器"新建" 菜单移除"Markdown" 选项',
     'preferences.general.dialogs': '对话框',
-    'preferences.general.resetAllDialogs': '重置全部密笺对话不内容转',
+    'preferences.general.resetAllDialogs': '重置全部对话框内容',
     'preferences.general.advanced': '高级设置',
     'preferences.general.enableDebug': '开启调试模式',
     'preferences.general.sendAnonymousData': '发送匿名使用数据',
     'preferences.general.openAdvanced': '打开高级设置',
-    'preferences.general.resetAdvanced': '重置高级设置'
+    'preferences.general.resetAdvanced': '重置高级设置',
+    
+    // 通用消息
+    'message.notImplemented': '该功能尚未实现：{feature}',
+    'message.fileSaved': '文件已保存：{path}',
+    'message.saveFailed': '保存失败：{error}',
+    'message.wordCount': '字数：{words}\n字符数：{chars}',
+    'message.unknownError': '未知错误'
 };
 

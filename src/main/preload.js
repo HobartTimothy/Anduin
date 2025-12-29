@@ -28,10 +28,30 @@ contextBridge.exposeInMainWorld('nodeAPI', {
 
 // 暴露 i18n 模块
 const i18n = require('../util/i18n');
+const i18nUI = require('../util/i18nUI');
+
 contextBridge.exposeInMainWorld('i18nAPI', {
-    t: (key) => i18n.t(key),
+    // 核心翻译功能
+    t: (key, params) => i18n.t(key, params),
+    tBatch: (keys) => i18n.tBatch(keys),
+    
+    // 语言管理
     currentLocale: () => i18n.currentLocale(),
-    loadLanguage: (locale) => i18n.loadLanguage(locale)
+    setLocale: (locale) => i18n.setLocale(locale),
+    loadLanguage: (locale) => i18n.loadLanguage(locale),
+    isLoaded: () => i18n.isLoaded(),
+    
+    // UI 更新（在渲染进程中使用）
+    updateUI: () => {
+        if (typeof document !== 'undefined') {
+            i18nUI.updateUI(document);
+        }
+    },
+    updateHtmlLang: () => {
+        if (typeof document !== 'undefined') {
+            i18nUI.updateHtmlLang(document);
+        }
+    }
 });
 
 // 加载并暴露 commandHandlers 模块

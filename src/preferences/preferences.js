@@ -90,97 +90,31 @@ function loadSettings() {
 function applySettings(settings) {
     // 更新语言选择框
     if (languageSelect) {
-        // 优先使用设置中的语言，如果没有则使用 i18n 的当前语言
-        const language = settings.language || i18n.currentLocale() || 'en';
-        languageSelect.value = language;
+        // 始终使用当前 i18n 的语言，确保与应用保持一致
+        const currentLanguage = i18n.currentLocale() || 'en';
+        languageSelect.value = currentLanguage;
         
         // 更新 HTML lang 属性
-        updateHtmlLang(language);
+        updateHtmlLang(currentLanguage);
         
-        // 如果设置中的语言与 i18n 不一致，确保同步
-        if (settings.language && settings.language !== i18n.currentLocale()) {
-            // 这种情况不应该发生，但如果发生了，使用设置中的语言
-            console.warn('语言设置不一致，使用设置中的语言:', settings.language);
+        // 如果设置文件中的语言与当前不一致，以 i18n 为准
+        if (settings.language && settings.language !== currentLanguage) {
+            console.log('同步语言设置:', currentLanguage);
         }
     }
 }
 
 // 更新 HTML lang 属性
 function updateHtmlLang(locale) {
-    const htmlElement = document.documentElement;
-    if (htmlElement) {
-        // 根据语言代码设置对应的 lang 属性
-        if (locale === 'zh') {
-            htmlElement.setAttribute('lang', 'zh-CN');
-        } else {
-            htmlElement.setAttribute('lang', 'en');
-        }
-    }
+    document.documentElement.lang = locale;
 }
 
-// 更新 UI 文本（使用 i18n）
+/**
+ * 更新 UI 文本（使用统一的 i18nAPI）
+ */
 function updateUIText() {
-    // 更新所有带有 data-i18n 属性的元素
-    document.querySelectorAll('[data-i18n]').forEach(element => {
-        const key = element.getAttribute('data-i18n');
-        const translation = i18n.t(key);
-        if (translation && translation !== key) {
-            // 对于 input、textarea 等元素，更新 placeholder
-            if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
-                // 如果元素有 data-i18n-placeholder，则更新 placeholder
-                const placeholderKey = element.getAttribute('data-i18n-placeholder');
-                if (placeholderKey) {
-                    const placeholderTranslation = i18n.t(placeholderKey);
-                    if (placeholderTranslation && placeholderTranslation !== placeholderKey) {
-                        element.placeholder = placeholderTranslation;
-                    }
-                }
-            } else {
-                // 对于其他元素，更新文本内容
-                element.textContent = translation;
-            }
-        }
-    });
-    
-    // 更新所有带有 data-i18n-placeholder 属性的元素的 placeholder
-    document.querySelectorAll('[data-i18n-placeholder]').forEach(element => {
-        const key = element.getAttribute('data-i18n-placeholder');
-        const translation = i18n.t(key);
-        if (translation && translation !== key) {
-            element.placeholder = translation;
-        }
-    });
-    
-    // 更新所有带有 data-i18n-aria-label 属性的元素的 aria-label
-    document.querySelectorAll('[data-i18n-aria-label]').forEach(element => {
-        const key = element.getAttribute('data-i18n-aria-label');
-        const translation = i18n.t(key);
-        if (translation && translation !== key) {
-            element.setAttribute('aria-label', translation);
-        }
-    });
-    
-    // 更新所有 select 的 option 文本
-    document.querySelectorAll('select').forEach(select => {
-        Array.from(select.options).forEach(option => {
-            const i18nKey = option.getAttribute('data-i18n');
-            if (i18nKey) {
-                const translation = i18n.t(i18nKey);
-                if (translation && translation !== i18nKey) {
-                    option.textContent = translation;
-                }
-            }
-        });
-    });
-    
-    // 更新 title 标签
-    const titleElement = document.querySelector('title[data-i18n]');
-    if (titleElement) {
-        const titleKey = titleElement.getAttribute('data-i18n');
-        const titleTranslation = i18n.t(titleKey);
-        if (titleTranslation && titleTranslation !== titleKey) {
-            document.title = titleTranslation;
-        }
+    if (i18n && i18n.updateUI) {
+        i18n.updateUI();
     }
 }
 
@@ -203,10 +137,10 @@ document.addEventListener('change', (e) => {
         // 如果是语言选择框，立即切换语言
         if (e.target.id === 'app-language') {
             const selectedLanguage = e.target.value;
-            // 重新加载 i18n 语言
-            i18n.setLocale(selectedLanguage);
-            // 更新 HTML lang 属性
-            updateHtmlLang(selectedLanguage);
+            // 切换语言（会自动更新配置）
+            if (i18n.setLocale) {
+                i18n.setLocale(selectedLanguage);
+            }
             // 更新 UI 文本
             updateUIText();
             // 通知主进程
@@ -234,18 +168,19 @@ ipcRenderer.on('language-changed', (event, locale) => {
 
 // 初始化函数
 function initialize() {
-    // 先加载设置
-    loadSettings();
-    // 然后更新 UI 文本
-    updateUIText();
+    // 首先立即更新 HTML lang 属性和语言选择框，使用当前 i18n 的语言
+    const currentLocale = i18n.currentLocale() || 'en';
+    updateHtmlLang(currentLocale);
     
-    // 如果语言选择框还没有值，从主进程获取当前语言
-    if (languageSelect && !languageSelect.value) {
-        const currentLocale = i18n.currentLocale() || 'en';
+    if (languageSelect) {
         languageSelect.value = currentLocale;
-        // 更新 HTML lang 属性
-        updateHtmlLang(currentLocale);
     }
+    
+    // 然后加载设置（如果设置中的语言不同，会被覆盖）
+    loadSettings();
+    
+    // 最后更新 UI 文本
+    updateUIText();
 }
 
 // 初始化：等待 DOM 加载完成后加载设置并更新 UI

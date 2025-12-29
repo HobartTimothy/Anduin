@@ -282,6 +282,13 @@ module.exports = {
     'preferences.general.enableDebug': 'Enable Debug Mode',
     'preferences.general.sendAnonymousData': 'Send Anonymous Usage Data',
     'preferences.general.openAdvanced': 'Open Advanced Settings',
-    'preferences.general.resetAdvanced': 'Reset Advanced Settings'
+    'preferences.general.resetAdvanced': 'Reset Advanced Settings',
+    
+    // 通用消息
+    'message.notImplemented': 'This feature is not yet implemented: {feature}',
+    'message.fileSaved': 'File saved: {path}',
+    'message.saveFailed': 'Save failed: {error}',
+    'message.wordCount': 'Words: {words}\nCharacters: {chars}',
+    'message.unknownError': 'Unknown error'
 };
 

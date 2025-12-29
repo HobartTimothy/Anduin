@@ -94,7 +94,9 @@ function createCommandHandlers(dependencies) {
                 // 可以显示保存成功的提示（可选）
                 // alert('文件已保存：' + result.path);
             } else if (!result.cancelled) {
-                alert('保存失败：' + (result.error || '未知错误'));
+                const error = result.error || (window.i18nAPI?.t('message.unknownError') || 'Unknown error');
+                const failMsg = window.i18nAPI?.t('message.saveFailed', {error}) || `Save failed: ${error}`;
+                alert(failMsg);
             }
 
             // 恢复编辑器焦点（延迟执行，确保对话框已关闭）
@@ -126,7 +128,9 @@ function createCommandHandlers(dependencies) {
                 // 可以显示保存成功的提示（可选）
                 // alert('文件已保存：' + result.path);
             } else if (!result.cancelled) {
-                alert('保存失败：' + (result.error || '未知错误'));
+                const error = result.error || (window.i18nAPI?.t('message.unknownError') || 'Unknown error');
+                const failMsg = window.i18nAPI?.t('message.saveFailed', {error}) || `Save failed: ${error}`;
+                alert(failMsg);
             }
 
             // 恢复编辑器焦点（延迟执行，确保对话框已关闭）
@@ -229,7 +233,10 @@ function createCommandHandlers(dependencies) {
             const text = editor.value || '';
             const words = text.trim() ? text.trim().split(/\s+/).length : 0;
             const chars = text.length;
-            alert(`字数：${words}\n字符数：${chars}`);
+            const message = window.i18nAPI && window.i18nAPI.t
+                ? window.i18nAPI.t('message.wordCount', {words, chars})
+                : `Words: ${words}\nCharacters: ${chars}`;
+            alert(message);
         },
         'view-switch-window': () => notImplemented('应用内窗口切换'),
 

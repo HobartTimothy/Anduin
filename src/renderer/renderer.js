@@ -709,8 +709,15 @@ function showThemeMenuAt(x, y) {
  * 待实现功能提示
  * @param {string} featureName - 功能名称
  */
+/**
+ * 显示未实现功能的提示
+ * @param {string} featureName - 功能名称
+ */
 function notImplemented(featureName) {
-    alert(`"${featureName}"功能待实现。`);
+    const message = i18n && i18n.t 
+        ? i18n.t('message.notImplemented', {feature: featureName})
+        : `"${featureName}" feature is not yet implemented.`;
+    alert(message);
 }
 
 // ==================== 导出功能 ====================
@@ -1476,26 +1483,9 @@ ipcRenderer.on('file-imported', (event, data) => {
 });
 
 // ==================== 国际化支持 ====================
-/**
- * 更新 UI 中的国际化文本
- * 查找所有带有 data-i18n 属性的元素并更新其文本内容
- */
-function updateUI() {
-    const elements = document.querySelectorAll('[data-i18n]');
-    elements.forEach(el => {
-        const key = el.getAttribute('data-i18n');
-        if (key && i18n.t) {
-            const translation = i18n.t(key);
-            if (translation) {
-                el.innerText = translation;
-            }
-        }
-    });
-}
-
-// 初始化时更新一次 UI
-if (i18n.t) {
-    updateUI();
+// 初始化时更新 UI
+if (i18n && i18n.updateUI) {
+    i18n.updateUI();
 }
 
 // 监听主进程的语言切换消息
@@ -1505,8 +1495,10 @@ if (ipcRenderer && ipcRenderer.on) {
         if (i18n.loadLanguage) {
             i18n.loadLanguage(lang);
         }
-        // 更新 UI
-        updateUI();
+        // 更新 UI（使用统一的 i18nUI 工具）
+        if (i18n.updateUI) {
+            i18n.updateUI();
+        }
     });
 }
 
