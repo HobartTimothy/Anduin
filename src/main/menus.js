@@ -13,12 +13,13 @@ const i18n = require('../shared/i18n');
  * @param {Object} fileService - 文件服务类实例
  * @param {Object} primaryWindow - 主窗口实例
  * @param {Function} createPreferencesWindow - 创建偏好设置窗口的函数
+ * @param {boolean} debugMode - 调试模式状态，默认为 false
  */
-function changeLanguage(lang, sendToRenderer, fileService, primaryWindow, createPreferencesWindow) {
+function changeLanguage(lang, sendToRenderer, fileService, primaryWindow, createPreferencesWindow, debugMode = false) {
     i18n.setLocale(lang);
     
-    // 1. 重建菜单
-    const menu = Menu.buildFromTemplate(createMenuTemplate(sendToRenderer, fileService, primaryWindow, createPreferencesWindow));
+    // 1. 重建菜单 (传入 debugMode)
+    const menu = Menu.buildFromTemplate(createMenuTemplate(sendToRenderer, fileService, primaryWindow, createPreferencesWindow, debugMode));
     Menu.setApplicationMenu(menu);
 
     // 2. 通知所有窗口更新 UI (如果渲染进程也需要更新)
@@ -33,11 +34,12 @@ function changeLanguage(lang, sendToRenderer, fileService, primaryWindow, create
  * @param {Object} fileService - 文件服务类实例
  * @param {Object} primaryWindow - 主窗口实例
  * @param {Function} createPreferencesWindow - 创建偏好设置窗口的函数
+ * @param {boolean} debugMode - 调试模式状态，默认为 false
  * @returns {Array} 菜单模板数组
  */
 const themeManager = require('../shared/theme');
 
-function createMenuTemplate(sendToRenderer, fileService, primaryWindow, createPreferencesWindow) {
+function createMenuTemplate(sendToRenderer, fileService, primaryWindow, createPreferencesWindow, debugMode = false) {
     return [
         {
             label: i18n.t('menu.file'),
@@ -460,7 +462,12 @@ function createMenuTemplate(sendToRenderer, fileService, primaryWindow, createPr
                     click: () => sendToRenderer('view-switch-window')
                 },
                 {role: 'reload', label: i18n.t('menu.view.reload')},
-                {role: 'toggleDevTools', label: i18n.t('menu.view.toggleDevTools'), accelerator: 'Shift+F12'}
+                {
+                    role: 'toggleDevTools', 
+                    label: i18n.t('menu.view.toggleDevTools'), 
+                    accelerator: 'Shift+F12',
+                    visible: debugMode // 只有开启调试模式时才显示
+                }
             ]
         },
         {

@@ -126,11 +126,16 @@ function createPrimaryWindow(filePathToLoad = null) {
 
 
 function setupAppMenu() {
+    // 读取设置以获取调试模式状态
+    const settings = readSettings();
+    const debugMode = settings.debugMode || false;
+    
     const template = createMenuTemplate(
         sendMessageToRenderer,
         fileService,
         primaryWindow,
-        openPreferencesWindow
+        openPreferencesWindow,
+        debugMode // 传入 debugMode
     );
     const menu = Menu.buildFromTemplate(template);
     Menu.setApplicationMenu(menu);
@@ -242,10 +247,25 @@ function readSettings() {
     const settingsPath = getSettingsPath();
     try {
         if (fs.existsSync(settingsPath)) {
-            return JSON.parse(fs.readFileSync(settingsPath, 'utf-8'));
+            const content = fs.readFileSync(settingsPath, 'utf-8').trim();
+            // 检查文件内容是否为空
+            if (!content) {
+                console.warn('设置文件为空，使用默认设置');
+                return {};
+            }
+            return JSON.parse(content);
         }
     } catch (error) {
         console.error('读取设置失败:', error);
+        // 如果文件损坏，尝试删除它以便下次重新创建
+        try {
+            if (fs.existsSync(settingsPath)) {
+                fs.unlinkSync(settingsPath);
+                console.log('已删除损坏的设置文件');
+            }
+        } catch (deleteError) {
+            console.error('删除损坏的设置文件失败:', deleteError);
+        }
     }
     return {};
 }
@@ -266,6 +286,7 @@ async function writeSettings(settings) {
 
 ipcMain.on('save-settings', (event, settings) => {
     writeSettings(settings); // 触发异步保存，不阻塞
+    setupAppMenu(); // 刷新菜单以应用调试模式更改
 });
 
 ipcMain.on('get-settings', (event) => {
@@ -283,14 +304,17 @@ ipcMain.on('open-preferences', () => {
 ipcMain.on('change-language', (event, locale) => {
     console.log('[Main] 收到语言切换请求:', locale);
 
+    // 获取当前设置中的调试模式状态
+    const settings = readSettings();
+    const debugMode = settings.debugMode || false;
+
     // 1. 更新主进程的 i18n 实例
     i18n.setLocale(locale);
 
-    // 2. 重新构建并设置原生应用菜单
-    changeLanguage(locale, sendMessageToRenderer, fileService, primaryWindow, openPreferencesWindow);
+    // 2. 重新构建并设置原生应用菜单 (传入 debugMode)
+    changeLanguage(locale, sendMessageToRenderer, fileService, primaryWindow, openPreferencesWindow, debugMode);
 
     // 3. 更新设置
-    const settings = readSettings();
     settings.language = locale;
     writeSettings(settings); // 异步保存
 

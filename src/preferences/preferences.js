@@ -116,6 +116,13 @@ function loadSettings() {
     try {
         const settings = ipcRenderer.sendSync('get-settings');
         // 这里可以加载其他设置（除了语言，语言已在 initialize() 中设置）
+        
+        // 加载调试模式设置
+        const debugModeCheckbox = document.getElementById('general-debug-mode');
+        if (debugModeCheckbox) {
+            debugModeCheckbox.checked = settings.debugMode || false;
+        }
+        
         // TODO: 加载其他设置项到界面
     } catch (error) {
         console.error('加载设置失败:', error);
@@ -129,8 +136,12 @@ function updateHtmlLang(locale) {
 
 // 保存设置
 function saveSettings() {
+    // 获取调试模式状态
+    const debugModeCheckbox = document.getElementById('general-debug-mode');
+    
     const settings = {
-        language: languageSelect ? languageSelect.value : i18n.currentLocale() || 'en'
+        language: languageSelect ? languageSelect.value : i18n.currentLocale() || 'en',
+        debugMode: debugModeCheckbox ? debugModeCheckbox.checked : false // 保存调试模式
     };
 
     try {
