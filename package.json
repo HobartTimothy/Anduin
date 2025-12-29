@@ -93,9 +93,9 @@
       "createStartMenuShortcut": true,
       "shortcutName": "Anduin",
       "include": "resources/windows/installer.nsh",
-      "installerIcon": "resources/icons/icon.jpg",
-      "uninstallerIcon": "resources/icons/icon.jpg",
-      "installerHeaderIcon": "resources/icons/icon.jpg"
+      "installerIcon": "resources/icons/icon.ico",
+      "uninstallerIcon": "resources/icons/icon.ico",
+      "installerHeaderIcon": "resources/icons/icon.ico"
     },
     "dmg": {
       "title": "${productName} ${version}",
@@ -117,7 +117,9 @@
       "window": {
         "width": 540,
         "height": 380
-      }
+      },
+      "writeUpdateChannel": false,
+      "sign": false
     }
   },
   "devDependencies": {
