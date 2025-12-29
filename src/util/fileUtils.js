@@ -11,15 +11,23 @@ const path = require('path');
 const {dialog} = require('electron');
 // 引入 mammoth 库
 const mammoth = require('mammoth');
+/**
+ * @typedef {Object} MammothResult
+ * @property {string} value - 转换后的 Markdown 内容
+ * @property {Array<string>} messages - 转换过程中的警告信息
+ */
 // 引入 Turndown 库
 const TurndownService = require('turndown');
 
 class FileUtils {
     /**
      * 构造函数
-     * @param {Object} mainWindow - Electron 主窗口实例
+     * @param {Electron.BrowserWindow} mainWindow - Electron 主窗口实例
      */
     constructor(mainWindow) {
+        /**
+         * @type {Electron.BrowserWindow}
+         */
         this.mainWindow = mainWindow;
     }
 
@@ -122,7 +130,9 @@ class FileUtils {
 
         try {
             // 显示文件选择对话框
-            const result = await dialog.showOpenDialog(this.mainWindow, {
+            // @type {Electron.BrowserWindow}
+            const window = this.mainWindow;
+            const result = await dialog.showOpenDialog(window, {
                 title: '选择要导入的txt文件',
                 filters: [
                     {name: '文本文件', extensions: ['txt']}
@@ -174,7 +184,9 @@ class FileUtils {
 
         try {
             // 显示文件选择对话框
-            const result = await dialog.showOpenDialog(this.mainWindow, {
+            // @type {Electron.BrowserWindow}
+            const window = this.mainWindow;
+            const result = await dialog.showOpenDialog(window, {
                 title: '选择要导入的Word文档',
                 filters: [
                     {name: 'Word文档', extensions: ['docx']},
@@ -199,6 +211,7 @@ class FileUtils {
             // 读取 Word 文档为 Buffer
             const buffer = fs.readFileSync(filePath);
             // 使用 mammoth 将 Word 文档转换为 Markdown
+            // @type {MammothResult}
             const resultMammoth = await mammoth.convertToMarkdown({buffer: buffer});
 
             const content = resultMammoth.value;
@@ -230,7 +243,9 @@ class FileUtils {
 
         try {
             // 显示文件选择对话框
-            const result = await dialog.showOpenDialog(this.mainWindow, {
+            // @type {Electron.BrowserWindow}
+            const window = this.mainWindow;
+            const result = await dialog.showOpenDialog(window, {
                 title: '选择要导入的HTML文件',
                 filters: [
                     {name: 'HTML文件', extensions: ['html', 'htm']},
@@ -260,6 +275,7 @@ class FileUtils {
             }
 
             // 初始化 TurndownService，配置转换选项
+            /** @type {TurndownService} */
             const turndownService = new TurndownService({
                 headingStyle: 'atx', // 使用 # 风格的标题（如：## 标题）
                 codeBlockStyle: 'fenced', // 使用 ``` 风格的代码块
