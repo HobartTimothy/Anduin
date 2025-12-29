@@ -1,259 +1,210 @@
 /**
- * Anduin - Markdown 编辑器主进程文件
- * 负责窗口管理、菜单创建、文件操作、导入导出等功能
+ * src/main/index.js
+ * Anduin - Markdown 编辑器主进程入口
  */
 
-// 抑制 libpng 的 iCCP 警告
-// 这个警告是由于 PNG 图像的颜色配置文件与 sRGB 标准不匹配导致的
-// 通常不影响功能，但会在控制台产生大量警告信息
+// 1. 错误抑制逻辑 (Keep Clean)
 const originalStderrWrite = process.stderr.write.bind(process.stderr);
 const originalStdoutWrite = process.stdout.write.bind(process.stdout);
 
-function shouldSuppressWarning(chunk) {
-    if (!chunk) {
-        return false;
-    }
+function isIgnorableConsoleMessage(chunk) {
+    if (!chunk) return false;
     const text = typeof chunk === 'string' ? chunk : chunk.toString();
     return text.includes('libpng warning: iCCP') ||
            text.includes('cHRM chunk does not match sRGB');
 }
 
-process.stderr.write = function (chunk, encoding, fd) {
-    if (shouldSuppressWarning(chunk)) {
-        return true; // 忽略这个警告
+process.stderr.write = (chunk, encoding, fd) => {
+    return isIgnorableConsoleMessage(chunk) ? true : originalStderrWrite(chunk, encoding, fd);
+};
+
+process.stdout.write = (chunk, encoding, fd) => {
+    return isIgnorableConsoleMessage(chunk) ? true : originalStdoutWrite(chunk, encoding, fd);
+};
+
+// 2. 模块导入
+const { app, BrowserWindow, Menu, shell, dialog, ipcMain, globalShortcut } = require('electron');
+const path = require('path');
+const fs = require('fs');
+
+// 导入重构后的服务和工具
+const FileService = require('./services/FileService');
+const { createMenuTemplate, changeLanguage } = require('./menus');
+const i18n = require('../shared/i18n');
+const themeManager = require('../shared/theme');
+
+// 3. 配置常量
+const AppConfig = {
+    WINDOWS: {
+        PRIMARY: { width: 1280, height: 800 },
+        PREFERENCES: { width: 900, height: 600 },
+        ABOUT: { width: 550, height: 280 }
+    },
+    DELAYS: {
+        FOCUS: 100,
+        RENDER: 500,
+        PRINT_CLOSE: 1000
     }
-    return originalStderrWrite(chunk, encoding, fd);
 };
 
-process.stdout.write = function (chunk, encoding, fd) {
-    if (shouldSuppressWarning(chunk)) {
-        return true; // 忽略这个警告
-    }
-    return originalStdoutWrite(chunk, encoding, fd);
-};
-
-// Electron 核心模块
-const {app, BrowserWindow, Menu, shell, dialog, ipcMain, globalShortcut} = require('electron');
-
-// Node.js 内置模块
-const path = require('path'); // 路径处理
-const fs = require('fs'); // 文件系统操作
-
-// 工具类
-const FileUtils = require('../util/fileUtils');
-const {createMenuTemplate, changeLanguage} = require('./menus');
-const i18n = require('../util/i18n');
-const themeManager = require('../util/theme');
-
-// 配置常量
-const WINDOW_CONFIG = {
-    MAIN: {width: 1280, height: 800},
-    PREFERENCES: {width: 900, height: 600},
-    ABOUT: {width: 550, height: 280}
-};
-
-const FOCUS_DELAY = 100; // 窗口聚焦延迟时间(毫秒)
-const RENDER_DELAY = 500; // PDF/打印渲染延迟时间(毫秒)
-const CLOSE_DELAY = 1000; // 打印窗口关闭延迟时间(毫秒)
-
-// 全局变量
-let mainWindow; // 主窗口实例
-let preferencesWindow = null; // 偏好设置窗口实例
-let aboutWindow = null; // 关于窗口实例
-let fileToOpen = null; // 启动时需要打开的文件路径
-let newMdPath = null; // 需要创建新 Markdown 文件的目录路径
-let fileUtils = null; // 文件处理工具类实例
+// 4. 全局状态
+let primaryWindow = null;      // 重命名: mainWindow -> primaryWindow
+let preferencesWindow = null;
+let aboutWindow = null;
+let initialFilePath = null;    // 重命名: fileToOpen -> initialFilePath
+let createTargetDir = null;    // 重命名: newMdPath -> createTargetDir
+let fileService = null;        // 重命名: fileUtils -> fileService
 
 /**
- * 创建主窗口
- * @param {string|null} filePath - 可选，启动时需要打开的文件路径
+ * 创建主应用窗口
+ * @param {string|null} filePathToLoad - 启动时加载的文件路径
  */
-function createWindow(filePath = null) {
-    // 创建主窗口实例
-    mainWindow = new BrowserWindow({
-        width: WINDOW_CONFIG.MAIN.width,
-        height: WINDOW_CONFIG.MAIN.height,
-        icon: path.join(__dirname, '../../resources/icons/icon.jpg'), // 窗口图标
+function createPrimaryWindow(filePathToLoad = null) {
+    primaryWindow = new BrowserWindow({
+        width: AppConfig.WINDOWS.PRIMARY.width,
+        height: AppConfig.WINDOWS.PRIMARY.height,
+        icon: path.join(__dirname, '../../resources/icons/icon.jpg'),
         webPreferences: {
-            preload: path.join(__dirname, 'preload.js'), // 预加载脚本
-            nodeIntegration: true, // 启用 Node.js 集成（保持向后兼容）
-            contextIsolation: true // 启用上下文隔离（contextBridge 需要）
+            preload: path.join(__dirname, 'preload.js'),
+            nodeIntegration: true,
+            contextIsolation: true
         },
-        focusable: true, // 确保窗口可以获得焦点
-        show: false // 先不显示，等待加载完成后再显示
+        focusable: true,
+        show: false
     });
 
-    // 窗口准备好后显示并聚焦
-    mainWindow.once('ready-to-show', () => {
-        mainWindow.show();
-        mainWindow.focus();
+    primaryWindow.once('ready-to-show', () => {
+        primaryWindow.show();
+        primaryWindow.focus();
     });
 
-    // 加载渲染进程的 HTML 文件
-    mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
+    primaryWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
 
-    // 窗口关闭事件处理
-    mainWindow.on('closed', () => {
-        mainWindow = null;
+    primaryWindow.on('closed', () => {
+        primaryWindow = null;
+        if (fileService) fileService.setTargetWindow(null);
     });
 
-    // 窗口获得焦点时，确保编辑器能够获得焦点
-    mainWindow.on('focus', () => {
-        // 延迟执行，确保窗口完全获得焦点
+    primaryWindow.on('focus', () => {
         setTimeout(() => {
-            if (mainWindow && !mainWindow.isDestroyed()) {
-                mainWindow.webContents.focus();
+            if (primaryWindow && !primaryWindow.isDestroyed()) {
+                primaryWindow.webContents.focus();
             }
-        }, FOCUS_DELAY);
+        }, AppConfig.DELAYS.FOCUS);
     });
 
-    // 初始化文件处理工具类
-    fileUtils = new FileUtils(mainWindow);
+    // 初始化文件服务
+    fileService = new FileService(primaryWindow);
 
-    // 过滤 DevTools 控制台中的无害错误消息
-    mainWindow.webContents.on('console-message', ({message}) => {
-        // 使用新的事件对象格式（Electron 新 API）
-        // 过滤 DevTools Autofill API 相关的无害错误
-        // 这些错误是 DevTools 内部协议问题，不影响应用功能
+    // 过滤 DevTools 消息
+    primaryWindow.webContents.on('console-message', ({ message }) => {
         if (message && (
-            message.includes('Autofill.enable') ||
-            message.includes('Autofill.setAddresses') ||
-            message.includes("'Autofill.enable' wasn't found") ||
-            message.includes("'Autofill.setAddresses' wasn't found")
+            message.includes('Autofill.enable') || 
+            message.includes('Autofill.setAddresses')
         )) {
-            // 注意：console-message 事件可能不支持 preventDefault
-            // 这里只是过滤消息，不阻止事件本身
             return;
         }
     });
 
-    // 等待窗口加载完成后打开文件
-    mainWindow.webContents.once('did-finish-load', () => {
-        // 发送当前的语言设置，确保渲染进程同步
+    // 窗口加载完成后的初始化操作
+    primaryWindow.webContents.once('did-finish-load', () => {
         const currentLocale = i18n.currentLocale() || 'en';
-        mainWindow.webContents.send('language-changed', currentLocale);
+        primaryWindow.webContents.send('language-changed', currentLocale);
         
-        // 发送当前的主题设置，确保渲染进程同步
         const currentThemeId = themeManager.getCurrentTheme().id;
-        mainWindow.webContents.send('theme-changed', currentThemeId);
+        primaryWindow.webContents.send('theme-changed', currentThemeId);
         
-        if (filePath) {
-            fileUtils.openFile(filePath);
+        if (filePathToLoad) {
+            fileService.openFile(filePathToLoad);
         }
     });
 
-    // 创建应用菜单
-    createAppMenu();
+    setupAppMenu();
 }
 
 
-/**
- * 创建应用程序菜单
- * 包含文件、编辑、段落、格式、视图、主题、帮助等菜单项
- */
-function createAppMenu() {
-    // 从菜单模板文件获取菜单配置
-    const template = createMenuTemplate(sendToRenderer, fileUtils, mainWindow, createPreferencesWindow);
-
+function setupAppMenu() {
+    const template = createMenuTemplate(
+        sendMessageToRenderer, 
+        fileService, 
+        primaryWindow, 
+        openPreferencesWindow
+    );
     const menu = Menu.buildFromTemplate(template);
     Menu.setApplicationMenu(menu);
 }
 
-/**
- * 向渲染进程发送消息
- * @param {string} channel - IPC 通道名称
- * @param {*} payload - 可选，要发送的数据
- */
-function sendToRenderer(channel, payload) {
-    mainWindow?.webContents.send(channel, payload);
+function sendMessageToRenderer(channel, payload) {
+    primaryWindow?.webContents.send(channel, payload);
 }
 
-/**
- * 创建偏好设置窗口
- * 如果窗口已存在，则聚焦到现有窗口
- */
-function createPreferencesWindow() {
-    // 如果窗口已存在，则聚焦到现有窗口
+function openPreferencesWindow() {
     if (preferencesWindow) {
         preferencesWindow.focus();
         return;
     }
 
-    // 创建偏好设置窗口
     preferencesWindow = new BrowserWindow({
-        width: WINDOW_CONFIG.PREFERENCES.width,
-        height: WINDOW_CONFIG.PREFERENCES.height,
-        parent: mainWindow, // 父窗口
-        modal: false, // 非模态窗口
-        icon: path.join(__dirname, '../../resources/icons/icon.jpg'), // 窗口图标
+        width: AppConfig.WINDOWS.PREFERENCES.width,
+        height: AppConfig.WINDOWS.PREFERENCES.height,
+        parent: primaryWindow,
+        modal: false,
+        icon: path.join(__dirname, '../../resources/icons/icon.jpg'),
         webPreferences: {
-            nodeIntegration: true, // 启用 Node.js 集成
-            contextIsolation: false // 禁用上下文隔离
+            nodeIntegration: true,
+            contextIsolation: false
         },
         title: '偏好设置',
-        resizable: true, // 可调整大小
-        minimizable: true, // 可最小化
-        maximizable: true // 可最大化
+        resizable: true,
+        minimizable: true,
+        maximizable: true
     });
 
-    // 加载偏好设置页面
     preferencesWindow.loadFile(path.join(__dirname, '../preferences/preferences.html'));
 
-    // 窗口加载完成后，发送当前语言设置
     preferencesWindow.webContents.once('did-finish-load', () => {
         const currentLocale = i18n.currentLocale() || 'en';
         preferencesWindow.webContents.send('language-changed', currentLocale);
     });
 
-    // 窗口关闭事件处理
     preferencesWindow.on('closed', () => {
         preferencesWindow = null;
     });
 
-    // 隐藏菜单栏
     preferencesWindow.setMenuBarVisibility(false);
 }
 
-/**
- * 创建关于窗口
- * 如果窗口已存在，则聚焦到现有窗口
- */
-function createAboutWindow() {
-    // 如果窗口已存在，则聚焦到现有窗口
+function openAboutWindow() {
     if (aboutWindow) {
         aboutWindow.focus();
         return;
     }
 
-    // 创建关于窗口
     aboutWindow = new BrowserWindow({
-        width: WINDOW_CONFIG.ABOUT.width,
-        height: WINDOW_CONFIG.ABOUT.height,
-        parent: mainWindow, // 父窗口
-        modal: true, // 模态窗口
-        icon: path.join(__dirname, '../../resources/icons/icon.jpg'), // 窗口图标
+        width: AppConfig.WINDOWS.ABOUT.width,
+        height: AppConfig.WINDOWS.ABOUT.height,
+        parent: primaryWindow,
+        modal: true,
+        icon: path.join(__dirname, '../../resources/icons/icon.jpg'),
         webPreferences: {
-            nodeIntegration: true, // 启用 Node.js 集成
-            contextIsolation: false // 禁用上下文隔离
+            nodeIntegration: true,
+            contextIsolation: false
         },
         title: '关于 Anduin',
-        resizable: false, // 不可调整大小
-        minimizable: false, // 不可最小化
-        maximizable: false, // 不可最大化
-        frame: true, // 显示窗口框架
-        autoHideMenuBar: true // 自动隐藏菜单栏
+        resizable: false,
+        minimizable: false,
+        maximizable: false,
+        frame: true,
+        autoHideMenuBar: true
     });
 
-    // 加载关于页面
     aboutWindow.loadFile(path.join(__dirname, '../about/about.html'));
 
-    // 窗口加载完成后，发送当前语言设置
     aboutWindow.webContents.once('did-finish-load', () => {
         const currentLocale = i18n.currentLocale() || 'en';
         aboutWindow.webContents.send('language-changed', currentLocale);
     });
 
-    // 窗口关闭事件处理
     aboutWindow.on('closed', () => {
         aboutWindow = null;
     });
@@ -354,7 +305,7 @@ ipcMain.on('get-settings', (event) => {
  * 打开偏好设置窗口
  */
 ipcMain.on('open-preferences', () => {
-    createPreferencesWindow();
+    openPreferencesWindow();
 });
 
 /**
@@ -367,7 +318,7 @@ ipcMain.on('change-language', (event, locale) => {
     i18n.setLocale(locale);
     
     // 2. 重新构建并设置原生应用菜单
-    changeLanguage(locale, sendToRenderer, fileUtils, mainWindow, createPreferencesWindow);
+    changeLanguage(locale, sendMessageToRenderer, fileService, primaryWindow, openPreferencesWindow);
     
     // 3. 同步更新 settings.json 中的语言设置
     const settings = readSettings();
@@ -404,7 +355,7 @@ ipcMain.on('change-theme', (event, themeId) => {
  * 打开关于窗口
  */
 ipcMain.on('open-about', () => {
-    createAboutWindow();
+    openAboutWindow();
 });
 
 /**
@@ -425,7 +376,7 @@ ipcMain.on('close-about-window', () => {
 ipcMain.handle('export-pdf', async (event, data) => {
     try {
         // 显示保存对话框
-        const {filePath, canceled} = await dialog.showSaveDialog(mainWindow, {
+        const {filePath, canceled} = await dialog.showSaveDialog(primaryWindow, {
             title: '导出为 PDF',
             defaultPath: data.defaultFilename + '.pdf',
             filters: [
@@ -454,7 +405,7 @@ ipcMain.handle('export-pdf', async (event, data) => {
         await pdfWindow.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(fullHtml));
 
         // 等待页面完全加载（延迟确保样式和内容都已渲染）
-        await new Promise(resolve => setTimeout(resolve, RENDER_DELAY));
+        await new Promise(resolve => setTimeout(resolve, AppConfig.DELAYS.RENDER));
 
         // 使用 Electron 的 printToPDF API 生成 PDF
         const pdfData = await pdfWindow.webContents.printToPDF({
@@ -483,7 +434,7 @@ ipcMain.handle('export-pdf', async (event, data) => {
 ipcMain.handle('export-html', async (event, data) => {
     try {
         // 显示保存对话框
-        const {filePath, canceled} = await dialog.showSaveDialog(mainWindow, {
+        const {filePath, canceled} = await dialog.showSaveDialog(primaryWindow, {
             title: '导出为 HTML',
             defaultPath: data.defaultFilename + '.html',
             filters: [
@@ -536,7 +487,7 @@ ipcMain.handle('print-document', async (event, data) => {
         await printWindow.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(fullHtml));
 
         // 等待页面完全加载（延迟确保样式和内容都已渲染）
-        await new Promise(resolve => setTimeout(resolve, RENDER_DELAY));
+        await new Promise(resolve => setTimeout(resolve, AppConfig.DELAYS.RENDER));
 
         // 使用 Electron 的 print API 弹出打印对话框
         const printOptions = {
@@ -554,7 +505,7 @@ ipcMain.handle('print-document', async (event, data) => {
                 if (printWindow && !printWindow.isDestroyed()) {
                     printWindow.close();
                 }
-            }, CLOSE_DELAY);
+            }, AppConfig.DELAYS.PRINT_CLOSE);
         });
 
         return {success: true};
@@ -577,7 +528,7 @@ ipcMain.handle('print-document', async (event, data) => {
 ipcMain.handle('export-image', async (event, data) => {
     try {
         // 显示保存对话框
-        const {filePath, canceled} = await dialog.showSaveDialog(mainWindow, {
+        const {filePath, canceled} = await dialog.showSaveDialog(primaryWindow, {
             title: '导出为图像',
             defaultPath: data.defaultFilename + '.png',
             filters: [
@@ -592,7 +543,7 @@ ipcMain.handle('export-image', async (event, data) => {
         }
 
         // 捕获主窗口的页面截图
-        const image = await mainWindow.webContents.capturePage();
+        const image = await primaryWindow.webContents.capturePage();
         // 根据文件扩展名决定保存格式
         const buffer = filePath.toLowerCase().endsWith('.png')
             ? image.toPNG() // PNG 格式（无损）
@@ -620,7 +571,7 @@ ipcMain.handle('save-file', async (event, data) => {
         // 如果没有提供文件路径，显示保存对话框
         if (!filePath) {
             const defaultFilename = data.defaultFilename || '未命名';
-            const {filePath: selectedPath, canceled} = await dialog.showSaveDialog(mainWindow, {
+            const {filePath: selectedPath, canceled} = await dialog.showSaveDialog(primaryWindow, {
                 title: '保存文件',
                 defaultPath: defaultFilename + '.md',
                 filters: [
@@ -655,7 +606,7 @@ ipcMain.handle('save-file', async (event, data) => {
 ipcMain.handle('export-markdown', async (event, data) => {
     try {
         // 显示保存对话框
-        const {filePath, canceled} = await dialog.showSaveDialog(mainWindow, {
+        const {filePath, canceled} = await dialog.showSaveDialog(primaryWindow, {
             title: '导出为 Markdown',
             defaultPath: data.defaultFilename + '.md',
             filters: [
@@ -683,7 +634,7 @@ ipcMain.handle('export-markdown', async (event, data) => {
  */
 ipcMain.handle('select-image-file', async () => {
     try {
-        const result = await dialog.showOpenDialog(mainWindow, {
+        const result = await dialog.showOpenDialog(primaryWindow, {
             title: '选择图片文件',
             filters: [
                 {name: '图片文件', extensions: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg']},
@@ -836,20 +787,17 @@ ${content}
  * 1. --new-md <目录路径> - 在指定目录创建新 Markdown 文件
  * 2. <文件路径> - 打开指定的 .md 文件
  */
-function handleCommandLineArgs() {
-    const args = process.argv.slice(1); // 获取命令行参数（排除 node/electron 路径）
+function parseCommandLineArgs() {
+    const args = process.argv.slice(1);
 
     for (let i = 0; i < args.length; i++) {
-        // 处理 --new-md 参数
         if (args[i] === '--new-md' && i + 1 < args.length) {
-            newMdPath = args[i + 1];
+            createTargetDir = args[i + 1];
             break;
         } else if (args[i] && !args[i].startsWith('--') && !args[i].includes('electron')) {
-        // 检查是否是文件路径（排除以 -- 开头的参数和包含 electron 的路径）
             const potentialPath = path.resolve(args[i]);
-            // 验证文件是否存在且是 .md 文件
             if (fs.existsSync(potentialPath) && path.extname(potentialPath).toLowerCase() === '.md') {
-                fileToOpen = potentialPath;
+                initialFilePath = potentialPath;
                 break;
             }
         }
@@ -863,14 +811,13 @@ function handleCommandLineArgs() {
  * 在 macOS 上，当应用未运行时双击文件会触发此事件
  */
 app.on('open-file', (event, filePath) => {
-    event.preventDefault(); // 阻止默认行为
-    fileToOpen = filePath;
+    event.preventDefault();
+    initialFilePath = filePath;
 
-    // 如果主窗口已存在，直接打开文件；否则在创建窗口时打开
-    if (mainWindow && fileUtils) {
-        fileUtils.openFile(filePath);
+    if (primaryWindow && fileService) {
+        fileService.openFile(filePath);
     } else {
-        createWindow(filePath);
+        createPrimaryWindow(filePath);
     }
 });
 
@@ -879,19 +826,14 @@ app.on('open-file', (event, filePath) => {
  * 当 Electron 完成初始化时触发
  */
 app.on('ready', () => {
-    // 处理命令行参数
-    handleCommandLineArgs();
-    // 创建主窗口
-    createWindow(fileToOpen);
+    parseCommandLineArgs();
+    createPrimaryWindow(initialFilePath);
 
-    // 如果需要在指定目录创建新文件，在窗口加载完成后执行
-    if (newMdPath && mainWindow && fileUtils) {
-        mainWindow.webContents.once('did-finish-load', () => {
-            fileUtils.createNewMdFile(newMdPath);
+    if (createTargetDir && primaryWindow && fileService) {
+        primaryWindow.webContents.once('did-finish-load', () => {
+            fileService.createMarkdownFile(createTargetDir);
         });
     }
-
-    // Win+. 快捷键由系统处理，用于打开系统表情符号选择器
 });
 
 /**
@@ -917,9 +859,8 @@ app.on('will-quit', () => {
  * 当用户点击 Dock 图标时触发
  */
 app.on('activate', () => {
-    // 如果没有窗口，创建新窗口
-    if (mainWindow === null) {
-        createWindow();
+    if (primaryWindow === null) {
+        createPrimaryWindow();
     }
 });
 
@@ -942,25 +883,20 @@ if (!gotTheLock) {
      * @param {Array} commandLine - 命令行参数数组
      * @param {string} workingDirectory - 工作目录
      */
-    app.on('second-instance', (event, commandLine, _workingDirectory) => {
-        // 如果主窗口存在，恢复并聚焦
-        if (mainWindow) {
-            if (mainWindow.isMinimized()) {
-                mainWindow.restore();
-            }
-            mainWindow.focus();
+    app.on('second-instance', (event, commandLine) => {
+        if (primaryWindow) {
+            if (primaryWindow.isMinimized()) primaryWindow.restore();
+            primaryWindow.focus();
 
-            // 检查命令行参数中是否有文件路径
-            const filePath = commandLine.find(arg =>
-                !arg.startsWith('--') && // 排除选项参数
-                !arg.includes('electron') && // 排除 electron 路径
-                path.extname(arg).toLowerCase() === '.md' && // 必须是 .md 文件
-                fs.existsSync(arg) // 文件必须存在
+            const filePath = commandLine.find(arg => 
+                !arg.startsWith('--') && 
+                !arg.includes('electron') && 
+                path.extname(arg).toLowerCase() === '.md' && 
+                fs.existsSync(arg)
             );
 
-            // 如果找到文件路径，打开文件
-            if (filePath) {
-                fileUtils.openFile(filePath);
+            if (filePath && fileService) {
+                fileService.openFile(filePath);
             }
         }
     });

@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const {shell, ipcRenderer} = require('electron');
     const path = require('path');
     const fs = require('fs');
-    const i18n = require('../util/i18n');
+    const i18n = require('../shared/i18n');
     const i18nUI = require('../util/i18nUI');
     const themeUI = require('../util/themeUI');
 

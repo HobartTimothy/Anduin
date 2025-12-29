@@ -9,7 +9,7 @@ let themeManager = null;
 try {
     // 在 Node.js 环境中直接 require
     if (typeof require !== 'undefined') {
-        themeManager = require('../util/theme');
+        themeManager = require('../shared/theme');
     }
 } catch (e) {
     // 如果 require 失败，说明在渲染进程中，需要通过 window.themeAPI 获取

@@ -27,20 +27,20 @@ const i18nUI = window.i18nUIAPI || {}; // i18nUI 模块
 const themeAPI = window.themeAPI || {}; // 主题管理模块
 
 // ==================== DOM 元素引用 ====================
-const editor = document.getElementById('editor'); // Markdown 编辑器文本域
-const preview = document.getElementById('preview'); // 预览面板
-const resultPane = document.getElementById('result-pane'); // 结果模式编辑面板
+const markdownInput = document.getElementById('editor'); // Markdown 编辑器文本域（源码输入）
+const previewContainerContainer = document.getElementById('previewContainer'); // 预览面板
+const wysiwygEditor = document.getElementById('result-pane'); // 结果模式编辑面板（富文本编辑器）
 const appRoot = document.getElementById('app-root'); // 应用根容器，用于切换模式样式
 
 // ==================== 全局状态变量 ====================
 
 /**
- * 当前编辑模式
+ * 当前视图模式
  * - 'split': 对比模式，同时显示编辑器和预览
  * - 'source': 源代码模式，只显示编辑器
  * - 'result': 结果模式，只显示渲染后的 HTML（可编辑）
  */
-let currentMode = 'split';
+let viewMode = 'split';
 // 使用引用对象来存储当前文件路径，以便在命令处理器中修改
 const currentFilePathRef = {current: null};
 // 使用引用对象来存储对话框函数，以便临时替换
@@ -84,14 +84,14 @@ function _doRenderMarkdown(text) {
     try {
         const rawHtml = marked.parse(text || '');
         // 对于桌面本地应用，简单场景下可以直接使用 marked 的输出
-        preview.innerHTML = rawHtml;
+        previewContainerContainer.innerHTML = rawHtml;
         // 如果当前是结果模式，同时更新结果面板
-        if (currentMode === 'result') {
-            resultPane.innerHTML = rawHtml;
+        if (viewMode === 'result') {
+            wysiwygEditor.innerHTML = rawHtml;
         }
     } catch (error) {
         console.error('Markdown 渲染错误:', error);
-        preview.innerHTML = '<p style="color: red;">渲染错误: ' + error.message + '</p>';
+        previewContainerContainer.innerHTML = '<p style="color: red;">渲染错误: ' + error.message + '</p>';
     }
 }
 
@@ -100,30 +100,30 @@ function _doRenderMarkdown(text) {
  * @param {string} mode - 模式名称：'split'（对比模式）、'source'（源代码模式）、'result'（结果模式）
  */
 function setMode(mode) {
-    currentMode = mode;
+    viewMode = mode;
     // 更新根容器的类名，用于应用对应的 CSS 样式
     appRoot.className = `app-root mode-${mode}`;
 
     if (mode === 'result') {
         // 切换到结果模式时，将当前 markdown 渲染到结果面板
         isUpdatingResultPane = true;
-        const markdown = editor.value || '';
+        const markdown = markdownInput.value || '';
         try {
-            resultPane.innerHTML = marked.parse(markdown);
+            wysiwygEditor.innerHTML = marked.parse(markdown);
         } catch (error) {
             console.error('Markdown 渲染错误:', error);
-            resultPane.innerHTML = '<p style="color: red;">渲染错误: ' + error.message + '</p>';
+            wysiwygEditor.innerHTML = '<p style="color: red;">渲染错误: ' + error.message + '</p>';
         }
 
         // 确保 result-pane 可以编辑
-        resultPane.contentEditable = 'true';
+        wysiwygEditor.contentEditable = 'true';
 
         // 延迟聚焦，确保 DOM 已更新
         setTimeout(() => {
-            resultPane.focus();
+            wysiwygEditor.focus();
             // 将光标移动到末尾
             const range = document.createRange();
-            range.selectNodeContents(resultPane);
+            range.selectNodeContents(wysiwygEditor);
             range.collapse(false);
             const selection = window.getSelection();
             selection.removeAllRanges();
@@ -132,10 +132,10 @@ function setMode(mode) {
         }, 50);
     } else if (mode === 'source') {
         // 切换到源代码模式时，聚焦编辑器
-        editor.focus();
+        markdownInput.focus();
     } else {
         // 对比模式：同时显示编辑器和预览
-        renderMarkdown(editor.value, true); // 模式切换时立即渲染
+        renderMarkdown(markdownInput.value, true); // 模式切换时立即渲染
     }
 }
 
@@ -150,9 +150,9 @@ setMode('split');
  * 编辑器输入事件监听
  * 当用户在编辑器中输入时，实时更新预览（结果模式除外）
  */
-editor.addEventListener('input', () => {
-    if (currentMode !== 'result') {
-        renderMarkdown(editor.value);
+markdownInput.addEventListener('input', () => {
+    if (viewMode !== 'result') {
+        renderMarkdown(markdownInput.value);
     }
 });
 
@@ -160,9 +160,9 @@ editor.addEventListener('input', () => {
  * 编辑器回车键事件处理
  * 在列表项中按回车时，自动创建新的列表项
  */
-editor.addEventListener('keydown', (e) => {
+markdownInput.addEventListener('keydown', (e) => {
     // 只在源代码模式下处理，且只处理回车键
-    if (currentMode === 'result' || e.key !== 'Enter') {
+    if (viewMode === 'result' || e.key !== 'Enter') {
         return;
     }
 
@@ -173,9 +173,9 @@ editor.addEventListener('keydown', (e) => {
         e.preventDefault(); // 阻止默认的回车行为
 
         const {lineStart, lineEnd} = getCurrentLineRange();
-        const value = editor.value;
+        const value = markdownInput.value;
         const currentLine = value.slice(lineStart, lineEnd);
-        const cursorPos = editor.selectionStart;
+        const cursorPos = markdownInput.selectionStart;
 
         // 检查光标是否在列表项内容的末尾（即列表项为空或光标在标记之后）
         const contentStart = lineStart + listInfo.indent.length + listInfo.marker.length;
@@ -187,9 +187,9 @@ editor.addEventListener('keydown', (e) => {
             // lineEnd 不包含换行符，所以需要检查下一行
             const nextLineStart = lineEnd < value.length && value[lineEnd] === '\n' ? lineEnd + 1 : lineEnd;
             const newValue = value.slice(0, lineStart) + '\n' + value.slice(nextLineStart);
-            editor.value = newValue;
-            editor.selectionStart = editor.selectionEnd = lineStart;
-            renderMarkdown(editor.value);
+            markdownInput.value = newValue;
+            markdownInput.selectionStart = markdownInput.selectionEnd = lineStart;
+            renderMarkdown(markdownInput.value);
             return;
         }
 
@@ -198,10 +198,10 @@ editor.addEventListener('keydown', (e) => {
             const nextMarker = getNextListMarker(listInfo);
             const insertPos = lineEnd;
             const newValue = value.slice(0, insertPos) + '\n' + nextMarker + value.slice(insertPos);
-            editor.value = newValue;
+            markdownInput.value = newValue;
             const newCursorPos = insertPos + 1 + nextMarker.length;
-            editor.selectionStart = editor.selectionEnd = newCursorPos;
-            renderMarkdown(editor.value);
+            markdownInput.selectionStart = markdownInput.selectionEnd = newCursorPos;
+            renderMarkdown(markdownInput.value);
         }
     }
 });
@@ -307,9 +307,9 @@ let isUpdatingResultPane = false; // 标记是否正在更新结果面板，防�
  * 结果模式输入事件处理
  * 当用户在结果面板中编辑时，将 HTML 转换为 Markdown 并同步到编辑器
  */
-resultPane.addEventListener('input', () => {
+wysiwygEditor.addEventListener('input', () => {
     // 只在结果模式且不在更新状态时处理
-    if (currentMode !== 'result' || isUpdatingResultPane) {
+    if (viewMode !== 'result' || isUpdatingResultPane) {
         return;
     }
 
@@ -323,18 +323,18 @@ resultPane.addEventListener('input', () => {
             // 保存当前光标位置（暂未使用，但保留用于未来优化）
             const selection = window.getSelection();
             // 将结果面板的 HTML 转换为 Markdown
-            const html = resultPane.innerHTML;
+            const html = wysiwygEditor.innerHTML;
             const markdown = htmlToMarkdown(html);
-            editor.value = markdown;
+            markdownInput.value = markdown;
 
             // 重新渲染结果面板（确保格式一致）
             isUpdatingResultPane = true;
-            resultPane.innerHTML = marked.parse(markdown);
+            wysiwygEditor.innerHTML = marked.parse(markdown);
 
             // 尝试恢复光标位置（简化处理：移动到末尾）
-            if (resultPane.firstChild) {
+            if (wysiwygEditor.firstChild) {
                 const newRange = document.createRange();
-                newRange.selectNodeContents(resultPane);
+                newRange.selectNodeContents(wysiwygEditor);
                 newRange.collapse(false); // 移动到末尾
                 selection.removeAllRanges();
                 selection.addRange(newRange);
@@ -352,8 +352,8 @@ resultPane.addEventListener('input', () => {
  * 结果模式粘贴事件处理
  * 在结果模式中粘贴时，只粘贴纯文本，避免引入格式问题
  */
-resultPane.addEventListener('paste', (e) => {
-    if (currentMode !== 'result') {
+wysiwygEditor.addEventListener('paste', (e) => {
+    if (viewMode !== 'result') {
         return;
     }
 
@@ -381,17 +381,17 @@ resultPane.addEventListener('paste', (e) => {
  * @param {string} after - 选中文本后要添加的标记（默认与 before 相同）
  */
 function surroundSelection(before, after = before) {
-    const start = editor.selectionStart;
-    const end = editor.selectionEnd;
-    const value = editor.value;
+    const start = markdownInput.selectionStart;
+    const end = markdownInput.selectionEnd;
+    const value = markdownInput.value;
     const selected = value.slice(start, end);
     const newText = before + selected + after;
-    editor.value = value.slice(0, start) + newText + value.slice(end);
-    editor.focus();
+    markdownInput.value = value.slice(0, start) + newText + value.slice(end);
+    markdownInput.focus();
     // 重新选中被标记的文本
-    editor.selectionStart = start + before.length;
-    editor.selectionEnd = start + before.length + selected.length;
-    renderMarkdown(editor.value);
+    markdownInput.selectionStart = start + before.length;
+    markdownInput.selectionEnd = start + before.length + selected.length;
+    renderMarkdown(markdownInput.value);
 }
 
 /**
@@ -400,9 +400,9 @@ function surroundSelection(before, after = before) {
  * @param {string} prefix - 要切换的前缀（如 '# '、'- '、'1. ' 等）
  */
 function toggleLinePrefix(prefix) {
-    const start = editor.selectionStart;
-    const end = editor.selectionEnd;
-    const value = editor.value;
+    const start = markdownInput.selectionStart;
+    const end = markdownInput.selectionEnd;
+    const value = markdownInput.value;
     const before = value.slice(0, start);
     const selected = value.slice(start, end);
     const after = value.slice(end);
@@ -416,11 +416,11 @@ function toggleLinePrefix(prefix) {
     });
 
     const newSelected = lines.join('\n');
-    editor.value = before + newSelected + after;
-    editor.focus();
-    editor.selectionStart = start;
-    editor.selectionEnd = start + newSelected.length;
-    renderMarkdown(editor.value);
+    markdownInput.value = before + newSelected + after;
+    markdownInput.focus();
+    markdownInput.selectionStart = start;
+    markdownInput.selectionEnd = start + newSelected.length;
+    renderMarkdown(markdownInput.value);
 }
 
 /**
@@ -428,8 +428,8 @@ function toggleLinePrefix(prefix) {
  * @returns {{lineStart: number, lineEnd: number}} 行的起始和结束位置
  */
 function getCurrentLineRange() {
-    const value = editor.value;
-    const pos = editor.selectionStart;
+    const value = markdownInput.value;
+    const pos = markdownInput.selectionStart;
     const lineStart = value.lastIndexOf('\n', pos - 1) + 1;
     let lineEnd = value.indexOf('\n', pos);
     if (lineEnd === -1) {
@@ -444,7 +444,7 @@ function getCurrentLineRange() {
  */
 function getCurrentLine() {
     const {lineStart, lineEnd} = getCurrentLineRange();
-    return editor.value.slice(lineStart, lineEnd);
+    return markdownInput.value.slice(lineStart, lineEnd);
 }
 
 /**
@@ -560,16 +560,16 @@ function insertTextAtCursor(text) {
     }
 
     // 确保编辑器获得焦点
-    editor.focus();
+    markdownInput.focus();
 
     // 获取当前光标位置，如果不可用则使用文档末尾
-    const start = (editor.selectionStart !== undefined && editor.selectionStart !== null)
-        ? editor.selectionStart
-        : (editor.value ? editor.value.length : 0);
-    const end = (editor.selectionEnd !== undefined && editor.selectionEnd !== null)
-        ? editor.selectionEnd
-        : (editor.value ? editor.value.length : 0);
-    const value = editor.value || '';
+    const start = (markdownInput.selectionStart !== undefined && markdownInput.selectionStart !== null)
+        ? markdownInput.selectionStart
+        : (markdownInput.value ? markdownInput.value.length : 0);
+    const end = (markdownInput.selectionEnd !== undefined && markdownInput.selectionEnd !== null)
+        ? markdownInput.selectionEnd
+        : (markdownInput.value ? markdownInput.value.length : 0);
+    const value = markdownInput.value || '';
 
     console.log('insertTextAtCursor - 插入前:', {
         start,
@@ -580,13 +580,13 @@ function insertTextAtCursor(text) {
 
     // 插入文本
     const newValue = value.slice(0, start) + text + value.slice(end);
-    editor.value = newValue;
+    markdownInput.value = newValue;
     const newPos = start + text.length;
 
     // 将光标移动到插入文本的末尾
     try {
-        editor.selectionStart = newPos;
-        editor.selectionEnd = newPos;
+        markdownInput.selectionStart = newPos;
+        markdownInput.selectionEnd = newPos;
     } catch (e) {
         console.warn('设置光标位置失败:', e);
     }
@@ -594,19 +594,19 @@ function insertTextAtCursor(text) {
     console.log('insertTextAtCursor - 插入后:', {
         newPos,
         newValueLength: newValue.length,
-        cursorPosition: editor.selectionStart
+        cursorPosition: markdownInput.selectionStart
     });
 
     // 触发 input 事件以确保其他监听器能够响应
     try {
         const inputEvent = new Event('input', {bubbles: true, cancelable: true});
-        editor.dispatchEvent(inputEvent);
+        markdownInput.dispatchEvent(inputEvent);
     } catch (e) {
         console.warn('触发 input 事件失败:', e);
     }
 
     // 渲染 Markdown
-    renderMarkdown(editor.value);
+    renderMarkdown(markdownInput.value);
 }
 
 /**
@@ -615,7 +615,7 @@ function insertTextAtCursor(text) {
  */
 function adjustHeadingLevel(delta) {
     const {lineStart, lineEnd} = getCurrentLineRange();
-    const value = editor.value;
+    const value = markdownInput.value;
     const line = value.slice(lineStart, lineEnd);
     // 匹配标题格式：1-6 个 # 号后跟空格和标题文本
     const match = line.match(/^(#{1,6})\s+(.*)$/);
@@ -631,10 +631,10 @@ function adjustHeadingLevel(delta) {
         level = 6;
     }
     const newLine = `${'#'.repeat(level)} ${match[2]}`;
-    editor.value = value.slice(0, lineStart) + newLine + value.slice(lineEnd);
-    editor.focus();
-    editor.selectionStart = editor.selectionEnd = lineStart + newLine.length;
-    renderMarkdown(editor.value);
+    markdownInput.value = value.slice(0, lineStart) + newLine + value.slice(lineEnd);
+    markdownInput.focus();
+    markdownInput.selectionStart = markdownInput.selectionEnd = lineStart + newLine.length;
+    renderMarkdown(markdownInput.value);
 }
 
 /**
@@ -734,8 +734,8 @@ let lastExportSettings = null; // 保存上一次的导出设置，用于快速�
  * @returns {{content: string, html: string, title: string, defaultFilename: string}} 导出所需的数据
  */
 function getExportData() {
-    const content = editor.value; // Markdown 原始内容
-    const html = preview.innerHTML; // 渲染后的 HTML
+    const content = markdownInput.value; // Markdown 原始内容
+    const html = previewContainer.innerHTML; // 渲染后的 HTML
 
     let title = '未命名';
     let defaultFilename = '未命名';
@@ -997,14 +997,14 @@ function showInputDialog(message, defaultValue = '') {
             // 延迟恢复焦点，确保对话框完全关闭
             setTimeout(() => {
                 // 如果之前有活动元素且是编辑器，恢复焦点
-                if (previousActiveElement && (previousActiveElement === editor || previousActiveElement === resultPane)) {
+                if (previousActiveElement && (previousActiveElement === editor || previousActiveElement === wysiwygEditor)) {
                     previousActiveElement.focus();
-                } else if (currentMode === 'result' && resultPane) {
+                } else if (viewMode === 'result' && wysiwygEditor) {
                     // 结果模式：聚焦结果面板
-                    resultPane.focus();
+                    wysiwygEditor.focus();
                 } else if (editor) {
                     // 其他模式：聚焦编辑器
-                    editor.focus();
+                    markdownInput.focus();
                 }
             }, 50);
         };
@@ -1199,12 +1199,12 @@ function showInsertTableDialog() {
         // 恢复焦点的辅助函数
         const restoreFocus = () => {
             setTimeout(() => {
-                if (previousActiveElement && (previousActiveElement === editor || previousActiveElement === resultPane)) {
+                if (previousActiveElement && (previousActiveElement === editor || previousActiveElement === wysiwygEditor)) {
                     previousActiveElement.focus();
-                } else if (currentMode === 'result' && resultPane) {
-                    resultPane.focus();
+                } else if (viewMode === 'result' && wysiwygEditor) {
+                    wysiwygEditor.focus();
                 } else if (editor) {
-                    editor.focus();
+                    markdownInput.focus();
                 }
             }, 50);
         };
@@ -1264,19 +1264,19 @@ async function insertLink() {
     if (!url) {
         return;
     }
-    const start = editor.selectionStart;
-    const end = editor.selectionEnd;
-    const value = editor.value;
+    const start = markdownInput.selectionStart;
+    const end = markdownInput.selectionEnd;
+    const value = markdownInput.value;
     const selected = value.slice(start, end) || '链接文本';
     const md = `[${selected}](${url})`;
-    editor.value = value.slice(0, start) + md + value.slice(end);
+    markdownInput.value = value.slice(0, start) + md + value.slice(end);
     // 延迟聚焦，确保对话框完全关闭
     setTimeout(() => {
-        editor.focus();
-        editor.selectionStart = start;
-        editor.selectionEnd = start + md.length;
+        markdownInput.focus();
+        markdownInput.selectionStart = start;
+        markdownInput.selectionEnd = start + md.length;
     }, 100);
-    renderMarkdown(editor.value);
+    renderMarkdown(markdownInput.value);
 }
 
 /**
@@ -1286,7 +1286,7 @@ async function insertLink() {
 async function insertImage() {
     try {
         // 确保编辑器获得焦点
-        editor.focus();
+        markdownInput.focus();
 
         // 首先尝试打开文件选择对话框选择本地图片
         const result = await ipcRenderer.invoke('select-image-file');
@@ -1323,15 +1323,15 @@ async function insertImage() {
             const md = `![${alt}](${encodedUrl})`;
 
             console.log('生成的 Markdown:', md); // 调试信息
-            console.log('编辑器当前值长度:', editor.value.length); // 调试信息
-            console.log('光标位置:', editor.selectionStart, editor.selectionEnd); // 调试信息
+            console.log('编辑器当前值长度:', markdownInput.value.length); // 调试信息
+            console.log('光标位置:', markdownInput.selectionStart, markdownInput.selectionEnd); // 调试信息
 
             insertTextAtCursor(md);
 
             // 验证插入是否成功
             setTimeout(() => {
-                console.log('插入后编辑器值长度:', editor.value.length); // 调试信息
-                console.log('插入后光标位置:', editor.selectionStart, editor.selectionEnd); // 调试信息
+                console.log('插入后编辑器值长度:', markdownInput.value.length); // 调试信息
+                console.log('插入后光标位置:', markdownInput.selectionStart, markdownInput.selectionEnd); // 调试信息
             }, 100);
 
             return;
@@ -1444,11 +1444,11 @@ channels.forEach((ch) => {
 ipcRenderer.on('file-opened', (event, data) => {
     if (data && data.path) {
         currentFilePathRef.current = data.path;
-        editor.value = data.content || '';
-        renderMarkdown(editor.value, true); // 文件加载时立即渲染
-        editor.focus();
+        markdownInput.value = data.content || '';
+        renderMarkdown(markdownInput.value, true); // 文件加载时立即渲染
+        markdownInput.focus();
         // 保存当前文件路径，用于后续保存和导出
-        editor.dataset.currentPath = data.path;
+        markdownInput.dataset.currentPath = data.path;
     }
 });
 
@@ -1459,32 +1459,32 @@ ipcRenderer.on('file-opened', (event, data) => {
 ipcRenderer.on('file-imported', (event, data) => {
     if (data && data.content !== undefined) {
         // 获取当前编辑器内容
-        const currentContent = editor.value || '';
+        const currentContent = markdownInput.value || '';
 
         // 如果当前内容不为空，在导入内容前添加换行
         const separator = currentContent && !currentContent.endsWith('\n') ? '\n\n' : '';
 
         // 将导入的内容追加到当前内容
-        editor.value = currentContent + separator + data.content;
+        markdownInput.value = currentContent + separator + data.content;
 
         // 更新预览（导入时立即渲染）
-        renderMarkdown(editor.value, true);
+        renderMarkdown(markdownInput.value, true);
 
         // 确保编辑器获得焦点（延迟执行，确保文件对话框已关闭）
         setTimeout(() => {
-            if (currentMode !== 'result') {
-                editor.focus();
+            if (viewMode !== 'result') {
+                markdownInput.focus();
             } else {
-                resultPane.focus();
+                wysiwygEditor.focus();
             }
         }, 100);
 
         // 将光标移动到文档末尾
-        editor.focus();
-        editor.selectionStart = editor.selectionEnd = editor.value.length;
+        markdownInput.focus();
+        markdownInput.selectionStart = markdownInput.selectionEnd = markdownInput.value.length;
 
         // 滚动到底部
-        editor.scrollTop = editor.scrollHeight;
+        markdownInput.scrollTop = markdownInput.scrollHeight;
     }
 });
 
@@ -1599,7 +1599,7 @@ if (typeof createTableToolbar !== 'undefined') {
 
 
     // 在 result-pane 中检测表格点击
-    resultPane.addEventListener('click', (e) => {
+    wysiwygEditor.addEventListener('click', (e) => {
         const table = e.target.closest('table');
         if (table) {
             if (typeof showTableToolbar !== 'undefined') {
@@ -1608,10 +1608,10 @@ if (typeof createTableToolbar !== 'undefined') {
         }
     });
 
-    // 在 preview-pane 中也可以显示工具栏（只读模式）
-    preview.addEventListener('click', (e) => {
+    // 在 previewContainer-pane 中也可以显示工具栏（只读模式）
+    previewContainer.addEventListener('click', (e) => {
         const table = e.target.closest('table');
-        if (table && currentMode === 'split') {
+        if (table && viewMode === 'split') {
             // 在预览模式下，可以显示工具栏但可能功能受限
             if (typeof showTableToolbar !== 'undefined') {
                 showTableToolbar(table, tableToolbar);
@@ -1633,7 +1633,7 @@ if (typeof createTableToolbar !== 'undefined') {
      * @returns {HTMLElement|null} 表格元素，未找到返回 null
      */
     function getCurrentTable() {
-        const pane = currentMode === 'result' ? resultPane : preview;
+        const pane = viewMode === 'result' ? wysiwygEditor : previewContainer;
         const tables = pane.querySelectorAll('table');
         return tables.length > 0 ? tables[tables.length - 1] : null;
     }

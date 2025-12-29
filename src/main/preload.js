@@ -27,7 +27,7 @@ contextBridge.exposeInMainWorld('nodeAPI', {
 });
 
 // 暴露 i18n 模块
-const i18n = require('../util/i18n');
+const i18n = require('../shared/i18n');
 const i18nUI = require('../util/i18nUI');
 
 contextBridge.exposeInMainWorld('i18nAPI', {
@@ -73,7 +73,7 @@ contextBridge.exposeInMainWorld('i18nUIAPI', {
 
 // 暴露主题管理模块
 const themeUI = require('../util/themeUI');
-const themeManager = require('../util/theme');
+const themeManager = require('../shared/theme');
 
 contextBridge.exposeInMainWorld('themeAPI', {
     applyTheme: () => {

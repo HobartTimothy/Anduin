@@ -1,8 +1,8 @@
 // 偏好设置页面交互逻辑
 const {ipcRenderer} = require('electron');
-const i18n = require('../util/i18n');
+const i18n = require('../shared/i18n');
 const i18nUI = require('../util/i18nUI'); // 引入 UI 更新工具
-const themeManager = require('../util/theme');
+const themeManager = require('../shared/theme');
 const themeUI = require('../util/themeUI');
 
 // 获取所有菜单项和内容区域

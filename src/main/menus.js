@@ -4,21 +4,21 @@
  */
 
 const { app, Menu, BrowserWindow } = require('electron');
-const i18n = require('../util/i18n');
+const i18n = require('../shared/i18n');
 
 /**
  * 切换语言的辅助函数
  * @param {string} lang - 语言代码 ('en' 或 'zh')
  * @param {Function} sendToRenderer - 向渲染进程发送消息的函数
- * @param {Object} fileUtils - 文件工具类实例
- * @param {Object} mainWindow - 主窗口实例
+ * @param {Object} fileService - 文件服务类实例
+ * @param {Object} primaryWindow - 主窗口实例
  * @param {Function} createPreferencesWindow - 创建偏好设置窗口的函数
  */
-function changeLanguage(lang, sendToRenderer, fileUtils, mainWindow, createPreferencesWindow) {
+function changeLanguage(lang, sendToRenderer, fileService, primaryWindow, createPreferencesWindow) {
     i18n.setLocale(lang);
     
     // 1. 重建菜单
-    const menu = Menu.buildFromTemplate(createMenuTemplate(sendToRenderer, fileUtils, mainWindow, createPreferencesWindow));
+    const menu = Menu.buildFromTemplate(createMenuTemplate(sendToRenderer, fileService, primaryWindow, createPreferencesWindow));
     Menu.setApplicationMenu(menu);
 
     // 2. 通知所有窗口更新 UI (如果渲染进程也需要更新)
@@ -30,14 +30,14 @@ function changeLanguage(lang, sendToRenderer, fileUtils, mainWindow, createPrefe
 /**
  * 创建菜单模板
  * @param {Function} sendToRenderer - 向渲染进程发送消息的函数
- * @param {Object} fileUtils - 文件工具类实例
- * @param {Object} mainWindow - 主窗口实例
+ * @param {Object} fileService - 文件服务类实例
+ * @param {Object} primaryWindow - 主窗口实例
  * @param {Function} createPreferencesWindow - 创建偏好设置窗口的函数
  * @returns {Array} 菜单模板数组
  */
-const themeManager = require('../util/theme');
+const themeManager = require('../shared/theme');
 
-function createMenuTemplate(sendToRenderer, fileUtils, mainWindow, createPreferencesWindow) {
+function createMenuTemplate(sendToRenderer, fileService, primaryWindow, createPreferencesWindow) {
     return [
         {
             label: i18n.t('menu.file'),
@@ -69,9 +69,9 @@ function createMenuTemplate(sendToRenderer, fileUtils, mainWindow, createPrefere
                 {
                     label: i18n.t('menu.file.import'),
                     submenu: [
-                        {label: i18n.t('menu.file.importFromTxt'), click: () => fileUtils.importFromFile()},
-                        {label: i18n.t('menu.file.importFromWord'), click: () => fileUtils.importFromWord()},
-                        {label: i18n.t('menu.file.importFromHTML'), click: () => fileUtils.importFromHTML()}
+                        {label: i18n.t('menu.file.importFromTxt'), click: () => fileService.importTextFile()},
+                        {label: i18n.t('menu.file.importFromWord'), click: () => fileService.importWordDoc()},
+                        {label: i18n.t('menu.file.importFromHTML'), click: () => fileService.importHtmlFile()}
                     ]
                 },
                 {
@@ -444,8 +444,8 @@ function createMenuTemplate(sendToRenderer, fileUtils, mainWindow, createPrefere
                     label: i18n.t('menu.view.alwaysOnTop'),
                     type: 'checkbox',
                     click: (menuItem) => {
-                        if (mainWindow) {
-                            mainWindow.setAlwaysOnTop(menuItem.checked);
+                        if (primaryWindow) {
+                            primaryWindow.setAlwaysOnTop(menuItem.checked);
                         }
                     }
                 },
