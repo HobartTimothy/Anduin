@@ -149,7 +149,7 @@ npm run dist:all
 
 ## 🤖 自动发布
 
-项目支持通过 GitHub Actions 实现自动化构建和发布。当推送新的 Git Tag 时，会自动触发构建流程，生成各平台的安装包并发布到 GitHub Release。
+项目支持通过 GitHub Actions 实现自动化构建和发布。当Publish Release时，会自动触发构建流程，生成各平台的安装包并发布到 GitHub Release中。
 
 ### 前置准备
 
@@ -181,10 +181,9 @@ npm run dist:all
    ```
 
 3. **自动构建和发布：**
-   - GitHub Actions 检测到新 tag 后自动触发工作流
+   - GitHub Actions 检测到新 Publish Release 后自动触发工作流
    - 在 Windows、macOS、Linux 三个平台上并行构建
    - 构建完成后自动上传到 GitHub Release
-   - 创建 Release 页面，包含所有平台的安装包下载链接
 
 ### 构建产物
 
