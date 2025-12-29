@@ -1,0 +1,160 @@
+name: Build and Release
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Windows (x64 and ia32)
+        run: npm run dist
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Windows artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-installer
+          path: dist/*.exe
+          retention-days: 30
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build macOS (x64 and arm64)
+        run: npm run dist:mac
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+
+      - name: Upload macOS artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-installer
+          path: dist/*.dmg
+          retention-days: 30
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libnss3-dev libatk-bridge2.0-dev libdrm2 libxkbcommon-dev libxcomposite-dev libxdamage-dev libxrandr-dev libgbm-dev libxss-dev libasound2-dev
+
+      - name: Build Linux (x64 and ia32)
+        run: npm run dist:linux
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Linux artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-installer
+          path: |
+            dist/*.AppImage
+            dist/*.deb
+          retention-days: 30
+
+  release:
+    needs: [build-windows, build-macos, build-linux]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: List artifacts for debugging
+        run: |
+          echo "Windows artifacts:"
+          find artifacts/windows-installer -type f 2>/dev/null || echo "No Windows artifacts found"
+          echo "macOS artifacts:"
+          find artifacts/macos-installer -type f 2>/dev/null || echo "No macOS artifacts found"
+          echo "Linux artifacts:"
+          find artifacts/linux-installer -type f 2>/dev/null || echo "No Linux artifacts found"
+
+      - name: Upload to Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            artifacts/windows-installer/**
+            artifacts/macos-installer/**
+            artifacts/linux-installer/**
+          tag_name: ${{ github.event.release.tag_name }}
+          body: |
+            ## 🎉 新版本发布
+
+            ### 📦 安装包
+
+            #### Windows
+            - **64位 (x64)**: `Anduin Setup *.exe`
+            - **32位 (ia32)**: `Anduin Setup *.exe`
+
+            #### macOS
+            - **Intel (x64)**: `Anduin-*.dmg`
+            - **Apple Silicon (arm64)**: `Anduin-*.dmg`
+
+            #### Linux
+            - **64位 AppImage (x64)**: `Anduin-*.AppImage`
+            - **32位 AppImage (ia32)**: `Anduin-*.AppImage`
+            - **64位 DEB (x64)**: `anduin_*.deb`
+            - **32位 DEB (ia32)**: `anduin_*.deb`
+
+            ### 📝 使用说明
+
+            1. 下载对应平台的安装包
+            2. 按照各平台的安装方式安装应用
+            3. 享受使用 Anduin 编辑 Markdown 的乐趣！
+
+            ---
+            *自动构建于 ${{ github.event.release.published_at }}*
+          draft: false
+          prerelease: ${{ github.event.release.prerelease }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
