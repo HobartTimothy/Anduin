@@ -21,6 +21,7 @@ const ipcRenderer = window.electronAPI; // IPC 渲染进程接口
 const path = window.nodeAPI.path; // 路径处理工具
 const {createCommandHandlers} = window.commandHandlersAPI; // 命令处理器模块
 const {initContextMenu} = window.contextMenuAPI; // 上下文菜单模块
+const {showThemeMenu, hideThemeMenu, initThemeMenu} = window.themeMenuAPI || {}; // 主题菜单模块
 
 // ==================== DOM 元素引用 ====================
 const editor = document.getElementById('editor'); // Markdown 编辑器文本域
@@ -647,6 +648,20 @@ function adjustHeadingLevel(delta) {
 }
 
 /**
+ * 获取当前主题名称
+ * @returns {string} 当前主题名称
+ */
+function getCurrentTheme() {
+    const themes = ['github-theme', 'newsprint-theme', 'night-theme', 'pixyll-theme', 'whitey-theme'];
+    for (const theme of themes) {
+        if (document.body.classList.contains(theme)) {
+            return theme.replace('-theme', '');
+        }
+    }
+    return 'github'; // 默认主题
+}
+
+/**
  * 设置应用主题
  * @param {string} theme - 主题名称（如 'github'、'newsprint'、'night' 等）
  * @param {boolean} save - 是否保存到设置，默认为 true
@@ -669,6 +684,24 @@ function setTheme(theme, save = true) {
             console.error('保存主题失败:', error);
         }
     }
+}
+
+/**
+ * 显示主题菜单
+ * @param {number} x - 菜单显示的 X 坐标（可选，默认在屏幕中央）
+ * @param {number} y - 菜单显示的 Y 坐标（可选，默认在屏幕中央）
+ */
+function showThemeMenuAt(x, y) {
+    if (!showThemeMenu) {
+        console.warn('主题菜单 API 不可用');
+        return;
+    }
+    const currentTheme = getCurrentTheme();
+    const menuX = x !== undefined ? x : window.innerWidth / 2 - 100;
+    const menuY = y !== undefined ? y : window.innerHeight / 2 - 150;
+    showThemeMenu(menuX, menuY, (themeId) => {
+        setTheme(themeId);
+    }, currentTheme);
 }
 
 /**
@@ -1363,6 +1396,11 @@ const commandHandlers = createCommandHandlers({
     path
 });
 
+// 将 showThemeMenuAt 暴露到全局，以便 commandHandlers 可以调用
+if (typeof window !== 'undefined') {
+    window.showThemeMenuAt = showThemeMenuAt;
+}
+
 /**
  * 处理菜单命令
  * @param {string} channel - 命令通道名称
@@ -1454,6 +1492,18 @@ if (editor && handleMenuCommand && initContextMenu) {
         handleMenuCommand: !!handleMenuCommand,
         initContextMenu: !!initContextMenu
     });
+}
+
+// ==================== 主题菜单 ====================
+// 初始化主题菜单
+if (initThemeMenu && showThemeMenu) {
+    try {
+        initThemeMenu((themeId) => {
+            setTheme(themeId);
+        }, getCurrentTheme);
+    } catch (error) {
+        console.error('主题菜单初始化失败:', error);
+    }
 }
 
 // ==================== 表格工具栏 ====================

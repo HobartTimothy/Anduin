@@ -310,6 +310,12 @@ function createCommandHandlers(dependencies) {
         'paragraph-link-ref': () => insertTextAtCursor('[链接文本][ref]\n\n[ref]: https://example.com'),
 
         // 主题菜单
+        'theme-show-menu': () => {
+            // 这个命令会在 renderer.js 中处理，显示自定义主题菜单
+            if (typeof window !== 'undefined' && window.showThemeMenuAt) {
+                window.showThemeMenuAt();
+            }
+        },
         'theme-github': () => setTheme('github'),
         'theme-newsprint': () => setTheme('newsprint'),
         'theme-night': () => setTheme('night'),

@@ -440,6 +440,8 @@ function createMenuTemplate(sendToRenderer, fileUtils, mainWindow, createPrefere
         {
             label: '主题(T)',
             submenu: [
+                {label: '选择主题...', click: () => sendToRenderer('theme-show-menu')},
+                {type: 'separator'},
                 {label: 'Github', type: 'radio', checked: true, click: () => sendToRenderer('theme-github')},
                 {label: 'Newsprint', type: 'radio', click: () => sendToRenderer('theme-newsprint')},
                 {label: 'Night', type: 'radio', click: () => sendToRenderer('theme-night')},

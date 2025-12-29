@@ -115,6 +115,28 @@ console.log('暴露 contextMenuAPI:', {
 
 contextBridge.exposeInMainWorld('contextMenuAPI', contextMenuAPI);
 
+// 加载并暴露 themeMenu 模块
+const themeMenuPath = path.join(__dirname, '..', 'renderer', 'themeMenu.js');
+const themeMenuModule = require(themeMenuPath);
+
+// 暴露 themeMenu 模块
+const themeMenuAPI = {
+    buildThemeMenu: (handleThemeChange, currentTheme) => {
+        return themeMenuModule.buildThemeMenu(handleThemeChange, currentTheme);
+    },
+    showThemeMenu: (x, y, handleThemeChange, currentTheme) => {
+        return themeMenuModule.showThemeMenu(x, y, handleThemeChange, currentTheme);
+    },
+    hideThemeMenu: () => {
+        return themeMenuModule.hideThemeMenu();
+    },
+    initThemeMenu: (handleThemeChange, getCurrentTheme) => {
+        return themeMenuModule.initThemeMenu(handleThemeChange, getCurrentTheme);
+    }
+};
+
+contextBridge.exposeInMainWorld('themeMenuAPI', themeMenuAPI);
+
 // 暴露菜单命令 API（保持向后兼容）
 contextBridge.exposeInMainWorld('mdEditorAPI', {
     onMenuCommand(callback) {

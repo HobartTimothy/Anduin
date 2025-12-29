@@ -232,6 +232,9 @@ function hideContextMenu() {
     const menu = document.getElementById('md-context-menu');
     if (menu) {
         menu.classList.remove('visible');
+        // 清除内联样式，确保菜单隐藏
+        menu.style.display = 'none';
+        menu.style.visibility = '';
         // 隐藏所有子菜单
         const submenus = menu.querySelectorAll('.context-submenu');
         submenus.forEach(submenu => {
@@ -278,8 +281,9 @@ function initContextMenu(editor, handleMenuCommand, menuHTML = null) {
         if (!menu) {
             return;
         }
-        // 只有当菜单可见时，点击外部才关闭菜单
-        if (menu.classList.contains('visible') && menu.style.display === 'block') {
+        // 检查菜单是否可见（通过类或内联样式）
+        const isVisible = menu.classList.contains('visible') || menu.style.display === 'block';
+        if (isVisible) {
             // 检查点击目标是否在菜单内（包括子菜单）
             const clickedInMenu = menu.contains(e.target);
             if (!clickedInMenu) {
@@ -291,7 +295,13 @@ function initContextMenu(editor, handleMenuCommand, menuHTML = null) {
     // ESC 键隐藏菜单
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
-            hideContextMenu();
+            const menu = document.getElementById('md-context-menu');
+            if (menu) {
+                const isVisible = menu.classList.contains('visible') || menu.style.display === 'block';
+                if (isVisible) {
+                    hideContextMenu();
+                }
+            }
         }
     });
 }
