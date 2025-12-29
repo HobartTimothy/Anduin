@@ -153,4 +153,3 @@ document.addEventListener('click', (e) => {
         ipcRenderer.send('open-themes-website');
     }
 });
-

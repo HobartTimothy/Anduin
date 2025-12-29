@@ -18,7 +18,10 @@
     "lint": "eslint . --ext .js",
     "lint:fix": "eslint . --ext .js --fix"
   },
-  "author": "Robert.HU",
+  "author": {
+    "name": "Robert.HU",
+    "email": "18256077691@163.com"
+  },
   "license": "Apache License",
   "build": {
     "appId": "com.anduin.app",
@@ -66,19 +69,13 @@
     "linux": {
       "target": [
         {
-          "target": "AppImage",
-          "arch": [
-            "x64"
-          ]
-        },
-        {
           "target": "deb",
           "arch": [
             "x64"
           ]
         }
       ],
-      "icon": "resources/icons/icon.jpg",
+      "icon": "resources/icons/icon.png",
       "category": "Office",
       "desktop": {
         "entry": {
@@ -127,7 +124,8 @@
     "electron": "37.3.1",
     "electron-builder": "^26.0.12",
     "eslint": "^8.57.1",
-    "eslint-plugin-node": "^11.1.0"
+    "eslint-plugin-node": "^11.1.0",
+    "sharp": "^0.34.5"
   },
   "dependencies": {
     "mammoth": "^1.11.0",
