@@ -21,6 +21,7 @@
  * @param {Function} dependencies.adjustHeadingLevel - 调整标题级别函数
  * @param {Function} dependencies.insertLink - 插入链接函数
  * @param {Function} dependencies.insertImage - 插入图片函数
+ * @param {Function} dependencies.showInsertTableDialog - 显示插入表格对话框函数
  * @param {Function} dependencies.exportToPDF - 导出为 PDF 函数
  * @param {Function} dependencies.exportToHTML - 导出为 HTML 函数
  * @param {Function} dependencies.exportToImage - 导出为图片函数
@@ -46,6 +47,7 @@ function createCommandHandlers(dependencies) {
         adjustHeadingLevel,
         insertLink,
         insertImage,
+        showInsertTableDialog,
         exportToPDF,
         exportToHTML,
         exportToImage,
@@ -248,7 +250,26 @@ function createCommandHandlers(dependencies) {
         'toggle-ol': () => toggleLinePrefix('1. '),
         'toggle-ul': () => toggleLinePrefix('- '),
         'toggle-task-list': () => toggleLinePrefix('- [ ] '),
-        'paragraph-insert-table': () => insertTextAtCursor('\n| 列1 | 列2 | 列3 |\n| --- | --- | --- |\n| 内容1 | 内容2 | 内容3 |\n'),
+        'paragraph-insert-table': async () => {
+            const result = await showInsertTableDialog();
+            if (!result) {
+                return; // 用户取消了对话框
+            }
+            const {cols, rows} = result;
+            // 生成表头行
+            let table = '\n';
+            const headerCells = Array(cols).fill('列').map((_, i) => `列${i + 1}`);
+            table += '| ' + headerCells.join(' | ') + ' |\n';
+            // 生成分隔行
+            table += '| ' + Array(cols).fill('---').join(' | ') + ' |\n';
+            // 生成数据行
+            for (let i = 0; i < rows; i++) {
+                const dataCells = Array(cols).fill('').map(() => '');
+                table += '| ' + dataCells.join(' | ') + ' |\n';
+            }
+            table += '\n';
+            insertTextAtCursor(table);
+        },
         'paragraph-math-block': () => surroundSelection('\n$$\n', '\n$$\n'),
         'paragraph-toggle-quote': () => toggleLinePrefix('> '),
         'paragraph-insert-above': () => {

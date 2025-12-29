@@ -596,3 +596,167 @@ body.whitey-theme .result-pane::-webkit-scrollbar-track {
     background: transparent;
     border-left: 1px solid rgba(17, 17, 17, 0.05);
 }
+
+/* ==================== 表格样式 ==================== */
+.preview-pane table,
+.result-pane table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 16px 0;
+    border: 1px solid #e0e0e0;
+    background: #fff;
+}
+
+.preview-pane table th,
+.result-pane table th {
+    background: #f5f5f5;
+    font-weight: 600;
+    padding: 10px 12px;
+    text-align: left;
+    border: 1px solid #e0e0e0;
+    color: #333;
+}
+
+.preview-pane table td,
+.result-pane table td {
+    padding: 10px 12px;
+    border: 1px solid #e0e0e0;
+    text-align: left;
+    color: #333;
+}
+
+.preview-pane table tbody tr:nth-child(even),
+.result-pane table tbody tr:nth-child(even) {
+    background: #fafafa;
+}
+
+.preview-pane table tbody tr:nth-child(odd),
+.result-pane table tbody tr:nth-child(odd) {
+    background: #fff;
+}
+
+.preview-pane table tbody tr:hover,
+.result-pane table tbody tr:hover {
+    background: #f0f0f0;
+}
+
+/* 表格工具栏样式 */
+.table-toolbar {
+    display: none;
+    position: absolute;
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    padding: 4px;
+    z-index: 1000;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+}
+
+.table-toolbar.visible {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.table-toolbar-btn {
+    padding: 6px 8px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s;
+}
+
+.table-toolbar-btn:hover {
+    background: #e9ecef;
+}
+
+.table-toolbar-btn.active {
+    background: #007acc;
+    color: white;
+}
+
+.table-toolbar-separator {
+    width: 1px;
+    height: 20px;
+    background: #e0e0e0;
+    margin: 0 4px;
+}
+
+/* 网格选择器样式 */
+.grid-selector {
+    position: relative;
+    display: inline-block;
+}
+
+.grid-selector-btn {
+    padding: 6px 8px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s;
+}
+
+.grid-selector-btn:hover {
+    background: #e9ecef;
+}
+
+.grid-selector-panel {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 4px;
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    padding: 8px;
+    display: none;
+    z-index: 1001;
+}
+
+.grid-selector-panel.visible {
+    display: block;
+}
+
+.grid-selector-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 20px);
+    gap: 2px;
+    margin-bottom: 8px;
+}
+
+.grid-selector-cell {
+    width: 20px;
+    height: 20px;
+    border: 1px solid #e0e0e0;
+    background: #f8f9fa;
+    cursor: pointer;
+    transition: background-color 0.15s;
+}
+
+.grid-selector-cell:hover {
+    background: #e9ecef;
+}
+
+.grid-selector-cell.selected {
+    background: #007acc;
+    border-color: #007acc;
+}
+
+.grid-selector-dimensions {
+    text-align: center;
+    font-size: 12px;
+    color: #666;
+    padding: 4px;
+    background: #f8f9fa;
+    border-radius: 3px;
+}

@@ -102,7 +102,7 @@ function setMode(mode) {
         isUpdatingResultPane = true;
         const markdown = editor.value || '';
         try {
-            resultPane.innerHTML = marked.parse(markdown);
+        resultPane.innerHTML = marked.parse(markdown);
         } catch (error) {
             console.error('Markdown 渲染错误:', error);
             resultPane.innerHTML = '<p style="color: red;">渲染错误: ' + error.message + '</p>';
@@ -998,6 +998,213 @@ function showInputDialog(message, defaultValue = '') {
 }
 
 /**
+ * 显示插入表格对话框
+ * @returns {Promise<{cols: number, rows: number}|null>} 返回列数和行数，如果取消则返回 null
+ */
+function showInsertTableDialog() {
+    return new Promise((resolve) => {
+        const previousActiveElement = document.activeElement;
+        
+        // 创建模态遮罩层
+        const overlay = document.createElement('div');
+        overlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        `;
+        
+        // 创建对话框
+        const dialog = document.createElement('div');
+        dialog.style.cssText = `
+            background: white;
+            padding: 20px;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            min-width: 300px;
+            max-width: 400px;
+        `;
+        
+        // 创建标题
+        const title = document.createElement('div');
+        title.textContent = '插入表格';
+        title.style.cssText = `
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 20px;
+        `;
+        
+        // 创建列输入组
+        const colGroup = document.createElement('div');
+        colGroup.style.cssText = 'margin-bottom: 15px;';
+        const colLabel = document.createElement('label');
+        colLabel.textContent = '列';
+        colLabel.style.cssText = `
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #333;
+        `;
+        const colInput = document.createElement('input');
+        colInput.type = 'text';
+        colInput.value = '4';
+        colInput.style.cssText = `
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        `;
+        colGroup.appendChild(colLabel);
+        colGroup.appendChild(colInput);
+        
+        // 创建行输入组
+        const rowGroup = document.createElement('div');
+        rowGroup.style.cssText = 'margin-bottom: 20px;';
+        const rowLabel = document.createElement('label');
+        rowLabel.textContent = '行';
+        rowLabel.style.cssText = `
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #333;
+        `;
+        const rowInput = document.createElement('input');
+        rowInput.type = 'text';
+        rowInput.value = '4';
+        rowInput.style.cssText = `
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        `;
+        rowGroup.appendChild(rowLabel);
+        rowGroup.appendChild(rowInput);
+        
+        // 创建按钮容器
+        const buttonContainer = document.createElement('div');
+        buttonContainer.style.cssText = `
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        `;
+        
+        // 创建取消按钮
+        const cancelButton = document.createElement('button');
+        cancelButton.textContent = '取消';
+        cancelButton.style.cssText = `
+            padding: 6px 16px;
+            background: #f0f0f0;
+            color: #333;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 14px;
+        `;
+        cancelButton.onmouseover = () => cancelButton.style.background = '#e0e0e0';
+        cancelButton.onmouseout = () => cancelButton.style.background = '#f0f0f0';
+        
+        // 创建确定按钮
+        const okButton = document.createElement('button');
+        okButton.textContent = '确定';
+        okButton.style.cssText = `
+            padding: 6px 16px;
+            background: #007acc;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 14px;
+        `;
+        okButton.onmouseover = () => okButton.style.background = '#005a9e';
+        okButton.onmouseout = () => okButton.style.background = '#007acc';
+        
+        // 组装对话框
+        buttonContainer.appendChild(cancelButton);
+        buttonContainer.appendChild(okButton);
+        dialog.appendChild(title);
+        dialog.appendChild(colGroup);
+        dialog.appendChild(rowGroup);
+        dialog.appendChild(buttonContainer);
+        overlay.appendChild(dialog);
+        document.body.appendChild(overlay);
+        
+        // 聚焦列输入框并选中默认值
+        setTimeout(() => {
+            colInput.focus();
+            colInput.select();
+        }, 10);
+        
+        // 恢复焦点的辅助函数
+        const restoreFocus = () => {
+            setTimeout(() => {
+                if (previousActiveElement && (previousActiveElement === editor || previousActiveElement === resultPane)) {
+                    previousActiveElement.focus();
+                } else if (currentMode === 'result' && resultPane) {
+                    resultPane.focus();
+                } else if (editor) {
+                    editor.focus();
+                }
+            }, 50);
+        };
+        
+        // 确定按钮处理
+        const handleOk = () => {
+            const cols = parseInt(colInput.value, 10) || 4;
+            const rows = parseInt(rowInput.value, 10) || 4;
+            if (cols > 0 && rows > 0) {
+                document.body.removeChild(overlay);
+                restoreFocus();
+                resolve({cols: Math.min(cols, 20), rows: Math.min(rows, 50)});
+            } else {
+                // 输入无效，不关闭对话框
+                colInput.focus();
+            }
+        };
+        
+        // 取消按钮处理
+        const handleCancel = () => {
+            document.body.removeChild(overlay);
+            restoreFocus();
+            resolve(null);
+        };
+        
+        okButton.addEventListener('click', handleOk);
+        cancelButton.addEventListener('click', handleCancel);
+        
+        // 按 Enter 键确定，按 Esc 键取消
+        const handleKeyDown = (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                handleOk();
+            } else if (e.key === 'Escape') {
+                e.preventDefault();
+                handleCancel();
+            }
+        };
+        colInput.addEventListener('keydown', handleKeyDown);
+        rowInput.addEventListener('keydown', handleKeyDown);
+        
+        // 点击遮罩层取消
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) {
+                handleCancel();
+            }
+        });
+    });
+}
+
+/**
  * 插入链接
  * 如果选中了文本，则使用选中文本作为链接文本；否则使用默认文本
  */
@@ -1014,9 +1221,9 @@ async function insertLink() {
     editor.value = value.slice(0, start) + md + value.slice(end);
     // 延迟聚焦，确保对话框完全关闭
     setTimeout(() => {
-        editor.focus();
-        editor.selectionStart = start;
-        editor.selectionEnd = start + md.length;
+    editor.focus();
+    editor.selectionStart = start;
+    editor.selectionEnd = start + md.length;
     }, 100);
     renderMarkdown(editor.value);
 }
@@ -1053,8 +1260,8 @@ async function insertImage() {
                     imageUrl = `file:///${imageUrl}`;
                 } else {
                     // 相对路径或其他情况
-                    imageUrl = `file:///${imageUrl}`;
-                }
+                imageUrl = `file:///${imageUrl}`;
+            }
             }
             
             // 对路径进行编码，确保特殊字符正确处理
@@ -1131,6 +1338,7 @@ const commandHandlers = createCommandHandlers({
     adjustHeadingLevel,
     insertLink,
     insertImage,
+    showInsertTableDialog,
     exportToPDF,
     exportToHTML,
     exportToImage,
@@ -1222,3 +1430,112 @@ renderMarkdown('', true);
 // ==================== 右键上下文菜单 ====================
 // 初始化上下文菜单（在 commandHandlers 创建后调用）
 initContextMenu(editor, handleMenuCommand);
+
+// ==================== 表格工具栏 ====================
+// 创建表格工具栏
+let tableToolbar = null;
+if (typeof createTableToolbar !== 'undefined') {
+    tableToolbar = createTableToolbar();
+    document.body.appendChild(tableToolbar);
+    
+    // 监听插入表格事件（从网格选择器触发）
+    document.addEventListener('insert-table', async (e) => {
+        const {cols, rows} = e.detail;
+        // 直接使用网格选择器的值插入表格
+        const handler = commandHandlers['paragraph-insert-table'];
+        if (handler) {
+            // 临时修改对话框返回值
+            const originalShowDialog = showInsertTableDialog;
+            showInsertTableDialog = () => Promise.resolve({cols, rows});
+            await handler();
+            showInsertTableDialog = originalShowDialog;
+        }
+    });
+    
+    // 在 result-pane 中检测表格点击
+    resultPane.addEventListener('click', (e) => {
+        const table = e.target.closest('table');
+        if (table) {
+            if (typeof showTableToolbar !== 'undefined') {
+                showTableToolbar(table, tableToolbar);
+            }
+        }
+    });
+    
+    // 在 preview-pane 中也可以显示工具栏（只读模式）
+    preview.addEventListener('click', (e) => {
+        const table = e.target.closest('table');
+        if (table && currentMode === 'split') {
+            // 在预览模式下，可以显示工具栏但可能功能受限
+            if (typeof showTableToolbar !== 'undefined') {
+                showTableToolbar(table, tableToolbar);
+            }
+        }
+    });
+    
+    // 点击其他地方隐藏工具栏
+    document.addEventListener('click', (e) => {
+        if (tableToolbar && !tableToolbar.contains(e.target) && !e.target.closest('table') && !e.target.closest('.grid-selector-panel')) {
+            if (typeof hideTableToolbar !== 'undefined') {
+                hideTableToolbar(tableToolbar);
+            }
+        }
+    });
+    
+    // 监听表格对齐事件
+    document.addEventListener('table-align', (e) => {
+        const {align} = e.detail;
+        // 查找当前显示的表格
+        const visibleTables = document.querySelectorAll('table');
+        let targetTable = null;
+        
+        // 优先查找 result-pane 中的表格
+        if (currentMode === 'result') {
+            const resultTables = resultPane.querySelectorAll('table');
+            if (resultTables.length > 0) {
+                targetTable = resultTables[resultTables.length - 1];
+            }
+        } else {
+            // 查找预览面板中的表格
+            const previewTables = preview.querySelectorAll('table');
+            if (previewTables.length > 0) {
+                targetTable = previewTables[previewTables.length - 1];
+            }
+        }
+        
+        if (targetTable) {
+            const cells = targetTable.querySelectorAll('th, td');
+            cells.forEach(cell => {
+                cell.style.textAlign = align;
+            });
+        }
+    });
+    
+    // 监听删除表格事件
+    document.addEventListener('table-delete', (e) => {
+        // 查找当前显示的表格
+        const visibleTables = document.querySelectorAll('table');
+        let targetTable = null;
+        
+        // 优先查找 result-pane 中的表格
+        if (currentMode === 'result') {
+            const resultTables = resultPane.querySelectorAll('table');
+            if (resultTables.length > 0) {
+                targetTable = resultTables[resultTables.length - 1];
+            }
+        } else {
+            // 查找预览面板中的表格
+            const previewTables = preview.querySelectorAll('table');
+            if (previewTables.length > 0) {
+                targetTable = previewTables[previewTables.length - 1];
+            }
+        }
+        
+        if (targetTable) {
+            targetTable.remove();
+            if (typeof hideTableToolbar !== 'undefined') {
+                hideTableToolbar(tableToolbar);
+            }
+        }
+    });
+}
