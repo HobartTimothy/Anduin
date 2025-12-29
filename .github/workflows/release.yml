@@ -47,8 +47,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # 移除了本地调试用的 hdiutil 清理命令，CI 环境不需要
-
       - name: Build macOS (x64 and arm64)
         run: npm run dist:mac
         env:
@@ -115,8 +113,7 @@ jobs:
           # 获取当前 tag
           CURRENT_TAG="${{ github.event.release.tag_name }}"
           
-          # 获取所有 tag
-          git fetch --tags
+          # 注意：删除了 git fetch --tags，因为 checkout fetch-depth:0 已经拉取了所有 tags
           
           # 获取上一个 tag（当前 tag 之前的最新 tag）
           ALL_TAGS=$(git tag --sort=-version:refname)
