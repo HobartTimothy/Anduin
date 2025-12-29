@@ -58,7 +58,7 @@
           ]
         }
       ],
-      "icon": "resources/icons/icon.jpg",
+      "icon": "resources/icons/icon.icns",
       "category": "public.app-category.productivity",
       "hardenedRuntime": true,
       "gatekeeperAssess": false,
@@ -68,6 +68,12 @@
     },
     "linux": {
       "target": [
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        },
         {
           "target": "deb",
           "arch": [
@@ -99,7 +105,7 @@
     },
     "dmg": {
       "title": "${productName} ${version}",
-      "icon": "resources/icons/icon.jpg",
+      "icon": "resources/icons/icon.icns",
       "background": null,
       "contents": [
         {
@@ -118,7 +124,6 @@
         "width": 540,
         "height": 380
       },
-      "writeUpdateChannel": false,
       "sign": false
     }
   },

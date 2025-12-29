@@ -47,20 +47,13 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Clean up any mounted DMG volumes
-        run: |
-          # Unmount any existing DMG volumes that might be stuck
-          hdiutil detach "/Volumes/Anduin 0.1.0" 2>/dev/null || true
-          hdiutil detach "/Volumes/Anduin" 2>/dev/null || true
-          # Kill any Finder processes that might be holding onto volumes
-          killall Finder 2>/dev/null || true
+      # 移除了本地调试用的 hdiutil 清理命令，CI 环境不需要
 
       - name: Build macOS (x64 and arm64)
         run: npm run dist:mac
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CSC_IDENTITY_AUTO_DISCOVERY: false
-          # Prevent Finder from auto-opening DMG volumes
           CI: true
 
       - name: Upload macOS artifacts
@@ -88,7 +81,7 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libnss3-dev libatk-bridge2.0-dev libdrm2 libxkbcommon-dev libxcomposite-dev libxdamage-dev libxrandr-dev libgbm-dev libxss-dev libasound2-dev
+          sudo apt-get install -y libnss3-dev libatk-bridge2.0-dev libdrm2 libxkbcommon-dev libxcomposite-dev libxdamage-dev libxrandr-dev libgbm-dev libxss-dev libasound2-dev libarchive-tools
 
       - name: Build Linux (x64)
         run: npm run dist:linux
@@ -121,20 +114,17 @@ jobs:
 
       - name: List artifacts for debugging
         run: |
-          echo "Windows artifacts:"
-          find artifacts/windows-installer -type f 2>/dev/null || echo "No Windows artifacts found"
-          echo "macOS artifacts:"
-          find artifacts/macos-installer -type f 2>/dev/null || echo "No macOS artifacts found"
-          echo "Linux artifacts:"
-          find artifacts/linux-installer -type f 2>/dev/null || echo "No Linux artifacts found"
+          echo "Structure of artifacts directory:"
+          ls -R artifacts
 
       - name: Upload to Release
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            artifacts/windows-installer/**
-            artifacts/macos-installer/**
-            artifacts/linux-installer/**
+            artifacts/windows-installer/*.exe
+            artifacts/macos-installer/*.dmg
+            artifacts/linux-installer/*.AppImage
+            artifacts/linux-installer/*.deb
           tag_name: ${{ github.event.release.tag_name }}
           body: |
             ## 🎉 新版本发布
@@ -145,18 +135,12 @@ jobs:
             - **64位 (x64)**: `Anduin Setup *.exe`
 
             #### macOS
-            - **Intel (x64)**: `Anduin-*.dmg`
-            - **Apple Silicon (arm64)**: `Anduin-*.dmg`
+            - **Intel & Apple Silicon**: `Anduin-*.dmg`
+            > ⚠️ 注意：由于没有购买 Apple 证书，首次打开可能提示“文件已损坏”。请在终端运行 `xattr -cr /Applications/Anduin.app` 即可修复。
 
             #### Linux
             - **64位 AppImage (x64)**: `Anduin-*.AppImage`
             - **64位 DEB (x64)**: `anduin_*.deb`
-
-            ### 📝 使用说明
-
-            1. 下载对应平台的安装包
-            2. 按照各平台的安装方式安装应用
-            3. 享受使用 Anduin 编辑 Markdown 的乐趣！
 
             ---
             *自动构建于 ${{ github.event.release.published_at }}*
@@ -164,4 +148,3 @@ jobs:
           prerelease: ${{ github.event.release.prerelease }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
