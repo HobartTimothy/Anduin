@@ -10,7 +10,8 @@
     <!-- 左侧菜单 -->
     <div class="sidebar">
         <div class="search-box">
-            <input type="text" placeholder="查找..." id="search-input"/>
+            <label for="search-input" class="sr-only">查找设置</label>
+            <input type="text" placeholder="查找..." id="search-input" aria-label="查找设置"/>
         </div>
         <nav class="menu">
             <div class="menu-item" data-section="file">文件</div>
@@ -30,8 +31,8 @@
             <h2>文件</h2>
 
             <div class="setting-group">
-                <label class="setting-label">启动操作</label>
-                <select class="setting-select">
+                <label for="startup-action" class="setting-label">启动操作</label>
+                <select id="startup-action" class="setting-select">
                     <option>打开新文件</option>
                     <option>打开上次文件</option>
                     <option>显示欢迎页</option>
@@ -47,8 +48,8 @@
             </div>
 
             <div class="setting-group">
-                <label class="setting-label">默认文件类型/扩展名</label>
-                <select class="setting-select">
+                <label for="default-file-type" class="setting-label">默认文件类型/扩展名</label>
+                <select id="default-file-type" class="setting-select">
                     <option>Markdown (.md)</option>
                     <option>文本文件 (.txt)</option>
                 </select>
@@ -79,21 +80,22 @@
             <div class="setting-group">
                 <label class="setting-label">当输入文件/文件夹关于 Typora 窗口时</label>
                 <div class="setting-row">
-                    <select class="setting-select">
+                    <label for="drag-drop-action" class="sr-only">拖放文件操作</label>
+                    <select id="drag-drop-action" class="setting-select" aria-label="拖放文件操作">
                         <option>在 Typora 中打开</option>
                         <option>忽略</option>
                     </select>
                 </div>
                 <div class="setting-row">
-                    <label>当输入 Markdown 文件时</label>
-                    <select class="setting-select">
+                    <label for="drag-drop-markdown">当输入 Markdown 文件时</label>
+                    <select id="drag-drop-markdown" class="setting-select">
                         <option>在 Typora 中打开</option>
                         <option>忽略</option>
                     </select>
                 </div>
                 <div class="setting-row">
-                    <label>当输入其他类型的文件时</label>
-                    <select class="setting-select">
+                    <label for="drag-drop-other">当输入其他类型的文件时</label>
+                    <select id="drag-drop-other" class="setting-select">
                         <option>导入文件</option>
                         <option>忽略</option>
                     </select>
@@ -107,8 +109,8 @@
             <p class="section-note">（一些项调整要重启 Typora 后生效）</p>
 
             <div class="setting-group">
-                <label class="setting-label">默认缩进</label>
-                <select class="setting-select small">
+                <label for="default-indent" class="setting-label">默认缩进</label>
+                <select id="default-indent" class="setting-select small">
                     <option>2</option>
                     <option>4</option>
                     <option>8</option>
@@ -167,9 +169,9 @@
             <div class="setting-group">
                 <label class="setting-label">拼写检查</label>
                 <div class="setting-row">
-                    <label>默认的拼写检查语言</label>
+                    <label for="spell-check-language">默认的拼写检查语言</label>
                 </div>
-                <select class="setting-select">
+                <select id="spell-check-language" class="setting-select">
                     <option>自动按照语言</option>
                     <option>English (US)</option>
                     <option>简体中文</option>
@@ -191,9 +193,9 @@
             <h2>图像</h2>
 
             <div class="setting-group">
-                <label class="setting-label">插入图片时...</label>
+                <label for="insert-image-action" class="setting-label">插入图片时...</label>
                 <a href="#" class="setting-link">了解更多...</a>
-                <select class="setting-select">
+                <select id="insert-image-action" class="setting-select">
                     <option>无特殊操作</option>
                     <option>复制到指定路径</option>
                     <option>上传图片</option>
@@ -230,8 +232,8 @@
             <div class="setting-group">
                 <label class="setting-label">上传服务设置</label>
                 <a href="#" class="setting-link">了解更多...</a>
-                <label class="setting-sublabel">上传服务</label>
-                <select class="setting-select">
+                <label for="upload-service" class="setting-sublabel">上传服务</label>
+                <select id="upload-service" class="setting-select">
                     <option>无</option>
                     <option>PicGo</option>
                     <option>uPic</option>
@@ -253,23 +255,23 @@
                     <a href="#" class="setting-link">了解更多...</a>
                 </div>
                 <div class="setting-row">
-                    <label class="setting-sublabel">标题样式</label>
-                    <select class="setting-select small">
+                    <label for="heading-style" class="setting-sublabel">标题样式</label>
+                    <select id="heading-style" class="setting-select small">
                         <option>atx (# )</option>
                         <option>Setext</option>
                     </select>
                 </div>
                 <div class="setting-row">
-                    <label class="setting-sublabel">无序列编</label>
-                    <select class="setting-select small">
+                    <label for="unordered-list-style" class="setting-sublabel">无序列编</label>
+                    <select id="unordered-list-style" class="setting-select small">
                         <option>-</option>
                         <option>*</option>
                         <option>+</option>
                     </select>
                 </div>
                 <div class="setting-row">
-                    <label class="setting-sublabel">有序列编</label>
-                    <select class="setting-select small">
+                    <label for="ordered-list-style" class="setting-sublabel">有序列编</label>
+                    <select id="ordered-list-style" class="setting-select small">
                         <option>1... 2... 3...</option>
                         <option>1... 1... 1...</option>
                     </select>
@@ -317,7 +319,8 @@
                 <label class="setting-label">智能标点</label>
                 <a href="#" class="setting-link">了解更多...</a>
                 <div class="setting-row">
-                    <input type="text" class="setting-input" placeholder="输入对符号键"/>
+                    <label for="smart-pair-keys" class="sr-only">输入对符号键</label>
+                    <input type="text" id="smart-pair-keys" class="setting-input" placeholder="输入对符号键" aria-label="输入对符号键"/>
                 </div>
                 <div class="setting-row">
                     <input type="checkbox" id="smart-pair-single"/>
@@ -348,20 +351,20 @@
                     <label for="code-tab-convert">使用 Shift+Tab 自动缩进到所代码编辑器</label>
                 </div>
                 <div class="setting-row">
-                    <label class="setting-sublabel">代码缩编</label>
-                    <select class="setting-select small">
+                    <label for="code-indent-size" class="setting-sublabel">代码缩编</label>
+                    <select id="code-indent-size" class="setting-select small">
                         <option>4</option>
                         <option>2</option>
                         <option>8</option>
                     </select>
                 </div>
                 <div class="setting-row">
-                    <label class="setting-sublabel">默认的代码格检查语言</label>
-                    <button class="setting-btn-inline">□</button>
+                    <label for="default-code-language" class="setting-sublabel">默认的代码格检查语言</label>
+                    <button id="default-code-language" class="setting-btn-inline" aria-label="选择默认代码语言">□</button>
                 </div>
                 <div class="setting-row">
-                    <label class="setting-sublabel">以下哪些项决定代码绑高清语言</label>
-                    <select class="setting-select">
+                    <label for="code-language-detection" class="setting-sublabel">以下哪些项决定代码绑高清语言</label>
+                    <select id="code-language-detection" class="setting-select">
                         <option>当编辑Markdown代码时插入代码块</option>
                         <option>仅当编辑空代码块时</option>
                     </select>
@@ -380,15 +383,15 @@
                     <label for="formula-physics">启用 physics 包</label>
                 </div>
                 <div class="setting-row">
-                    <label class="setting-sublabel">自动编码适应</label>
-                    <select class="setting-select">
+                    <label for="formula-auto-encoding" class="setting-sublabel">自动编码适应</label>
+                    <select id="formula-auto-encoding" class="setting-select">
                         <option>不启用松松对访问换码自公式</option>
                         <option>自动按需决定</option>
                     </select>
                 </div>
                 <div class="setting-row">
-                    <label class="setting-sublabel">当数敢或倍功为 无标底被的HTML 时</label>
-                    <select class="setting-select">
+                    <label for="formula-html-output" class="setting-sublabel">当数敢或倍功为 无标底被的HTML 时</label>
+                    <select id="formula-html-output" class="setting-select">
                         <option>使用 SVG</option>
                         <option>使用 MathML</option>
                     </select>
@@ -408,15 +411,15 @@
                     <label for="doc-edit-br">显示 &lt;br/&gt;</label>
                 </div>
                 <div class="setting-row">
-                    <label class="setting-sublabel">保留换编号</label>
-                    <select class="setting-select">
+                    <label for="doc-line-break-edit" class="setting-sublabel">保留换编号</label>
+                    <select id="doc-line-break-edit" class="setting-select">
                         <option>保留每包的空行选号个换行</option>
                         <option>保留所有空行</option>
                     </select>
                 </div>
                 <div class="setting-row">
-                    <label class="setting-sublabel">导出时导印编</label>
-                    <select class="setting-select">
+                    <label for="doc-line-break-export" class="setting-sublabel">导出时导印编</label>
+                    <select id="doc-line-break-export" class="setting-select">
                         <option>保留每包的空行选号个换行</option>
                         <option>保留所有空行</option>
                     </select>
@@ -429,19 +432,20 @@
             <h2>Export</h2>
 
             <div class="setting-group">
-                <label class="setting-label">默认的导出文件夹</label>
-                <select class="setting-select">
+                <label for="export-folder" class="setting-label">默认的导出文件夹</label>
+                <select id="export-folder" class="setting-select">
                     <option>自动</option>
                     <option>自定义</option>
                 </select>
             </div>
 
             <div class="setting-group">
-                <label class="setting-label">Pandoc 路径</label>
+                <label for="pandoc-path" class="setting-label">Pandoc 路径</label>
                 <a href="#" class="setting-link">了解更多...</a>
                 <div class="setting-row">
-                    <input type="text" class="setting-input-full" placeholder="(自动侦测)"/>
-                    <button class="setting-btn-inline">📁</button>
+                    <label for="pandoc-path" class="sr-only">Pandoc 路径</label>
+                    <input type="text" id="pandoc-path" class="setting-input-full" placeholder="(自动侦测)" aria-label="Pandoc 路径"/>
+                    <button class="setting-btn-inline" aria-label="选择 Pandoc 路径">📁</button>
                 </div>
             </div>
 
@@ -480,8 +484,8 @@
             </div>
 
             <div class="setting-group">
-                <label class="setting-label">Zoom</label>
-                <select class="setting-select small">
+                <label for="zoom-level" class="setting-label">Zoom</label>
+                <select id="zoom-level" class="setting-select small">
                     <option>100%</option>
                     <option>110%</option>
                     <option>125%</option>
@@ -505,18 +509,18 @@
             <div class="setting-group">
                 <label class="setting-label">字数统计</label>
                 <div class="setting-row">
-                    <label>阅读速度</label>
-                    <input type="number" class="setting-input-number" value="382"/>
-                    <label>词每分钟</label>
-                    <button class="setting-btn-inline">重置</button>
-                    <button class="setting-btn-dropdown">▼</button>
+                    <label for="reading-speed">阅读速度</label>
+                    <input type="number" id="reading-speed" class="setting-input-number" value="382" aria-label="阅读速度（词每分钟）"/>
+                    <label for="reading-speed">词每分钟</label>
+                    <button class="setting-btn-inline" aria-label="重置阅读速度">重置</button>
+                    <button class="setting-btn-dropdown" aria-label="阅读速度选项">▼</button>
                 </div>
             </div>
 
             <div class="setting-group">
-                <label class="setting-label">主题</label>
+                <label for="theme-select" class="setting-label">主题</label>
                 <a href="#" class="setting-link">了解更多...</a>
-                <select class="setting-select">
+                <select id="theme-select" class="setting-select">
                     <option>Newsprint</option>
                     <option>Github</option>
                     <option>Night</option>
@@ -538,9 +542,9 @@
             <h2>通用</h2>
 
             <div class="setting-group">
-                <label class="setting-label">语言</label>
+                <label for="app-language" class="setting-label">语言</label>
                 <p class="setting-note">（重启 Typora 后生效）</p>
-                <select class="setting-select">
+                <select id="app-language" class="setting-select">
                     <option>系统语言</option>
                     <option>English</option>
                     <option>简体中文</option>

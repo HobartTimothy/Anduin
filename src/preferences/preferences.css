@@ -4,6 +4,19 @@
     box-sizing: border-box;
 }
 
+/* 屏幕阅读器专用 - 视觉上隐藏但对屏幕阅读器可见 */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
     font-size: 13px;
