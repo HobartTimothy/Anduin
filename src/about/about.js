@@ -5,7 +5,7 @@
 
 // 等待 DOM 加载完成
 document.addEventListener('DOMContentLoaded', () => {
-    const {shell, ipcRenderer, app} = require('electron');
+    const {shell, ipcRenderer} = require('electron');
     const path = require('path');
     const fs = require('fs');
 
