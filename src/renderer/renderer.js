@@ -23,6 +23,7 @@ const {createCommandHandlers} = window.commandHandlersAPI; // 命令处理器模
 const {initContextMenu} = window.contextMenuAPI; // 上下文菜单模块
 const {showThemeMenu, hideThemeMenu, initThemeMenu} = window.themeMenuAPI || {}; // 主题菜单模块
 const i18n = window.i18nAPI || {}; // i18n 模块
+const i18nUI = window.i18nUIAPI || {}; // i18nUI 模块
 
 // ==================== DOM 元素引用 ====================
 const editor = document.getElementById('editor'); // Markdown 编辑器文本域
@@ -1483,20 +1484,32 @@ ipcRenderer.on('file-imported', (event, data) => {
 });
 
 // ==================== 国际化支持 ====================
-// 初始化时更新 UI
-if (i18n && i18n.updateUI) {
-    i18n.updateUI();
-}
+// 页面加载时初始化翻译
+document.addEventListener('DOMContentLoaded', () => {
+    if (i18nUI && i18nUI.updateUI) {
+        i18nUI.updateUI();
+    } else if (i18n && i18n.updateUI) {
+        i18n.updateUI();
+    }
+});
 
-// 监听主进程的语言切换消息
+// 监听语言改变事件
 if (ipcRenderer && ipcRenderer.on) {
-    ipcRenderer.on('language-changed', (event, lang) => {
-        // 重新加载语言包
-        if (i18n.loadLanguage) {
-            i18n.loadLanguage(lang);
+    ipcRenderer.on('language-changed', (event, locale) => {
+        console.log('[Renderer] 语言切换为:', locale);
+        
+        // 重新加载语言包（注意：这里只加载内存即可，因为 preferences 已经保存了文件）
+        if (i18n && i18n.loadLanguage) {
+            i18n.loadLanguage(locale);
+        } else if (i18n && i18n.setLocale) {
+            // 如果没有 loadLanguage，使用 setLocale（但不要保存，因为 preferences 已经保存了）
+            i18n.setLocale(locale);
         }
-        // 更新 UI（使用统一的 i18nUI 工具）
-        if (i18n.updateUI) {
+        
+        // 更新界面（使用统一的 i18nUI 工具）
+        if (i18nUI && i18nUI.updateUI) {
+            i18nUI.updateUI();
+        } else if (i18n && i18n.updateUI) {
             i18n.updateUI();
         }
     });

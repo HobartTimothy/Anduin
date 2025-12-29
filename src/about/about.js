@@ -38,7 +38,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // 监听语言变化事件
     ipcRenderer.on('language-changed', (event, locale) => {
         console.log('[About] 收到语言变化事件:', locale);
-        i18n.setLocale(locale);
+        
+        // 重新加载语言包（注意：这里只加载内存即可，因为 preferences 已经保存了文件）
+        if (i18n.loadLanguage) {
+            i18n.loadLanguage(locale);
+        } else if (i18n.setLocale) {
+            // 如果没有 loadLanguage，使用 setLocale（但不要保存，因为 preferences 已经保存了）
+            i18n.setLocale(locale);
+        }
+        
+        // 更新界面
         i18nUI.updateUI(document);
         
         // 语言变化后，需要重新更新平台信息（因为 i18n 可能覆盖了它）

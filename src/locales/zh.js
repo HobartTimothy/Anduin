@@ -1,6 +1,6 @@
 module.exports = {
     'app.name': 'Anduin',
-    
+
     // 菜单
     'menu.file': '文件',
     'menu.edit': '编辑',
@@ -13,7 +13,7 @@ module.exports = {
     'menu.language': '语言',
     'menu.english': '英文',
     'menu.chinese': '简体中文',
-    
+
     // 文件菜单
     'menu.file.new': '新建',
     'menu.file.newWindow': '新建窗口',
@@ -31,7 +31,7 @@ module.exports = {
     'menu.file.showSidebar': '在侧边栏中显示',
     'menu.file.delete': '删除...',
     'menu.file.import': '导入...',
-    'menu.file.importFromTxt': '从txt中导入...',
+    'menu.file.importFromTxt': '从 Txt中导入...',
     'menu.file.importFromWord': '从 Word 导入...',
     'menu.file.importFromHTML': '从 HTML 导入...',
     'menu.file.export': '导出',
@@ -55,7 +55,7 @@ module.exports = {
     'menu.file.preferences': '偏好设置...',
     'menu.file.close': '关闭',
     'menu.file.quit': '退出',
-    
+
     // 编辑菜单
     'menu.edit.undo': '撤销',
     'menu.edit.redo': '重做',
@@ -89,7 +89,7 @@ module.exports = {
     'menu.edit.findNext': '查找下一个',
     'menu.edit.replace': '替换',
     'menu.edit.emoji': '表情与符号',
-    
+
     // 段落菜单
     'menu.paragraph.heading1': '一级标题',
     'menu.paragraph.heading2': '二级标题',
@@ -121,7 +121,7 @@ module.exports = {
     'menu.paragraph.hr': '水平分割线',
     'menu.paragraph.toc': '内容目录',
     'menu.paragraph.yamlFrontMatter': 'YAML Front Matter',
-    
+
     // 格式菜单
     'menu.format.bold': '加粗',
     'menu.format.italic': '斜体',
@@ -137,7 +137,7 @@ module.exports = {
     'menu.format.imageInsert': '插入图片',
     'menu.format.imageEdit': '编辑图片',
     'menu.format.clearStyle': '清除样式',
-    
+
     // 视图菜单
     'menu.view.editMode': '编辑模式',
     'menu.view.modeSplit': '对比模式',
@@ -160,7 +160,7 @@ module.exports = {
     'menu.view.switchWindow': '应用内窗口切换',
     'menu.view.reload': '重新加载',
     'menu.view.toggleDevTools': '开发者工具',
-    
+
     // 主题菜单
     'menu.theme.select': '选择主题...',
     'menu.theme.github': 'Github',
@@ -168,7 +168,7 @@ module.exports = {
     'menu.theme.night': 'Night',
     'menu.theme.pixyll': 'Pixyll',
     'menu.theme.whitey': 'Whitey',
-    
+
     // 帮助菜单
     'menu.help.changelog': '更新日志',
     'menu.help.privacy': '隐私条款',
@@ -176,7 +176,7 @@ module.exports = {
     'menu.help.feedback': '反馈',
     'menu.help.checkUpdates': '检查更新...',
     'menu.help.about': '关于',
-    
+
     // 偏好设置
     'preferences.title': '偏好设置',
     'preferences.search.label': '查找设置',
@@ -188,7 +188,7 @@ module.exports = {
     'preferences.menu.export': '导出',
     'preferences.menu.appearance': '外观',
     'preferences.menu.general': '通用',
-    
+
     // 文件设置
     'preferences.file.startupAction': '启动操作',
     'preferences.file.startupAction.newFile': '打开新文件',
@@ -213,7 +213,7 @@ module.exports = {
     'preferences.file.dragDropAction.import': '导入文件',
     'preferences.file.dragDropMarkdown': '当输入 Markdown 文件时',
     'preferences.file.dragDropOther': '当输入其他类型的文件时',
-    
+
     // 编辑器设置
     'preferences.editor.note': '（一些项调整要重启 Typora 后生效）',
     'preferences.editor.defaultIndent': '默认缩进',
@@ -238,7 +238,7 @@ module.exports = {
     'preferences.editor.typewriterMode': '打字机模式',
     'preferences.editor.typewriterKeepCenter': '在打字机模式下，始终保证光标在屏幕中间',
     'preferences.editor.closeTypewriterFocus': '关闭 打字机模式 / 专注模式',
-    
+
     // 图像设置
     'preferences.image.insertImageAction': '插入图片时...',
     'preferences.image.learnMore': '了解更多...',
@@ -259,7 +259,7 @@ module.exports = {
     'preferences.image.uploadService.picgo': 'PicGo',
     'preferences.image.uploadService.upic': 'uPic',
     'preferences.image.uploadService.custom': '自定义',
-    
+
     // Markdown 设置
     'preferences.markdown.note': '（下述选项将在 Typora 重启后生效）',
     'preferences.markdown.syntaxPreference': 'Markdown 语法偏好',
@@ -311,7 +311,7 @@ module.exports = {
     'preferences.markdown.lineBreakPreserveOption1': '保留每包的空行选号个换行',
     'preferences.markdown.lineBreakPreserveOption2': '保留所有空行',
     'preferences.markdown.lineBreakExport': '导出时导印编',
-    
+
     // 导出设置
     'preferences.export.defaultExportFolder': '默认的导出文件夹',
     'preferences.export.auto': '自动',
@@ -322,7 +322,7 @@ module.exports = {
     'preferences.export.selectPandocPath': '选择 Pandoc 路径',
     'preferences.export.outputSidebar': '输出框',
     'preferences.export.autoOpenSidebar': '打开生活文件后自动',
-    
+
     // 外观设置
     'preferences.appearance.windowStyle': '窗口样式',
     'preferences.appearance.windowStyleNote': '（重启 Typora 后生效）',
@@ -346,7 +346,7 @@ module.exports = {
     'preferences.appearance.themeDarkMode': '在深色模式下使用暗的主题',
     'preferences.appearance.openThemeFolder': '打开主题文件夹',
     'preferences.appearance.getThemes': '获取主题',
-    
+
     // 通用设置
     'preferences.general.language': '语言',
     'preferences.general.language.english': '英文',
@@ -367,7 +367,7 @@ module.exports = {
     'preferences.general.sendAnonymousData': '发送匿名使用数据',
     'preferences.general.openAdvanced': '打开高级设置',
     'preferences.general.resetAdvanced': '重置高级设置',
-    
+
     // 上下文菜单
     'contextMenu.cut': '剪切',
     'contextMenu.copy': '复制',
@@ -405,7 +405,7 @@ module.exports = {
     'contextMenu.yamlFrontMatter': 'YAML Front Matter',
     'contextMenu.paragraphAbove': '段落（上方）',
     'contextMenu.paragraphBelow': '段落（下方）',
-    
+
     // 关于页面
     'about.title': '关于 Anduin',
     'about.appName': 'Anduin',
@@ -415,10 +415,10 @@ module.exports = {
     'about.version': '版本',
     'about.website': 'Website',
     'about.github': 'Anduin',
-    
+
     // 主页面
     'index.title': 'Anduin',
-    
+
     // 通用消息
     'message.notImplemented': '该功能尚未实现：{feature}',
     'message.fileSaved': '文件已保存：{path}',

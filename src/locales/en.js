@@ -1,6 +1,6 @@
 module.exports = {
     'app.name': 'Anduin',
-    
+
     // 菜单
     'menu.file': 'File',
     'menu.edit': 'Edit',
@@ -13,7 +13,7 @@ module.exports = {
     'menu.language': 'Language',
     'menu.english': 'English',
     'menu.chinese': 'Chinese (简体中文)',
-    
+
     // 文件菜单
     'menu.file.new': 'New',
     'menu.file.newWindow': 'New Window',
@@ -31,7 +31,7 @@ module.exports = {
     'menu.file.showSidebar': 'Show in Sidebar',
     'menu.file.delete': 'Delete...',
     'menu.file.import': 'Import...',
-    'menu.file.importFromTxt': 'Import from txt...',
+    'menu.file.importFromTxt': 'Import from Txt...',
     'menu.file.importFromWord': 'Import from Word...',
     'menu.file.importFromHTML': 'Import from HTML...',
     'menu.file.export': 'Export',
@@ -55,7 +55,7 @@ module.exports = {
     'menu.file.preferences': 'Preferences...',
     'menu.file.close': 'Close',
     'menu.file.quit': 'Quit',
-    
+
     // 编辑菜单
     'menu.edit.undo': 'Undo',
     'menu.edit.redo': 'Redo',
@@ -89,7 +89,7 @@ module.exports = {
     'menu.edit.findNext': 'Find Next',
     'menu.edit.replace': 'Replace',
     'menu.edit.emoji': 'Emoji & Symbols',
-    
+
     // 段落菜单
     'menu.paragraph.heading1': 'Heading 1',
     'menu.paragraph.heading2': 'Heading 2',
@@ -121,7 +121,7 @@ module.exports = {
     'menu.paragraph.hr': 'Horizontal Rule',
     'menu.paragraph.toc': 'Table of Contents',
     'menu.paragraph.yamlFrontMatter': 'YAML Front Matter',
-    
+
     // 格式菜单
     'menu.format.bold': 'Bold',
     'menu.format.italic': 'Italic',
@@ -137,7 +137,7 @@ module.exports = {
     'menu.format.imageInsert': 'Insert Image',
     'menu.format.imageEdit': 'Edit Image',
     'menu.format.clearStyle': 'Clear Style',
-    
+
     // 视图菜单
     'menu.view.editMode': 'Edit Mode',
     'menu.view.modeSplit': 'Split Mode',
@@ -160,7 +160,7 @@ module.exports = {
     'menu.view.switchWindow': 'Switch Window in App',
     'menu.view.reload': 'Reload',
     'menu.view.toggleDevTools': 'Toggle Developer Tools',
-    
+
     // 主题菜单
     'menu.theme.select': 'Select Theme...',
     'menu.theme.github': 'Github',
@@ -168,7 +168,7 @@ module.exports = {
     'menu.theme.night': 'Night',
     'menu.theme.pixyll': 'Pixyll',
     'menu.theme.whitey': 'Whitey',
-    
+
     // 帮助菜单
     'menu.help.changelog': 'Changelog',
     'menu.help.privacy': 'Privacy Policy',
@@ -176,7 +176,7 @@ module.exports = {
     'menu.help.feedback': 'Feedback',
     'menu.help.checkUpdates': 'Check for Updates...',
     'menu.help.about': 'About',
-    
+
     // 偏好设置
     'preferences.title': 'Preferences',
     'preferences.search.label': 'Search Settings',
@@ -188,7 +188,7 @@ module.exports = {
     'preferences.menu.export': 'Export',
     'preferences.menu.appearance': 'Appearance',
     'preferences.menu.general': 'General',
-    
+
     // 文件设置
     'preferences.file.startupAction': 'Startup Action',
     'preferences.file.startupAction.newFile': 'Open New File',
@@ -213,7 +213,7 @@ module.exports = {
     'preferences.file.dragDropAction.import': 'Import File',
     'preferences.file.dragDropMarkdown': 'When dragging Markdown files',
     'preferences.file.dragDropOther': 'When dragging other types of files',
-    
+
     // 编辑器设置
     'preferences.editor.note': '(Some items require Typora restart to take effect)',
     'preferences.editor.defaultIndent': 'Default Indent',
@@ -238,7 +238,7 @@ module.exports = {
     'preferences.editor.typewriterMode': 'Typewriter Mode',
     'preferences.editor.typewriterKeepCenter': 'In typewriter mode, always keep cursor in the center of the screen',
     'preferences.editor.closeTypewriterFocus': 'Close Typewriter Mode / Focus Mode',
-    
+
     // 图像设置
     'preferences.image.insertImageAction': 'When inserting images...',
     'preferences.image.learnMore': 'Learn More...',
@@ -259,7 +259,7 @@ module.exports = {
     'preferences.image.uploadService.picgo': 'PicGo',
     'preferences.image.uploadService.upic': 'uPic',
     'preferences.image.uploadService.custom': 'Custom',
-    
+
     // Markdown 设置
     'preferences.markdown.note': '(The following options will take effect after Typora restart)',
     'preferences.markdown.syntaxPreference': 'Markdown Syntax Preference',
@@ -311,7 +311,7 @@ module.exports = {
     'preferences.markdown.lineBreakPreserveOption1': 'Preserve at most one blank line per line break',
     'preferences.markdown.lineBreakPreserveOption2': 'Preserve all blank lines',
     'preferences.markdown.lineBreakExport': 'Line Break When Exporting',
-    
+
     // 导出设置
     'preferences.export.defaultExportFolder': 'Default Export Folder',
     'preferences.export.auto': 'Auto',
@@ -322,7 +322,7 @@ module.exports = {
     'preferences.export.selectPandocPath': 'Select Pandoc Path',
     'preferences.export.outputSidebar': 'Output Sidebar',
     'preferences.export.autoOpenSidebar': 'Auto open after generating file',
-    
+
     // 外观设置
     'preferences.appearance.windowStyle': 'Window Style',
     'preferences.appearance.windowStyleNote': '(Restart Typora to take effect)',
@@ -346,7 +346,7 @@ module.exports = {
     'preferences.appearance.themeDarkMode': 'Use dark theme in dark mode',
     'preferences.appearance.openThemeFolder': 'Open Theme Folder',
     'preferences.appearance.getThemes': 'Get Themes',
-    
+
     // 通用设置
     'preferences.general.language': 'Language',
     'preferences.general.language.english': 'English',
@@ -367,7 +367,7 @@ module.exports = {
     'preferences.general.sendAnonymousData': 'Send Anonymous Usage Data',
     'preferences.general.openAdvanced': 'Open Advanced Settings',
     'preferences.general.resetAdvanced': 'Reset Advanced Settings',
-    
+
     // 上下文菜单
     'contextMenu.cut': 'Cut',
     'contextMenu.copy': 'Copy',
@@ -405,7 +405,7 @@ module.exports = {
     'contextMenu.yamlFrontMatter': 'YAML Front Matter',
     'contextMenu.paragraphAbove': 'Paragraph (Above)',
     'contextMenu.paragraphBelow': 'Paragraph (Below)',
-    
+
     // 关于页面
     'about.title': 'About Anduin',
     'about.appName': 'Anduin',
@@ -415,10 +415,10 @@ module.exports = {
     'about.version': 'version',
     'about.website': 'Website',
     'about.github': 'Anduin',
-    
+
     // 主页面
     'index.title': 'Anduin',
-    
+
     // 通用消息
     'message.notImplemented': 'This feature is not yet implemented: {feature}',
     'message.fileSaved': 'File saved: {path}',

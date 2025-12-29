@@ -128,6 +128,10 @@ function createWindow(filePath = null) {
 
     // 等待窗口加载完成后打开文件
     mainWindow.webContents.once('did-finish-load', () => {
+        // 发送当前的语言设置，确保渲染进程同步
+        const currentLocale = i18n.currentLocale() || 'en';
+        mainWindow.webContents.send('language-changed', currentLocale);
+        
         if (filePath) {
             fileUtils.openFile(filePath);
         }
@@ -352,23 +356,23 @@ ipcMain.on('open-preferences', () => {
  * 处理语言切换
  */
 ipcMain.on('change-language', (event, locale) => {
+    console.log('[Main] 收到语言切换请求:', locale);
+    
+    // 1. 更新主进程的 i18n 实例（这对原生菜单很重要）
+    i18n.setLocale(locale);
+    
+    // 2. 重新构建并设置原生应用菜单
     changeLanguage(locale, sendToRenderer, fileUtils, mainWindow, createPreferencesWindow);
     
-    // 同步更新 settings.json 中的语言设置
+    // 3. 同步更新 settings.json 中的语言设置
     const settings = readSettings();
     settings.language = locale;
     writeSettings(settings);
     
-    // 通知所有窗口语言已更改
-    if (preferencesWindow) {
-        preferencesWindow.webContents.send('language-changed', locale);
-    }
-    if (mainWindow) {
-        mainWindow.webContents.send('language-changed', locale);
-    }
-    if (aboutWindow) {
-        aboutWindow.webContents.send('language-changed', locale);
-    }
+    // 4. 广播通知所有打开的窗口（主窗口、偏好设置窗口、关于窗口等）
+    BrowserWindow.getAllWindows().forEach(win => {
+        win.webContents.send('language-changed', locale);
+    });
 });
 
 /**

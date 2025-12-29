@@ -1,6 +1,7 @@
 // 偏好设置页面交互逻辑
 const {ipcRenderer} = require('electron');
 const i18n = require('../util/i18n');
+const i18nUI = require('../util/i18nUI'); // 引入 UI 更新工具
 
 // 获取所有菜单项和内容区域
 const menuItems = document.querySelectorAll('.menu-item');
@@ -90,15 +91,6 @@ function updateHtmlLang(locale) {
     document.documentElement.lang = locale;
 }
 
-/**
- * 更新 UI 文本（使用统一的 i18nAPI）
- */
-function updateUIText() {
-    if (i18n && i18n.updateUI) {
-        i18n.updateUI();
-    }
-}
-
 // 保存设置
 function saveSettings() {
     const settings = {
@@ -112,40 +104,49 @@ function saveSettings() {
     }
 }
 
-// 监听所有输入变化，自动保存
+// 监听语言选择框变化
+if (languageSelect) {
+    languageSelect.addEventListener('change', (e) => {
+        const newLocale = e.target.value;
+        
+        console.log('[Preferences] 用户切换语言:', newLocale);
+        
+        // 1. 在本地实例设置并保存 (这一步会写入 json 配置文件)
+        i18n.setLocale(newLocale);
+        
+        // 2. 发送给主进程，让主进程通知其他窗口
+        ipcRenderer.send('change-language', newLocale);
+        
+        // 3. 立即更新当前页面 UI (虽然监听了事件，但为了响应速度可以立即执行)
+        i18nUI.updateUI();
+    });
+}
+
+// 监听所有其他输入变化，自动保存
 document.addEventListener('change', (e) => {
-    if (e.target.matches('input, select')) {
-        // 如果是语言选择框，立即切换语言
-        if (e.target.id === 'app-language') {
-            const selectedLanguage = e.target.value;
-            // 切换语言（会自动更新配置）
-            if (i18n.setLocale) {
-                i18n.setLocale(selectedLanguage);
-            }
-            // 更新 UI 文本
-            updateUIText();
-            // 通知主进程
-            ipcRenderer.send('change-language', selectedLanguage);
-        }
+    if (e.target.matches('input, select') && e.target.id !== 'app-language') {
         // 延迟保存，避免频繁写入
         clearTimeout(window.saveTimeout);
         window.saveTimeout = setTimeout(saveSettings, 500);
     }
 });
 
-// 监听语言变化事件
+// 监听来自主进程的广播 (用于多窗口同步)
 ipcRenderer.on('language-changed', (event, locale) => {
-    console.log('[事件] 收到语言变化事件:', locale);
+    console.log('[Preferences] 收到同步事件:', locale);
     
     // 标记已接收到主进程的语言设置
     initialLanguageReceived = true;
     
-    // 重新加载 i18n 语言
-    i18n.setLocale(locale);
+    // 如果是别的窗口触发的改变，这里也需要同步
+    if (i18n.currentLocale() !== locale) {
+        i18n.setLocale(locale); // 只需要加载内存，不需要再存盘（因为 preferences 已经保存了）
+    }
+    
     // 更新 HTML lang 属性
     updateHtmlLang(locale);
     // 更新 UI 文本
-    updateUIText();
+    i18nUI.updateUI();
     
     // 在下一个事件循环中更新语言选择框
     // 确保在 UI 更新完成后再设置选择框的值
@@ -196,27 +197,27 @@ let initialLanguageReceived = false;
 
 // 初始化函数
 function initialize() {
-    // 获取当前 i18n 的语言
+    // 1. 获取当前语言 (i18n 内部会自动从配置文件读取)
     const currentLocale = i18n.currentLocale() || 'en';
-    console.log('[初始化] 当前 i18n 语言:', currentLocale);
+    console.log('[Preferences] 初始化语言:', currentLocale);
     
-    // 更新 HTML lang 属性
+    // 2. 更新 HTML lang 属性
     updateHtmlLang(currentLocale);
     
-    // 加载其他设置
+    // 3. 加载其他设置
     loadSettings();
     
-    // 更新 UI 文本（这会更新所有带 data-i18n 属性的元素）
-    updateUIText();
+    // 4. 更新当前页面的文本
+    i18nUI.updateUI();
     
-    // 等待一小段时间，让主进程有机会发送 language-changed 事件
+    // 5. 等待一小段时间，让主进程有机会发送 language-changed 事件
     // 如果主进程没有发送，我们就使用本地的语言设置
     setTimeout(() => {
         if (!initialLanguageReceived) {
-            console.log('[初始化] 使用本地语言设置（主进程事件未到达）');
+            console.log('[Preferences] 使用本地语言设置（主进程事件未到达）');
             setLanguageSelectValue(currentLocale);
         } else {
-            console.log('[初始化] 已收到主进程语言设置，跳过本地设置');
+            console.log('[Preferences] 已收到主进程语言设置，跳过本地设置');
         }
     }, 100); // 等待100ms
 }

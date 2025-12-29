@@ -54,6 +54,23 @@ contextBridge.exposeInMainWorld('i18nAPI', {
     }
 });
 
+// 暴露 i18nUI 模块（供渲染进程使用）
+contextBridge.exposeInMainWorld('i18nUIAPI', {
+    updateUI: () => {
+        if (typeof document !== 'undefined') {
+            i18nUI.updateUI(document);
+        }
+    },
+    updateHtmlLang: () => {
+        if (typeof document !== 'undefined') {
+            i18nUI.updateHtmlLang(document);
+        }
+    },
+    t: (key, params) => i18nUI.t(key, params),
+    currentLocale: () => i18nUI.currentLocale(),
+    setLocale: (locale) => i18nUI.setLocale(locale)
+});
+
 // 加载并暴露 commandHandlers 模块
 const commandHandlersPath = path.join(__dirname, '..', 'renderer', 'commandHandlers.js');
 const {createCommandHandlers} = require(commandHandlersPath);
