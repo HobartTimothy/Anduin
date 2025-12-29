@@ -149,47 +149,102 @@ npm run dist:all
 
 ## 🤖 自动发布
 
-项目配置了 GitHub Actions 自动发布流程。当你推送一个新的 Git Tag 时，会自动构建并发布到 GitHub Release。
+项目支持通过 GitHub Actions 实现自动化构建和发布。当推送新的 Git Tag 时，会自动触发构建流程，生成各平台的安装包并发布到 GitHub Release。
 
-### 使用方法
+### 前置准备
 
-1. **创建并推送 Tag：**
+1. **配置 GitHub Token：**
+   - 在 GitHub 仓库设置中，确保 Actions 权限已启用
+   - GitHub Actions 会自动使用内置的 `GITHUB_TOKEN`，无需额外配置
+
+2. **创建工作流文件：**
+   - 在项目根目录创建 `.github/workflows/release.yml` 文件
+   - 配置 electron-builder 的发布策略
+
+### 发布流程
+
+1. **更新版本号：**
    ```bash
-   # 创建 tag（推荐使用语义化版本，如 v1.0.0）
-   git tag v1.0.0
-   git push origin v1.0.0
-   
-   # 或者创建带注释的 tag
-   git tag -a v1.0.0 -m "Release version 1.0.0"
-   git push origin v1.0.0
+   # 在 package.json 中更新 version 字段
+   # 例如：从 "0.1.0" 更新到 "0.1.1"
    ```
 
-2. **GitHub Actions 会自动：**
-   - 在 Windows、macOS、Linux 三个平台上构建应用
-   - Windows 和 Linux 会同时构建 64 位和 32 位版本
-   - 将构建产物上传到 GitHub Release
-   - 创建 Release 页面，包含所有平台的安装包
+2. **创建并推送 Tag：**
+   ```bash
+   # 创建带注释的 tag（推荐）
+   git tag -a v0.1.1 -m "Release version 0.1.1"
+   git push origin v0.1.1
+   
+   # 或者创建轻量级 tag
+   git tag v0.1.1
+   git push origin v0.1.1
+   ```
 
-### Workflow 文件说明
+3. **自动构建和发布：**
+   - GitHub Actions 检测到新 tag 后自动触发工作流
+   - 在 Windows、macOS、Linux 三个平台上并行构建
+   - 构建完成后自动上传到 GitHub Release
+   - 创建 Release 页面，包含所有平台的安装包下载链接
 
-项目提供了两个 workflow 文件：
+### 构建产物
 
-- **`.github/workflows/release.yml`**（推荐）：
-  - 使用 electron-builder 内置的 publish 功能
-  - 更简单，自动处理 Release 创建和文件上传
-  - 需要配置 `GH_TOKEN` 环境变量（GitHub Actions 自动提供）
+自动发布流程会生成以下安装包：
 
-- **`.github/workflows/release-with-action.yml`**（备选）：
-  - 使用 `softprops/action-gh-release` 手动创建 Release
-  - 更灵活，可以自定义 Release 说明
-  - 适合需要更精细控制 Release 内容的场景
+- **Windows：**
+  - NSIS 安装程序（x64）
+  
+- **macOS：**
+  - DMG 安装包（x64 + arm64）
+  
+- **Linux：**
+  - AppImage（x64）
+  - DEB 包（x64）
+
+### 版本命名规范
+
+- 使用语义化版本（Semantic Versioning）：`主版本号.次版本号.修订号`
+- Tag 名称格式：`v` + 版本号，如 `v0.1.0`、`v1.0.0`、`v2.1.3`
+- 预发布版本：使用 `-` 分隔，如 `v1.0.0-beta.1`、`v1.0.0-rc.1`
+- 预发布版本会自动标记为 GitHub Release 的预发布状态
+
+### 工作流配置示例
+
+在 `.github/workflows/release.yml` 中配置：
+
+```yaml
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - run: npm ci
+      - run: npm run build
+      - uses: softprops/action-gh-release@v1
+        with:
+          files: dist/**
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+```
 
 ### 注意事项
 
-- Tag 名称建议使用语义化版本格式：`v1.0.0`、`v1.0.1`、`v2.0.0-beta.1` 等
-- 如果 tag 名称包含 `-`（如 `v1.0.0-beta.1`），会自动标记为预发布版本
-- 确保 GitHub Actions 有足够的权限（在仓库设置中启用 Actions 和 Release 权限）
-- 默认使用 `release.yml`，如需使用备选方案，可以重命名或删除 `release.yml`
+- 确保 `package.json` 中的版本号与 tag 名称一致（tag 去掉 `v` 前缀）
+- macOS 构建需要在 macOS 运行器上执行（GitHub Actions 自动处理）
+- 首次发布前，建议先在本地测试构建流程
+- 如果构建失败，可以在 GitHub Actions 页面查看详细日志
 
 ## 🛠️ 开发
 
