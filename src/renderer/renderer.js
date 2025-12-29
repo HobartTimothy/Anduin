@@ -1328,6 +1328,9 @@ async function insertImage() {
  * 将菜单命令名称映射到对应的处理函数
  * 这些命令由主进程通过 IPC 发送
  */
+// 初始化 showInsertTableDialogRef，将实际的函数赋值给它
+showInsertTableDialogRef.current = showInsertTableDialog;
+
 // 创建命令处理器映射对象，传入所有依赖
 const commandHandlers = createCommandHandlers({
     editor,
@@ -1342,7 +1345,13 @@ const commandHandlers = createCommandHandlers({
     adjustHeadingLevel,
     insertLink,
     insertImage,
-    showInsertTableDialog: () => showInsertTableDialogRef.current(),
+    showInsertTableDialog: () => {
+        if (showInsertTableDialogRef.current && typeof showInsertTableDialogRef.current === 'function') {
+            return showInsertTableDialogRef.current();
+        }
+        console.error('showInsertTableDialogRef.current is not a function');
+        return Promise.resolve(null);
+    },
     exportToPDF,
     exportToHTML,
     exportToImage,

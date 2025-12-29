@@ -72,7 +72,7 @@ try {
         console.error('读取右键菜单 HTML 文件失败: 所有路径都尝试失败', {
             __dirname: __dirname,
             cwd: process.cwd(),
-            triedPaths: possiblePaths.map(p => ({ path: p, exists: fs.existsSync(p) }))
+            triedPaths: possiblePaths.map(p => ({path: p, exists: fs.existsSync(p)}))
         });
     }
 } catch (error) {

@@ -4,6 +4,7 @@
  */
 
 let currentOpenSubmenu = null; // 跟踪当前打开的子菜单，确保一次只展开一个
+let lastClickedCommand = null; // 跟踪最后点击的菜单命令
 
 /**
  * 构建右键上下文菜单
@@ -129,11 +130,26 @@ function buildContextMenu(handleMenuCommand, menuHTML = null) {
     });
 
     menu.addEventListener('click', (e) => {
+        // 阻止事件冒泡，避免触发 document 的点击事件
+        e.stopPropagation();
+        
         const target = e.target.closest('[data-command]');
         if (!target) {
             return;
         }
         const cmd = target.getAttribute('data-command');
+
+        // 如果再次点击同一个菜单项，只关闭菜单
+        if (lastClickedCommand === cmd) {
+            lastClickedCommand = null; // 重置，以便下次可以正常执行
+            hideContextMenu();
+            return;
+        }
+
+        // 记录当前点击的命令
+        lastClickedCommand = cmd;
+
+        // 执行命令
         if (cmd === 'edit-cut') {
             document.execCommand('cut');
         } else if (cmd === 'edit-copy') {
@@ -165,6 +181,9 @@ function showContextMenu(x, y, handleMenuCommand, menuHTML = null) {
         console.error('showContextMenu: 无法创建菜单元素');
         return;
     }
+
+    // 重置最后点击的命令，以便每次打开菜单时第一次点击都会执行命令
+    lastClickedCommand = null;
 
     // 先显示菜单（但暂时不可见），以便计算尺寸
     menu.style.visibility = 'hidden';
@@ -242,19 +261,32 @@ function initContextMenu(editor, handleMenuCommand, menuHTML = null) {
     // 编辑器右键菜单事件
     editor.addEventListener('contextmenu', (e) => {
         e.preventDefault();
-        showContextMenu(e.clientX, e.clientY, handleMenuCommand, menuHTML);
+        const menu = document.getElementById('md-context-menu');
+        // 如果菜单已经打开，再次右键时关闭菜单
+        if (menu && menu.classList.contains('visible') && menu.style.display === 'block') {
+            hideContextMenu();
+        } else {
+            // 否则打开菜单
+            showContextMenu(e.clientX, e.clientY, handleMenuCommand, menuHTML);
+        }
     });
 
     // 点击事件监听 - 点击菜单外部时隐藏菜单
+    // 使用捕获阶段，确保能捕获所有点击（在菜单的点击事件处理之前）
     document.addEventListener('click', (e) => {
         const menu = document.getElementById('md-context-menu');
         if (!menu) {
             return;
         }
-        if (!menu.contains(e.target)) {
-            hideContextMenu();
+        // 只有当菜单可见时，点击外部才关闭菜单
+        if (menu.classList.contains('visible') && menu.style.display === 'block') {
+            // 检查点击目标是否在菜单内（包括子菜单）
+            const clickedInMenu = menu.contains(e.target);
+            if (!clickedInMenu) {
+                hideContextMenu();
+            }
         }
-    });
+    }, true); // 使用捕获阶段，确保在菜单的点击事件处理之前执行
 
     // ESC 键隐藏菜单
     document.addEventListener('keydown', (e) => {
