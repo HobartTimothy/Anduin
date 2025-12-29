@@ -2,7 +2,7 @@ name: Build and Release
 
 on:
   release:
-    types: [created]
+    types: [published]
 
 jobs:
   build-windows:
@@ -80,7 +80,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libnss3-dev libatk-bridge2.0-dev libdrm2 libxkbcommon-dev libxcomposite-dev libxdamage-dev libxrandr-dev libgbm-dev libxss-dev libasound2-dev
 
-      - name: Build Linux (x64 and ia32)
+      - name: Build Linux (x64)
         run: npm run dist:linux
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -141,9 +141,7 @@ jobs:
 
             #### Linux
             - **64位 AppImage (x64)**: `Anduin-*.AppImage`
-            - **32位 AppImage (ia32)**: `Anduin-*.AppImage`
             - **64位 DEB (x64)**: `anduin_*.deb`
-            - **32位 DEB (ia32)**: `anduin_*.deb`
 
             ### 📝 使用说明
 
