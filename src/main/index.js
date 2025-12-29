@@ -78,7 +78,7 @@ function createWindow(filePath = null) {
     fileUtils = new FileUtils(mainWindow);
 
     // 过滤 DevTools 控制台中的无害错误消息
-    mainWindow.webContents.on('console-message', (event, level, message, line, sourceId) => {
+    mainWindow.webContents.on('console-message', (event, { level, message, line, sourceId }) => {
         // 过滤 DevTools Autofill API 相关的无害错误
         // 这些错误是 DevTools 内部协议问题，不影响应用功能
         if (message && (

@@ -304,6 +304,163 @@ body.night-theme .preview-pane {
     background-color: #0d1117;
 }
 
+/* ========== 上下文菜单主题样式 ========== */
+
+/* GitHub 主题菜单 */
+body.github-theme .context-menu,
+body.github-theme .context-submenu {
+    background: #ffffff;
+    color: #24292e;
+    border-color: #e1e4e8;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+body.github-theme .context-menu-item:hover,
+body.github-theme .context-menu-btn:hover {
+    background: #f6f8fa;
+}
+
+body.github-theme .context-menu-separator {
+    background: #e1e4e8;
+}
+
+body.github-theme .context-menu-item-shortcut,
+body.github-theme .context-menu-item.has-submenu::after {
+    color: #6a737d;
+}
+
+body.github-theme .context-menu-btn svg {
+    fill: #586069;
+}
+
+body.github-theme .context-menu-row.context-menu-icons {
+    border-bottom-color: #e1e4e8;
+}
+
+/* Newsprint 主题菜单 */
+body.newsprint-theme .context-menu,
+body.newsprint-theme .context-submenu {
+    background: #f8f5e9;
+    color: #333333;
+    border-color: #e0d9c4;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+body.newsprint-theme .context-menu-item:hover,
+body.newsprint-theme .context-menu-btn:hover {
+    background: #f0ead6;
+}
+
+body.newsprint-theme .context-menu-separator {
+    background: #e0d9c4;
+}
+
+body.newsprint-theme .context-menu-item-shortcut,
+body.newsprint-theme .context-menu-item.has-submenu::after {
+    color: #8b7d6b;
+}
+
+body.newsprint-theme .context-menu-btn svg {
+    fill: #6b5d4a;
+}
+
+body.newsprint-theme .context-menu-row.context-menu-icons {
+    border-bottom-color: #e0d9c4;
+}
+
+/* Night 主题菜单（深色） */
+body.night-theme .context-menu,
+body.night-theme .context-submenu {
+    background: #161b22;
+    color: #c9d1d9;
+    border-color: #30363d;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+body.night-theme .context-menu-item:hover,
+body.night-theme .context-menu-btn:hover {
+    background: #21262d;
+}
+
+body.night-theme .context-menu-separator {
+    background: #30363d;
+}
+
+body.night-theme .context-menu-item-shortcut,
+body.night-theme .context-menu-item.has-submenu::after {
+    color: #8b949e;
+}
+
+body.night-theme .context-menu-btn svg {
+    fill: #8b949e;
+}
+
+body.night-theme .context-menu-row.context-menu-icons {
+    border-bottom-color: #30363d;
+}
+
+/* Pixyll 主题菜单 */
+body.pixyll-theme .context-menu,
+body.pixyll-theme .context-submenu {
+    background: #fdfdfd;
+    color: #2c3e50;
+    border-color: #e0e0e0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+body.pixyll-theme .context-menu-item:hover,
+body.pixyll-theme .context-menu-btn:hover {
+    background: #f5f5f5;
+}
+
+body.pixyll-theme .context-menu-separator {
+    background: #e0e0e0;
+}
+
+body.pixyll-theme .context-menu-item-shortcut,
+body.pixyll-theme .context-menu-item.has-submenu::after {
+    color: #7f8c8d;
+}
+
+body.pixyll-theme .context-menu-btn svg {
+    fill: #5a6c7d;
+}
+
+body.pixyll-theme .context-menu-row.context-menu-icons {
+    border-bottom-color: #e0e0e0;
+}
+
+/* Whitey 主题菜单 */
+body.whitey-theme .context-menu,
+body.whitey-theme .context-submenu {
+    background: #f5f5f5;
+    color: #111111;
+    border-color: #d0d0d0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+body.whitey-theme .context-menu-item:hover,
+body.whitey-theme .context-menu-btn:hover {
+    background: #e8e8e8;
+}
+
+body.whitey-theme .context-menu-separator {
+    background: #d0d0d0;
+}
+
+body.whitey-theme .context-menu-item-shortcut,
+body.whitey-theme .context-menu-item.has-submenu::after {
+    color: #666666;
+}
+
+body.whitey-theme .context-menu-btn svg {
+    fill: #555555;
+}
+
+body.whitey-theme .context-menu-row.context-menu-icons {
+    border-bottom-color: #d0d0d0;
+}
+
 /* ========== 滚动栏样式 ========== */
 
 /* 默认滚动栏样式（浅色主题） */

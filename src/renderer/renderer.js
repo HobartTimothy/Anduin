@@ -398,14 +398,64 @@ function getCurrentLineRange() {
  * @param {string} text - 要插入的文本
  */
 function insertTextAtCursor(text) {
-    const start = editor.selectionStart;
-    const end = editor.selectionEnd;
-    const value = editor.value;
-    editor.value = value.slice(0, start) + text + value.slice(end);
-    const newPos = start + text.length;
+    if (!text) {
+        console.warn('insertTextAtCursor: 文本为空，跳过插入');
+        return;
+    }
+    
+    // 确保编辑器存在且可用
+    if (!editor) {
+        console.error('insertTextAtCursor: 编辑器元素不存在');
+        return;
+    }
+    
+    // 确保编辑器获得焦点
     editor.focus();
+    
+    // 获取当前光标位置，如果不可用则使用文档末尾
+    const start = (editor.selectionStart !== undefined && editor.selectionStart !== null) 
+        ? editor.selectionStart 
+        : (editor.value ? editor.value.length : 0);
+    const end = (editor.selectionEnd !== undefined && editor.selectionEnd !== null) 
+        ? editor.selectionEnd 
+        : (editor.value ? editor.value.length : 0);
+    const value = editor.value || '';
+    
+    console.log('insertTextAtCursor - 插入前:', {
+        start,
+        end,
+        valueLength: value.length,
+        textToInsert: text.substring(0, 50) + (text.length > 50 ? '...' : '')
+    });
+    
+    // 插入文本
+    const newValue = value.slice(0, start) + text + value.slice(end);
+    editor.value = newValue;
+    const newPos = start + text.length;
+    
     // 将光标移动到插入文本的末尾
-    editor.selectionStart = editor.selectionEnd = newPos;
+    try {
+        editor.selectionStart = newPos;
+        editor.selectionEnd = newPos;
+    } catch (e) {
+        console.warn('设置光标位置失败:', e);
+    }
+    
+    console.log('insertTextAtCursor - 插入后:', {
+        newPos,
+        newValueLength: newValue.length,
+        cursorPosition: editor.selectionStart
+    });
+    
+    // 触发 input 事件以确保其他监听器能够响应
+    try {
+        const inputEvent = new Event('input', { bubbles: true, cancelable: true });
+        editor.dispatchEvent(inputEvent);
+    } catch (e) {
+        console.warn('触发 input 事件失败:', e);
+    }
+    
+    // 渲染 Markdown
     renderMarkdown(editor.value);
 }
 
@@ -623,11 +673,156 @@ function exportAndOverwrite() {
 }
 
 /**
+ * 显示输入对话框（替代 window.prompt）
+ * @param {string} message - 提示信息
+ * @param {string} defaultValue - 默认值
+ * @returns {Promise<string|null>} 用户输入的值，如果取消则返回 null
+ */
+function showInputDialog(message, defaultValue = '') {
+    return new Promise((resolve) => {
+        // 创建模态遮罩层
+        const overlay = document.createElement('div');
+        overlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        `;
+        
+        // 创建对话框
+        const dialog = document.createElement('div');
+        dialog.style.cssText = `
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            min-width: 300px;
+            max-width: 500px;
+        `;
+        
+        // 创建消息标签
+        const label = document.createElement('label');
+        label.textContent = message;
+        label.style.cssText = `
+            display: block;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #333;
+        `;
+        
+        // 创建输入框
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.value = defaultValue;
+        input.style.cssText = `
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+            margin-bottom: 15px;
+        `;
+        
+        // 创建按钮容器
+        const buttonContainer = document.createElement('div');
+        buttonContainer.style.cssText = `
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        `;
+        
+        // 创建确定按钮
+        const okButton = document.createElement('button');
+        okButton.textContent = '确定';
+        okButton.style.cssText = `
+            padding: 6px 16px;
+            background: #007acc;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        `;
+        okButton.onmouseover = () => okButton.style.background = '#005a9e';
+        okButton.onmouseout = () => okButton.style.background = '#007acc';
+        
+        // 创建取消按钮
+        const cancelButton = document.createElement('button');
+        cancelButton.textContent = '取消';
+        cancelButton.style.cssText = `
+            padding: 6px 16px;
+            background: #f0f0f0;
+            color: #333;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        `;
+        cancelButton.onmouseover = () => cancelButton.style.background = '#e0e0e0';
+        cancelButton.onmouseout = () => cancelButton.style.background = '#f0f0f0';
+        
+        // 组装对话框
+        buttonContainer.appendChild(okButton);
+        buttonContainer.appendChild(cancelButton);
+        dialog.appendChild(label);
+        dialog.appendChild(input);
+        dialog.appendChild(buttonContainer);
+        overlay.appendChild(dialog);
+        document.body.appendChild(overlay);
+        
+        // 聚焦输入框并选中默认值
+        input.focus();
+        input.select();
+        
+        // 确定按钮处理
+        const handleOk = () => {
+            const value = input.value;
+            document.body.removeChild(overlay);
+            resolve(value);
+        };
+        
+        // 取消按钮处理
+        const handleCancel = () => {
+            document.body.removeChild(overlay);
+            resolve(null);
+        };
+        
+        okButton.addEventListener('click', handleOk);
+        cancelButton.addEventListener('click', handleCancel);
+        
+        // 按 Enter 键确定，按 Esc 键取消
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                handleOk();
+            } else if (e.key === 'Escape') {
+                e.preventDefault();
+                handleCancel();
+            }
+        });
+        
+        // 点击遮罩层取消
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) {
+                handleCancel();
+            }
+        });
+    });
+}
+
+/**
  * 插入链接
  * 如果选中了文本，则使用选中文本作为链接文本；否则使用默认文本
  */
-function insertLink() {
-    const url = window.prompt('输入链接地址：', 'https://');
+async function insertLink() {
+    const url = await showInputDialog('输入链接地址：', 'https://');
     if (!url) {
         return;
     }
@@ -649,38 +844,85 @@ function insertLink() {
  */
 async function insertImage() {
     try {
+        // 确保编辑器获得焦点
+        editor.focus();
+        
         // 首先尝试打开文件选择对话框选择本地图片
         const result = await ipcRenderer.invoke('select-image-file');
+        
+        console.log('图片选择结果:', result); // 调试信息
         
         if (result && result.filePath) {
             // 用户选择了本地文件
             const filePath = result.filePath;
+            console.log('选择的文件路径:', filePath); // 调试信息
+            
             // 将文件路径转换为 file:// URL 格式
-            // Windows 路径需要转换为 file:///C:/path/to/file 格式
-            let imageUrl = filePath.replace(/\\/g, '/');
-            // 确保以 file:/// 开头（Windows 路径需要三个斜杠）
+            // 使用 path 模块规范化路径，然后转换为 URL
+            const normalizedPath = path.normalize(filePath);
+            let imageUrl = normalizedPath.replace(/\\/g, '/');
+            
+            // Windows 路径处理：确保正确格式
+            // 如果路径是绝对路径（如 C:/path/to/file），需要转换为 file:///C:/path/to/file
             if (!imageUrl.startsWith('file://')) {
-                imageUrl = `file:///${imageUrl}`;
+                // 对于 Windows 绝对路径（如 C:/...），需要三个斜杠
+                if (imageUrl.match(/^[A-Za-z]:/)) {
+                    imageUrl = `file:///${imageUrl}`;
+                } else {
+                    // 相对路径或其他情况
+                    imageUrl = `file:///${imageUrl}`;
+                }
             }
-            const alt = window.prompt('输入图片说明（可选）：', '') || '';
-            const md = `![${alt}](${imageUrl})`;
+            
+            // 对路径进行编码，确保特殊字符正确处理
+            // 注意：encodeURI 不会编码 : / 等字符，这对 file:// URL 是正确的
+            const encodedUrl = encodeURI(imageUrl).replace(/#/g, '%23');
+            
+            const alt = (await showInputDialog('输入图片说明（可选）：', '')) || '';
+            const md = `![${alt}](${encodedUrl})`;
+            
+            console.log('生成的 Markdown:', md); // 调试信息
+            console.log('编辑器当前值长度:', editor.value.length); // 调试信息
+            console.log('光标位置:', editor.selectionStart, editor.selectionEnd); // 调试信息
+            
             insertTextAtCursor(md);
-        } else if (result && result.cancelled) {
-            // 用户取消了文件选择，可以选择输入 URL
-            const url = window.prompt('输入图片地址（或取消以退出）：', 'https://');
-            if (url) {
-                const alt = window.prompt('输入图片说明（可选）：', '') || '';
-                const md = `![${alt}](${url})`;
+            
+            // 验证插入是否成功
+            setTimeout(() => {
+                console.log('插入后编辑器值长度:', editor.value.length); // 调试信息
+                console.log('插入后光标位置:', editor.selectionStart, editor.selectionEnd); // 调试信息
+            }, 100);
+            
+            return;
+        }
+        
+        // 用户取消了文件选择或没有选择文件，可以选择输入 URL
+        if (result && result.cancelled) {
+            const url = await showInputDialog('输入图片地址（或取消以退出）：', 'https://');
+            if (url && url.trim()) {
+                const alt = (await showInputDialog('输入图片说明（可选）：', '')) || '';
+                const md = `![${alt}](${url.trim()})`;
+                console.log('生成的 Markdown (URL):', md); // 调试信息
+                insertTextAtCursor(md);
+            }
+        } else {
+            // 如果 result 为空或格式不正确，回退到 URL 输入方式
+            const url = await showInputDialog('输入图片地址（或取消以退出）：', 'https://');
+            if (url && url.trim()) {
+                const alt = (await showInputDialog('输入图片说明（可选）：', '')) || '';
+                const md = `![${alt}](${url.trim()})`;
+                console.log('生成的 Markdown (回退):', md); // 调试信息
                 insertTextAtCursor(md);
             }
         }
     } catch (error) {
         console.error('插入图片失败:', error);
         // 如果文件选择失败，回退到 URL 输入方式
-        const url = window.prompt('输入图片地址：', 'https://');
-        if (url) {
-            const alt = window.prompt('输入图片说明（可选）：', '') || '';
-            const md = `![${alt}](${url})`;
+        const url = await showInputDialog('输入图片地址：', 'https://');
+        if (url && url.trim()) {
+            const alt = (await showInputDialog('输入图片说明（可选）：', '')) || '';
+            const md = `![${alt}](${url.trim()})`;
+            console.log('生成的 Markdown (错误处理):', md); // 调试信息
             insertTextAtCursor(md);
         }
     }

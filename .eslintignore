@@ -19,11 +19,9 @@ resources/
 
 # 文档
 *.md
-README.md
 LICENSE
 
 # 其他
 .git/
 .vscode/
 .idea/
-
